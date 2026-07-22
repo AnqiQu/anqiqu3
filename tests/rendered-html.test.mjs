@@ -1,0 +1,81 @@
+import assert from "node:assert/strict";
+import { access, readFile } from "node:fs/promises";
+import test from "node:test";
+
+async function render(pathname = "/") {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set(
+    "test",
+    `${process.pid}-${Date.now()}-${pathname}`,
+  );
+  const { default: worker } = await import(workerUrl.href);
+
+  return worker.fetch(
+    new Request(`http://localhost${pathname}`, {
+      headers: { accept: "text/html" },
+    }),
+    {
+      ASSETS: {
+        fetch: async () => new Response("Not found", { status: 404 }),
+      },
+    },
+    {
+      waitUntil() {},
+      passThroughOnException() {},
+    },
+  );
+}
+
+test("server-renders the Anqi Intelligence landing page", async () => {
+  const response = await render();
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+
+  const html = await response.text();
+  assert.match(html, /<title>Anqi Intelligence<\/title>/i);
+  assert.match(html, /INTRODUCING ANQI INTELLIGENCE/);
+  assert.match(html, /Our most advanced multimodal human model yet\./);
+  assert.match(html, /OBSERVED IN PROXIMITY TO PEOPLE AT/);
+  assert.match(html, /Technical specifications/);
+  assert.match(html, /Compare adjacent solutions/);
+  assert.match(html, /Security &amp; compliance/);
+  assert.match(html, /href="\/contact"/);
+  assert.doesNotMatch(html, /Radix Trading/);
+  assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);
+});
+
+test("server-renders contact options with supplied URLs", async () => {
+  const response = await render("/contact");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<title>Book a Demo \| Anqi Intelligence<\/title>/i);
+  assert.match(html, /Select a communication protocol\./);
+  assert.match(html, /https:\/\/www\.instagram\.com\/anqi\._\.thewateraddict/);
+  assert.match(html, /https:\/\/www\.linkedin\.com\/in\/anqiqu\//);
+  assert.match(html, /mailto:anqi@anqiqu\.com/);
+  assert.match(html, /https:\/\/x\.com\/Anqinator/);
+});
+
+test("keeps production content centralized and reduced-motion safe", async () => {
+  const [content, css, layout, packageJson] = await Promise.all([
+    readFile(new URL("../app/content.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(content, /export const contactLinks/);
+  assert.match(content, /export const specifications/);
+  assert.doesNotMatch(content, /Radix Trading/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.match(css, /@media \(max-width: 360px\)/);
+  assert.match(layout, /metadataBase:\s*new URL\("https:\/\/anqiqu\.com"\)/);
+  assert.match(layout, /themeColor:\s*"#000000"/);
+  assert.match(layout, /images:\s*\["\/og\.png"\]/);
+  assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+
+  await assert.rejects(
+    access(new URL("../app/_sites-preview", import.meta.url)),
+  );
+});
