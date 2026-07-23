@@ -89,6 +89,8 @@ test("keeps production content centralized and reduced-motion safe", async () =>
   assert.match(css, /hero-parenthetical/);
   assert.match(css, /--gyro-x/);
   assert.match(css, /@keyframes orbit-sweep/);
+  assert.match(css, /@keyframes orbit-drift-three/);
+  assert.match(css, /technical-star/);
   assert.match(css, /company-logo-item-nvidia/);
   assert.match(css, /company-logo-item-featured/);
   assert.match(css, /contact-option-x/);

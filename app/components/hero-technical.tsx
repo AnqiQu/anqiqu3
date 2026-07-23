@@ -39,8 +39,18 @@ export function HeroTechnical() {
     <div className="hero-technical" aria-hidden="true" ref={graphicRef}>
       <span className="orbit orbit-one" />
       <span className="orbit orbit-two" />
+      <span className="orbit orbit-three" />
+      <span className="orbit orbit-four" />
       <span className="orbit-node orbit-node-one" />
       <span className="orbit-node orbit-node-two" />
+      <span className="technical-dot technical-dot-one" />
+      <span className="technical-dot technical-dot-two" />
+      <span className="technical-dot technical-dot-three" />
+      <span className="technical-dot technical-dot-four" />
+      <span className="technical-dot technical-dot-five" />
+      <span className="technical-star technical-star-one" />
+      <span className="technical-star technical-star-two" />
+      <span className="technical-star technical-star-three" />
     </div>
   );
 }
