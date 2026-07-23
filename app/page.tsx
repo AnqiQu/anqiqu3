@@ -65,7 +65,7 @@ export default function Home() {
                   >
                     {companies.map((company) => (
                       <span
-                        className={`company-logo-item ${company.name === "NVIDIA" ? "company-logo-item-nvidia" : ""}`}
+                        className={`company-logo-item ${company.name === "NVIDIA" ? "company-logo-item-nvidia" : ""} ${company.name === "Apple" || company.name === "Meta" ? "company-logo-item-featured" : ""}`}
                         key={company.name}
                       >
                         <Image

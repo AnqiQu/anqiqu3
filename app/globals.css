@@ -226,6 +226,8 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .company-logo-item:hover img { opacity: 0.86; }
 .company-logo-item-nvidia { width: 220px; }
 .company-logo-item-nvidia img { width: 190px; height: 68px; }
+.company-logo-item-featured { width: 210px; }
+.company-logo-item-featured img { width: 198px; height: 54px; }
 
 .section { padding: clamp(100px, 10vw, 150px) 0; border-bottom: 1px solid var(--border); }
 .section-header { padding-bottom: 32px; }
@@ -386,6 +388,8 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
   .hero-actions { align-items: stretch; flex-direction: column; }
   .hero-actions .button { width: 100%; }
   .company-logo-item { width: 148px; min-height: 72px; }
+  .company-logo-item-featured { width: 180px; }
+  .company-logo-item-featured img { width: 166px; height: 48px; }
   .section { padding: 88px 0; }
   .section-header { padding-bottom: 34px; }
   .section-header h2, .final-cta h2 { font-size: clamp(2.25rem, 11vw, 3.5rem); }
