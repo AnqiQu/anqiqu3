@@ -51,6 +51,7 @@ test("server-renders the Anqi Intelligence landing page", async () => {
   assert.doesNotMatch(html, /✓/);
   assert.match(html, /Compare adjacent solutions/);
   assert.match(html, /Security &amp; compliance/);
+  assert.match(html, /Try out a real-world deployment of A\(nqi\) I\(ntelligence\)/);
   assert.match(html, /<span>NOT CERTIFIED<\/span><h3>SOC 2<\/h3>/);
   assert.match(html, /href="\/contact"/);
   assert.doesNotMatch(html, /Radix Trading/);
@@ -67,6 +68,7 @@ test("server-renders contact options with supplied URLs", async () => {
   assert.match(html, /https:\/\/www\.instagram\.com\/anqi\._\.thewateraddict/);
   assert.match(html, /https:\/\/www\.linkedin\.com\/in\/anqiqu\//);
   assert.match(html, /mailto:anqi@anqiqu\.com/);
+  assert.match(html, /\/brand\/social\/email\.svg/);
   assert.match(html, /https:\/\/x\.com\/Anqinator/);
   assert.doesNotMatch(html, />Instagram<|>LinkedIn<|>Email<|>X</);
 });
@@ -89,6 +91,7 @@ test("keeps production content centralized and reduced-motion safe", async () =>
   assert.match(css, /company-logo-item-nvidia/);
   assert.match(css, /company-logo-item-featured/);
   assert.match(css, /contact-option-x/);
+  assert.match(css, /contact-value[^}]*font-size:\s*16px/);
   assert.match(css, /border-radius:\s*16px/);
   assert.match(css, /@media \(max-width: 360px\)/);
   assert.match(layout, /metadataBase:\s*new URL\("https:\/\/anqiqu\.com"\)/);

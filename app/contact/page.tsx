@@ -25,17 +25,13 @@ export default function ContactPage() {
                 rel={link.href.startsWith("http") ? "noreferrer" : undefined}
                 aria-label={`${link.label}: ${link.value}`}
               >
-                {link.icon ? (
-                  <Image
-                    src={link.icon}
-                    alt=""
-                    width={72}
-                    height={72}
-                    unoptimized
-                  />
-                ) : (
-                  <span className="email-glyph" aria-hidden="true" />
-                )}
+                <Image
+                  src={link.icon}
+                  alt=""
+                  width={72}
+                  height={72}
+                  unoptimized
+                />
                 <span className="contact-value">{link.value}</span>
               </a>
             ))}

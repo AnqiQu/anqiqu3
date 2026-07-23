@@ -244,8 +244,8 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .spec-table, .known-issues { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .spec-row { display: grid; grid-template-columns: minmax(190px, 0.4fr) minmax(0, 0.6fr); gap: 30px; padding: 20px; border-bottom: 1px solid var(--border); }
 .spec-row:last-child { border-bottom: 0; }
-.spec-label { color: var(--muted); font-size: 18px; }
-.spec-value { font-size: 18px; font-weight: 560; }
+.spec-label { color: var(--muted); font-size: 16.2px; }
+.spec-value { font-size: 16.2px; font-weight: 560; }
 .spec-value a { color: var(--pale-green); text-decoration: underline; text-decoration-color: rgb(199 249 204 / 0.3); text-underline-offset: 4px; }
 .spec-dimensions { display: grid; gap: 7px; }
 .spec-dimensions strong { display: block; font-weight: 650; }
@@ -263,7 +263,7 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .timeline-content { display: grid; gap: 16px; }
 .timeline-primary { display: flex; align-items: baseline; gap: 22px; }
 .timeline-primary time { flex: 0 0 auto; font-size: clamp(1.7rem, 2.8vw, 2.75rem); font-weight: 600; line-height: 1; }
-.timeline-divider { width: 1px; height: 1.2em; background: var(--green); transform: translateY(0.15em); }
+.timeline-divider { width: 1px; height: clamp(1.7rem, 2.8vw, 2.75rem); align-self: center; background: var(--green); }
 .timeline-primary p { margin: 0; color: var(--white); font-size: clamp(1.1rem, 2vw, 1.65rem); }
 .timeline-details { max-width: 900px; margin: 0 0 0 clamp(96px, 10vw, 142px); color: var(--muted); font-size: 13px; line-height: 1.6; }
 
@@ -272,11 +272,11 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .comparison-table th, .comparison-table td { height: 78px; padding: 0 24px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); text-align: left; }
 .comparison-table th:last-child, .comparison-table td:last-child { border-right: 0; }
 .comparison-table tbody tr:last-child th, .comparison-table tbody tr:last-child td { border-bottom: 0; }
-.comparison-table thead th { height: 92px; color: var(--muted); font-size: 16px; font-weight: 600; letter-spacing: 0.11em; text-transform: uppercase; }
-.comparison-table tbody th { width: 48%; color: var(--muted-strong); font-size: 18px; font-weight: 450; }
+.comparison-table thead th { height: 92px; color: var(--muted); font-size: 14.4px; font-weight: 600; letter-spacing: 0.11em; text-transform: uppercase; }
+.comparison-table tbody th { width: 48%; color: var(--muted-strong); font-size: 16.2px; font-weight: 450; }
 .comparison-table .anqi-column { border-color: var(--border-bright); background: rgb(87 204 153 / 0.06); }
-.model-column-name { display: block; color: var(--bright-green); font-family: var(--font-exo), sans-serif; font-size: 18px; letter-spacing: -0.02em; text-transform: none; }
-.result { display: inline; color: var(--muted-strong); font-size: 18px; }
+.model-column-name { display: block; color: var(--bright-green); font-family: var(--font-exo), sans-serif; font-size: 16.2px; letter-spacing: -0.02em; text-transform: none; }
+.result { display: inline; color: var(--muted-strong); font-size: 16.2px; }
 .comparison-cards { display: none; }
 .footnote, .disclosure { margin: 16px 0 0; color: rgb(255 255 255 / 0.4); font-size: 14px; letter-spacing: 0.02em; }
 
@@ -311,7 +311,7 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .footer-background-word {
   position: absolute;
   right: 0;
-  bottom: -0.2em;
+  bottom: -0.08em;
   left: 0;
   color: rgb(128 237 153 / 0.11);
   font-family: var(--font-audiowide), sans-serif;
@@ -341,13 +341,8 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .contact-option:hover { color: var(--bright-green); transform: translateY(-5px); }
 .contact-option img { width: clamp(46px, 5vw, 68px); height: clamp(46px, 5vw, 68px); object-fit: contain; filter: brightness(0) invert(1); opacity: 0.82; transition: filter 180ms ease, opacity 180ms ease; }
 .contact-option:hover img { filter: brightness(0) saturate(100%) invert(89%) sepia(18%) saturate(1184%) hue-rotate(63deg) brightness(100%) contrast(90%); opacity: 1; }
-.contact-option-x img { padding: 10%; }
-.email-glyph { position: relative; display: block; width: clamp(52px, 5vw, 68px); height: clamp(38px, 3.7vw, 50px); border: 2px solid currentcolor; border-radius: 4px; color: var(--white); opacity: 0.82; transition: color 180ms ease, opacity 180ms ease; }
-.email-glyph::before, .email-glyph::after { position: absolute; top: 4px; width: 55%; height: 2px; background: currentcolor; content: ""; }
-.email-glyph::before { left: 2px; transform: rotate(34deg); transform-origin: left center; }
-.email-glyph::after { right: 2px; transform: rotate(-34deg); transform-origin: right center; }
-.contact-option:hover .email-glyph { color: var(--bright-green); opacity: 1; }
-.contact-value { max-width: 100%; overflow: hidden; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.contact-option-x img { padding: 5%; }
+.contact-value { max-width: 100%; overflow: hidden; color: var(--muted); font-size: 16px; text-overflow: ellipsis; white-space: nowrap; }
 .contact-footer-note { margin-top: 50px; text-align: center; }
 .contact-footer-note p { margin: 0; color: rgb(255 255 255 / 0.36); font-size: 8px; letter-spacing: 0.04em; }
 
@@ -403,11 +398,11 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
   .comparison-table-wrap { overflow: visible; border: 0; border-radius: 0; }
   .comparison-cards { display: grid; gap: 10px; }
   .comparison-card { display: grid; grid-template-columns: 1fr 0.7fr; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
-  .comparison-card h3 { grid-column: 1 / -1; margin: 0; padding: 15px 16px; border-bottom: 1px solid var(--border); color: var(--muted-strong); font-size: 16px; font-weight: 500; }
+  .comparison-card h3 { grid-column: 1 / -1; margin: 0; padding: 15px 16px; border-bottom: 1px solid var(--border); color: var(--muted-strong); font-size: 14.4px; font-weight: 500; }
   .comparison-card > div { display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
   .comparison-card > div:first-of-type { border-right: 1px solid var(--border-bright); background: rgb(87 204 153 / 0.06); }
   .comparison-card > div > span:first-child { color: var(--muted); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
-  .comparison-card > div > .result { font-size: 14px; }
+  .comparison-card > div > .result { font-size: 12.6px; }
   .compliance-grid { grid-template-columns: 1fr; }
   .compliance-card { min-height: 168px; }
   .final-cta { gap: 44px; }

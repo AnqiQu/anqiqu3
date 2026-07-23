@@ -133,7 +133,7 @@ export const contactLinks = [
     label: "Email",
     value: "anqi [at] anqiqu [dot] com",
     href: "mailto:anqi@anqiqu.com",
-    icon: null,
+    icon: "/brand/social/email.svg",
   },
   {
     label: "X",

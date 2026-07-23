@@ -244,8 +244,7 @@ export default function Home() {
               </div>
               <div className="final-cta-copy">
                 <p>
-                  Available for coffee, collaborations, research, startup
-                  conversations, and other unsupported use cases.
+                  Try out a real-world deployment of A(nqi) I(ntelligence)
                 </p>
                 <Link href="/contact" className="button">
                   View contact options <span aria-hidden="true">↗</span>
