@@ -33,10 +33,15 @@ test("server-renders the Anqi Intelligence landing page", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>Anqi Intelligence<\/title>/i);
-  assert.match(html, /INTRODUCING ANQI INTELLIGENCE/);
+  assert.doesNotMatch(html, /INTRODUCING ANQI INTELLIGENCE/);
+  assert.match(html, /Anqi Qu/);
   assert.match(html, /Our most advanced multimodal human model yet\./);
   assert.match(html, /OBSERVED IN PROXIMITY TO PEOPLE AT/);
   assert.match(html, /Technical specifications/);
+  assert.match(html, /Dimensions/);
+  assert.match(html, /Multimodal support/);
+  assert.doesNotMatch(html, /General-purpose reasoning/);
+  assert.doesNotMatch(html, /✓/);
   assert.match(html, /Compare adjacent solutions/);
   assert.match(html, /Security &amp; compliance/);
   assert.match(html, /href="\/contact"/);
@@ -50,7 +55,7 @@ test("server-renders contact options with supplied URLs", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>Book a Demo \| Anqi Intelligence<\/title>/i);
-  assert.match(html, /Select a communication protocol\./);
+  assert.doesNotMatch(html, /Select a communication protocol\./);
   assert.match(html, /https:\/\/www\.instagram\.com\/anqi\._\.thewateraddict/);
   assert.match(html, /https:\/\/www\.linkedin\.com\/in\/anqiqu\//);
   assert.match(html, /mailto:anqi@anqiqu\.com/);
@@ -69,6 +74,9 @@ test("keeps production content centralized and reduced-motion safe", async () =>
   assert.match(content, /export const specifications/);
   assert.doesNotMatch(content, /Radix Trading/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.match(css, /@keyframes logo-marquee/);
+  assert.match(css, /filter:\s*brightness\(0\) invert\(1\)/);
+  assert.match(css, /hero-parenthetical/);
   assert.match(css, /@media \(max-width: 360px\)/);
   assert.match(layout, /metadataBase:\s*new URL\("https:\/\/anqiqu\.com"\)/);
   assert.match(layout, /themeColor:\s*"#000000"/);

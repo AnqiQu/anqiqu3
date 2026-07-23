@@ -35,11 +35,9 @@ export const specifications = [
   { label: "Dogs", value: "2" },
   { label: "Battery life", value: "Up to 16 hours" },
   { label: "Time to full recharge", value: "Approximately 8 hours" },
-  { label: "Length", value: "166 cm" },
-  { label: "Width", value: "Variable" },
   {
-    label: "Depth",
-    value: "Book a demo to find out for yourself",
+    label: "Dimensions",
+    value: "166 cm (H) × variable (W) × book a demo (D)",
     href: "/contact",
   },
   { label: "Preferred energy sources", value: "Soup, sushi, steak" },
@@ -75,10 +73,11 @@ export const changelog = [
 export const comparisons = [
   { capability: "Can write emails", anqi: "Yes", chatgpt: "Yes" },
   { capability: "Knows machine learning", anqi: "Yes", chatgpt: "Yes" },
-  { capability: "Text support", anqi: "Yes", chatgpt: "Yes" },
-  { capability: "Image support", anqi: "Yes", chatgpt: "Yes" },
-  { capability: "Voice support", anqi: "Yes", chatgpt: "Yes" },
-  { capability: "Touch support", anqi: "Yes", chatgpt: "No" },
+  {
+    capability: "Multimodal support",
+    anqi: "Text, image, voice, touch",
+    chatgpt: "Text, image, voice",
+  },
   { capability: "Hallucinations", anqi: "Yes", chatgpt: "Yes" },
   {
     capability: "Maintains social context",
@@ -114,20 +113,24 @@ export const contactLinks = [
     label: "Instagram",
     value: "@anqi._.thewateraddict",
     href: "https://www.instagram.com/anqi._.thewateraddict",
+    icon: "/brand/social/instagram-glyph.svg",
   },
   {
     label: "LinkedIn",
     value: "anqiqu",
     href: "https://www.linkedin.com/in/anqiqu/",
+    icon: "/brand/social/linked-in.svg",
   },
   {
     label: "Email",
     value: "anqi [at] anqiqu [dot] com",
     href: "mailto:anqi@anqiqu.com",
+    icon: null,
   },
   {
     label: "X",
     value: "@Anqinator",
     href: "https://x.com/Anqinator",
+    icon: "/brand/social/x-logo.svg",
   },
 ] as const;

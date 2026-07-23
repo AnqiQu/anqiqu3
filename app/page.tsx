@@ -11,23 +11,7 @@ import {
 } from "./content";
 
 function Result({ value }: { value: string }) {
-  if (value === "Yes") {
-    return (
-      <span className="result result-yes">
-        <span aria-hidden="true">✓</span> Yes
-      </span>
-    );
-  }
-
-  if (value === "Sometimes") {
-    return <span className="result result-variable">Sometimes</span>;
-  }
-
-  return (
-    <span className="result result-no">
-      <span aria-hidden="true">—</span> No
-    </span>
-  );
+  return <span className="result">{value}</span>;
 }
 
 export default function Home() {
@@ -44,10 +28,11 @@ export default function Home() {
           </div>
           <div className="container hero-inner">
             <div className="hero-copy">
-              <p className="eyebrow">INTRODUCING ANQI INTELLIGENCE</p>
               <h1>
-                Welcome to the new era of <span>A</span>(nqi) <span>I</span>
-                (ntelligence).
+                Welcome to the new era of <span className="hero-initial">A</span>
+                <span className="hero-parenthetical">(nqi)</span>{" "}
+                <span className="hero-initial">I</span>
+                <span className="hero-parenthetical">(ntelligence)</span>.
               </h1>
               <p className="hero-subtitle">
                 Our most advanced multimodal human model yet.
@@ -62,48 +47,43 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="hero-status" aria-label="System capabilities">
-              <p>
-                General-purpose reasoning, research, conversation, and
-                real-world interaction.
-              </p>
-              <div className="status-badges">
-                <span>MULTIMODAL</span>
-                <span>LOW-LATENCY</span>
-                <span>SOLAR-DEPENDENT</span>
-              </div>
-            </div>
           </div>
         </section>
 
         <section className="company-cloud" aria-labelledby="company-label">
           <div className="container">
-            <p className="eyebrow centered" id="company-label">
+            <p className="company-label" id="company-label">
               OBSERVED IN PROXIMITY TO PEOPLE AT
             </p>
-            <div className="company-grid">
-              {companies.map((company) => (
-                <span key={company.name}>
-                  <Image
-                    src={company.logo}
-                    alt={company.name}
-                    width={180}
-                    height={48}
-                    unoptimized
-                  />
-                </span>
-              ))}
+            <div className="company-marquee">
+              <div className="company-marquee-track">
+                {[false, true].map((duplicate) => (
+                  <div
+                    className="company-marquee-group"
+                    aria-hidden={duplicate || undefined}
+                    key={duplicate ? "duplicate" : "original"}
+                  >
+                    {companies.map((company) => (
+                      <span className="company-logo-item" key={company.name}>
+                        <Image
+                          src={company.logo}
+                          alt={duplicate ? "" : company.name}
+                          width={180}
+                          height={48}
+                          unoptimized
+                        />
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         <section className="section reveal" id="specs">
           <div className="container">
-            <SectionHeader
-              eyebrow="SYSTEM PROFILE"
-              title="Technical specifications"
-              description="Core attributes, operating constraints, and known deployment characteristics."
-            />
+            <SectionHeader title="Technical specifications" />
 
             <div className="spec-layout">
               <div className="spec-table" role="table" aria-label="Technical specifications">
@@ -145,14 +125,11 @@ export default function Home() {
 
         <section className="section reveal" id="changelog">
           <div className="container">
-            <SectionHeader
-              eyebrow="RELEASE HISTORY"
-              title="Changelog"
-              description="Selected updates from continued model development."
-            />
+            <SectionHeader title="Changelog" />
             <div className="timeline">
               {changelog.map((entry) => (
                 <article className="timeline-entry" key={entry.year}>
+                  <span className="timeline-node" aria-hidden="true" />
                   <div className="timeline-year">
                     <span>{entry.year}</span>
                     <span className="release-tag">{entry.tag}</span>
@@ -166,18 +143,14 @@ export default function Home() {
 
         <section className="section reveal" id="comparison">
           <div className="container">
-            <SectionHeader
-              eyebrow="BENCHMARKING"
-              title="Compare adjacent solutions"
-              description="Performance characteristics may vary under real-world conditions."
-            />
+            <SectionHeader title="Compare adjacent solutions" />
             <div className="comparison-table-wrap">
               <table className="comparison-table">
                 <thead>
                   <tr>
                     <th scope="col">Capability</th>
                     <th scope="col" className="anqi-column">
-                      <span className="model-column-name">A/I</span>
+                      <span className="model-column-name">Anqi Qu</span>
                       Anqi
                     </th>
                     <th scope="col">ChatGPT</th>
@@ -223,11 +196,7 @@ export default function Home() {
 
         <section className="section reveal" id="compliance">
           <div className="container">
-            <SectionHeader
-              eyebrow="TRUST CENTER"
-              title="Security & compliance"
-              description="Operational safeguards for high-context environments."
-            />
+            <SectionHeader title="Security & compliance" />
             <div className="compliance-grid">
               {compliance.map((item, index) => (
                 <article
@@ -253,7 +222,6 @@ export default function Home() {
           <div className="container">
             <div className="final-cta">
               <div>
-                <p className="eyebrow">REQUEST ACCESS</p>
                 <h2>Book a demo</h2>
               </div>
               <div className="final-cta-copy">

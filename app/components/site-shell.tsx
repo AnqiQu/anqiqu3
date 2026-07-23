@@ -2,14 +2,7 @@ import Link from "next/link";
 import { navigation } from "../content";
 
 export function LogoMark() {
-  return (
-    <span className="brand-lockup" aria-label="Anqi Intelligence">
-      <span className="brand-mark" aria-hidden="true">
-        A<span>/</span>I
-      </span>
-      <span className="brand-name">ANQI INTELLIGENCE</span>
-    </span>
-  );
+  return <span className="brand-wordmark">Anqi Qu</span>;
 }
 
 export function Header() {
@@ -50,21 +43,13 @@ export function Header() {
 }
 
 export function SectionHeader({
-  eyebrow,
   title,
-  description,
 }: {
-  eyebrow: string;
   title: string;
-  description: string;
 }) {
   return (
     <div className="section-header">
-      <p className="eyebrow">{eyebrow}</p>
-      <div className="section-heading-row">
-        <h2>{title}</h2>
-        <p>{description}</p>
-      </div>
+      <h2>{title}</h2>
     </div>
   );
 }
@@ -72,12 +57,15 @@ export function SectionHeader({
 export function Footer() {
   return (
     <footer className="site-footer">
+      <div className="footer-background-word" aria-hidden="true">
+        Anqi Qu
+      </div>
       <div className="footer-inner">
         <Link href="/" className="brand-link">
           <LogoMark />
         </Link>
         <div className="footer-meta">
-          <span>© {new Date().getFullYear()} Anqi Intelligence</span>
+          <span>© {new Date().getFullYear()} Anqi Qu</span>
           <span>Built for real-world deployment.</span>
           <Link href="/contact">Contact</Link>
         </div>
