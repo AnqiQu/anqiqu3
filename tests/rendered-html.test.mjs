@@ -51,7 +51,6 @@ test("server-renders the Anqi Intelligence landing page", async () => {
   assert.doesNotMatch(html, /✓/);
   assert.match(html, /Compare adjacent solutions/);
   assert.match(html, /Security &amp; compliance/);
-  assert.match(html, /Try out a real-world deployment of A\(nqi\) I\(ntelligence\)/);
   assert.match(html, /<span>NOT CERTIFIED<\/span><h3>SOC 2<\/h3>/);
   assert.match(html, /href="\/contact"/);
   assert.doesNotMatch(html, /Radix Trading/);
@@ -88,6 +87,8 @@ test("keeps production content centralized and reduced-motion safe", async () =>
   assert.match(css, /@keyframes logo-marquee/);
   assert.match(css, /filter:\s*brightness\(0\) invert\(1\)/);
   assert.match(css, /hero-parenthetical/);
+  assert.match(css, /--gyro-x/);
+  assert.match(css, /@keyframes orbit-sweep/);
   assert.match(css, /company-logo-item-nvidia/);
   assert.match(css, /company-logo-item-featured/);
   assert.match(css, /contact-option-x/);

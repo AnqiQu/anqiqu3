@@ -40,7 +40,7 @@ export default function ContactPage() {
           <div className="contact-footer-note">
             <p>
               No sales team is currently available. You will be routed directly
-              to the model.
+              to the Anqi.
             </p>
           </div>
         </div>

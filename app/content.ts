@@ -26,10 +26,6 @@ export const companies = [
 export const specifications = [
   { label: "Name", value: "Anqi Qu" },
   { label: "Country of manufacture", value: "South Africa" },
-  {
-    label: "Training background",
-    value: "Machine learning, statistics, economics, debate",
-  },
   { label: "Model", value: "Gemini" },
   { label: "Chromosomes", value: "XX" },
   { label: "Dogs", value: "2" },

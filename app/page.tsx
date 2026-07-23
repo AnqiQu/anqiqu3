@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { HeroTechnical } from "./components/hero-technical";
 import { Footer, Header, SectionHeader } from "./components/site-shell";
 import {
   changelog,
@@ -20,12 +21,7 @@ export default function Home() {
       <Header />
       <main>
         <section className="hero" id="overview">
-          <div className="hero-technical" aria-hidden="true">
-            <span className="orbit orbit-one" />
-            <span className="orbit orbit-two" />
-            <span className="orbit-node orbit-node-one" />
-            <span className="orbit-node orbit-node-two" />
-          </div>
+          <HeroTechnical />
           <div className="container hero-inner">
             <div className="hero-copy">
               <h1>
@@ -122,7 +118,7 @@ export default function Home() {
               <aside className="known-issues" aria-labelledby="issues-title">
                 <div className="panel-heading">
                   <p className="eyebrow" id="issues-title">
-                    KNOWN ISSUES
+                    KNOWN BUGS
                   </p>
                   <span>5 OPEN</span>
                 </div>
@@ -243,9 +239,6 @@ export default function Home() {
                 <h2>Book a demo</h2>
               </div>
               <div className="final-cta-copy">
-                <p>
-                  Try out a real-world deployment of A(nqi) I(ntelligence)
-                </p>
                 <Link href="/contact" className="button">
                   View contact options <span aria-hidden="true">↗</span>
                 </Link>

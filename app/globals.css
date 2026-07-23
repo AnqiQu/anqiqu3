@@ -188,11 +188,11 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
   letter-spacing: 0.14em;
   line-height: 1;
 }
-.hero-technical { position: absolute; top: 52%; left: 50%; z-index: 1; width: min(1180px, 96vw); aspect-ratio: 1.75; opacity: 0.86; pointer-events: none; transform: translate(-50%, -50%); }
-.hero-technical::before { position: absolute; inset: 25% 32%; border: 1px dashed rgb(128 237 153 / 0.28); border-radius: 50%; content: ""; transform: rotate(18deg); }
-.hero-technical::after { position: absolute; top: 50%; right: 8%; left: 8%; height: 1px; background: linear-gradient(90deg, transparent, rgb(128 237 153 / 0.24), transparent); content: ""; }
-.orbit { position: absolute; inset: 0; border: 1px solid rgb(128 237 153 / 0.28); border-radius: 50%; }
-.orbit-two { inset: 18% 14%; border-color: rgb(255 255 255 / 0.18); transform: rotate(-12deg); }
+.hero-technical { --gyro-x: 0px; --gyro-y: 0px; --gyro-rotation: 0deg; position: absolute; top: 52%; left: 50%; z-index: 1; width: min(1180px, 96vw); aspect-ratio: 1.75; opacity: 0.96; pointer-events: none; transform: translate(calc(-50% + var(--gyro-x)), calc(-50% + var(--gyro-y))) rotate(var(--gyro-rotation)); transition: transform 1.25s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform; }
+.hero-technical::before { position: absolute; inset: 25% 32%; border: 1px dashed rgb(128 237 153 / 0.42); border-radius: 50%; content: ""; animation: orbit-sweep 30s linear infinite; }
+.hero-technical::after { position: absolute; top: 50%; right: 8%; left: 8%; height: 1px; background: linear-gradient(90deg, transparent, rgb(128 237 153 / 0.36), transparent); content: ""; }
+.orbit { position: absolute; inset: 0; border: 1px solid rgb(128 237 153 / 0.4); border-radius: 50%; }
+.orbit-two { inset: 18% 14%; border-color: rgb(255 255 255 / 0.25); animation: orbit-tilt 22s ease-in-out infinite alternate; }
 .orbit-node { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--bright-green); box-shadow: 0 0 22px var(--green); }
 .orbit-node-one { top: 8%; right: 24%; }
 .orbit-node-two { bottom: 15%; left: 16%; }
@@ -311,9 +311,9 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .footer-background-word {
   position: absolute;
   right: 0;
-  bottom: -0.08em;
+  bottom: 0.02em;
   left: 0;
-  color: rgb(128 237 153 / 0.11);
+  color: rgb(128 237 153 / 0.17);
   font-family: var(--font-audiowide), sans-serif;
   font-size: clamp(6.4rem, 20vw, 20rem);
   font-weight: 650;
@@ -353,6 +353,8 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 
 @keyframes orbit-breathe { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.72; transform: scale(1.02); } }
 .orbit-one { animation: orbit-breathe 10s ease-in-out infinite; }
+@keyframes orbit-tilt { from { transform: rotate(-15deg) scale(0.98); } to { transform: rotate(-6deg) scale(1.025); } }
+@keyframes orbit-sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes logo-marquee { to { transform: translateX(-50%); } }
 @keyframes background-drift { from { transform: translate3d(-2%, -1%, 0) scale(1); } to { transform: translate3d(3%, 2%, 0) scale(1.06); } }
 
