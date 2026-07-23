@@ -222,8 +222,8 @@ export default function Home() {
                   key={item.standard}
                 >
                   <div className="compliance-card-header">
-                    <h3>{item.standard}</h3>
                     <span>{item.status}</span>
+                    <h3>{item.standard}</h3>
                   </div>
                   <p>{item.value}</p>
                 </article>

@@ -51,6 +51,7 @@ test("server-renders the Anqi Intelligence landing page", async () => {
   assert.doesNotMatch(html, /✓/);
   assert.match(html, /Compare adjacent solutions/);
   assert.match(html, /Security &amp; compliance/);
+  assert.match(html, /<span>NOT CERTIFIED<\/span><h3>SOC 2<\/h3>/);
   assert.match(html, /href="\/contact"/);
   assert.doesNotMatch(html, /Radix Trading/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);

@@ -245,7 +245,7 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .spec-row { display: grid; grid-template-columns: minmax(190px, 0.4fr) minmax(0, 0.6fr); gap: 30px; padding: 20px; border-bottom: 1px solid var(--border); }
 .spec-row:last-child { border-bottom: 0; }
 .spec-label { color: var(--muted); font-size: 18px; }
-.spec-value { font-size: 21px; font-weight: 560; }
+.spec-value { font-size: 18px; font-weight: 560; }
 .spec-value a { color: var(--pale-green); text-decoration: underline; text-decoration-color: rgb(199 249 204 / 0.3); text-underline-offset: 4px; }
 .spec-dimensions { display: grid; gap: 7px; }
 .spec-dimensions strong { display: block; font-weight: 650; }
@@ -273,9 +273,9 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .comparison-table th:last-child, .comparison-table td:last-child { border-right: 0; }
 .comparison-table tbody tr:last-child th, .comparison-table tbody tr:last-child td { border-bottom: 0; }
 .comparison-table thead th { height: 92px; color: var(--muted); font-size: 16px; font-weight: 600; letter-spacing: 0.11em; text-transform: uppercase; }
-.comparison-table tbody th { width: 48%; color: var(--muted-strong); font-size: 19px; font-weight: 450; }
+.comparison-table tbody th { width: 48%; color: var(--muted-strong); font-size: 18px; font-weight: 450; }
 .comparison-table .anqi-column { border-color: var(--border-bright); background: rgb(87 204 153 / 0.06); }
-.model-column-name { display: block; color: var(--bright-green); font-family: var(--font-exo), sans-serif; font-size: 21px; letter-spacing: -0.02em; text-transform: none; }
+.model-column-name { display: block; color: var(--bright-green); font-family: var(--font-exo), sans-serif; font-size: 18px; letter-spacing: -0.02em; text-transform: none; }
 .result { display: inline; color: var(--muted-strong); font-size: 18px; }
 .comparison-cards { display: none; }
 .footnote, .disclosure { margin: 16px 0 0; color: rgb(255 255 255 / 0.4); font-size: 14px; letter-spacing: 0.02em; }
