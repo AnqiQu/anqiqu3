@@ -61,9 +61,9 @@ export function Footer() {
         Anqi Qu
       </div>
       <div className="footer-inner">
-        <Link href="/" className="brand-link">
+        {/* <Link href="/" className="brand-link">
           <LogoMark />
-        </Link>
+        </Link> */}
         <div className="footer-meta">
           <span>© {new Date().getFullYear()} Anqi Qu</span>
           <span>Built for real-world deployment.</span>

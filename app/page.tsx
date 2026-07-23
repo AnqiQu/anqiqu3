@@ -28,7 +28,7 @@ export default function Home() {
                 Welcome to the new era of <span className="hero-initial">A</span>
                 <span className="hero-parenthetical">nqi</span>{" "}
                 <span className="hero-initial">I</span>
-                <span className="hero-parenthetical">ntelligence</span>.
+                <span className="hero-parenthetical">ntelligence</span>
               </h1>
               <p className="hero-subtitle">
                 Our most advanced multimodal human model yet.
