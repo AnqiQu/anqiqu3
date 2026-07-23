@@ -96,7 +96,20 @@ export default function Home() {
                       {row.label}
                     </span>
                     <span role="cell" className="spec-value">
-                      {"href" in row ? (
+                      {"dimensions" in row ? (
+                        <span className="spec-dimensions">
+                          {row.dimensions.map((dimension) => (
+                            <strong key={dimension.label}>
+                              {dimension.label}:{" "}
+                              {"href" in dimension ? (
+                                <Link href={dimension.href}>{dimension.value}</Link>
+                              ) : (
+                                dimension.value
+                              )}
+                            </strong>
+                          ))}
+                        </span>
+                      ) : "href" in row ? (
                         <Link href={row.href}>{row.value} ↗</Link>
                       ) : (
                         row.value

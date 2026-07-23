@@ -32,6 +32,7 @@ test("server-renders the Anqi Intelligence landing page", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
+  const normalizedHtml = html.replaceAll("<!-- -->", "");
   assert.match(html, /<title>Anqi Intelligence<\/title>/i);
   assert.doesNotMatch(html, /INTRODUCING ANQI INTELLIGENCE/);
   assert.match(html, /Anqi Qu/);
@@ -39,6 +40,9 @@ test("server-renders the Anqi Intelligence landing page", async () => {
   assert.match(html, /OBSERVED IN PROXIMITY TO PEOPLE AT/);
   assert.match(html, /Technical specifications/);
   assert.match(html, /Dimensions/);
+  assert.match(normalizedHtml, /H:\s*166 cm/);
+  assert.match(normalizedHtml, /W:\s*variable/);
+  assert.match(normalizedHtml, /D:\s*<a href="\/contact">Book a demo to find out for yourself ;\)<\/a>/);
   assert.match(html, /Multimodal support/);
   assert.match(html, /Rhodes Scholar/);
   assert.match(html, /Economics, Statistics, Computer Science/);

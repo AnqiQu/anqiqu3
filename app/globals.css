@@ -245,6 +245,8 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .spec-label { color: var(--muted); font-size: 18px; }
 .spec-value { font-size: 21px; font-weight: 560; }
 .spec-value a { color: var(--pale-green); text-decoration: underline; text-decoration-color: rgb(199 249 204 / 0.3); text-underline-offset: 4px; }
+.spec-dimensions { display: grid; gap: 7px; }
+.spec-dimensions strong { display: block; font-weight: 650; }
 .known-issues { align-self: start; overflow: hidden; background: radial-gradient(circle at 80% 0%, rgb(87 204 153 / 0.1), transparent 36%), var(--surface-green); }
 .panel-heading { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-bottom: 1px solid var(--border); }
 .issue { display: grid; grid-template-columns: 64px 1fr; gap: 16px; padding: 18px 20px; border-bottom: 1px solid var(--border); }

@@ -37,8 +37,15 @@ export const specifications = [
   { label: "Time to full recharge", value: "Approximately 8 hours" },
   {
     label: "Dimensions",
-    value: "166 cm (H) × variable (W) × book a demo (D)",
-    href: "/contact",
+    dimensions: [
+      { label: "H", value: "166 cm" },
+      { label: "W", value: "variable" },
+      {
+        label: "D",
+        value: "Book a demo to find out for yourself ;)",
+        href: "/contact",
+      },
+    ],
   },
   { label: "Preferred energy sources", value: "Soup, sushi, steak" },
 ] as const;
