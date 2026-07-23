@@ -46,7 +46,7 @@ export const specifications = [
 export const knownIssues = [
   {
     id: "BUG-001",
-    text: "Sometimes breaks when touching grass—literally, especially pollinated grass",
+    text: "Sometimes breaks when touching grass (especially pollened grass)",
   },
   { id: "BUG-002", text: "Occasional issues with timezone adjustment" },
   {
@@ -60,13 +60,14 @@ export const knownIssues = [
 export const changelog = [
   {
     year: "2025",
-    tag: "CURRENT",
     text: "Model fine-tuning begins at the University of Oxford.",
+    details:
+      "Rhodes Scholar. Interested in reinforcement learning, autonomous agents, strategic game theory, training efficiency, and AI alignment more broadly.",
   },
   {
     year: "2021",
-    tag: "FOUNDATION",
     text: "Model pretraining begins at the University of Chicago.",
+    details: "Economics, Statistics, Computer Science",
   },
 ] as const;
 

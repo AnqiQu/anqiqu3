@@ -20,7 +20,7 @@ export default function ContactPage() {
               <a
                 key={link.label}
                 href={link.href}
-                className="contact-option"
+                className={`contact-option contact-option-${link.label.toLowerCase()}`}
                 target={link.href.startsWith("http") ? "_blank" : undefined}
                 rel={link.href.startsWith("http") ? "noreferrer" : undefined}
                 aria-label={`${link.label}: ${link.value}`}
@@ -34,9 +34,8 @@ export default function ContactPage() {
                     unoptimized
                   />
                 ) : (
-                  <span className="email-glyph" aria-hidden="true">@</span>
+                  <span className="email-glyph" aria-hidden="true" />
                 )}
-                <span className="contact-label">{link.label}</span>
                 <span className="contact-value">{link.value}</span>
               </a>
             ))}

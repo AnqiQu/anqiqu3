@@ -30,9 +30,9 @@ export default function Home() {
             <div className="hero-copy">
               <h1>
                 Welcome to the new era of <span className="hero-initial">A</span>
-                <span className="hero-parenthetical">(nqi)</span>{" "}
+                <span className="hero-parenthetical">nqi</span>{" "}
                 <span className="hero-initial">I</span>
-                <span className="hero-parenthetical">(ntelligence)</span>.
+                <span className="hero-parenthetical">ntelligence</span>.
               </h1>
               <p className="hero-subtitle">
                 Our most advanced multimodal human model yet.
@@ -64,7 +64,10 @@ export default function Home() {
                     key={duplicate ? "duplicate" : "original"}
                   >
                     {companies.map((company) => (
-                      <span className="company-logo-item" key={company.name}>
+                      <span
+                        className={`company-logo-item ${company.name === "NVIDIA" ? "company-logo-item-nvidia" : ""}`}
+                        key={company.name}
+                      >
                         <Image
                           src={company.logo}
                           alt={duplicate ? "" : company.name}
@@ -130,11 +133,14 @@ export default function Home() {
               {changelog.map((entry) => (
                 <article className="timeline-entry" key={entry.year}>
                   <span className="timeline-node" aria-hidden="true" />
-                  <div className="timeline-year">
-                    <span>{entry.year}</span>
-                    <span className="release-tag">{entry.tag}</span>
+                  <div className="timeline-content">
+                    <div className="timeline-primary">
+                      <time>{entry.year}</time>
+                      <span className="timeline-divider" aria-hidden="true" />
+                      <p>{entry.text}</p>
+                    </div>
+                    <p className="timeline-details">{entry.details}</p>
                   </div>
-                  <p>{entry.text}</p>
                 </article>
               ))}
             </div>
@@ -150,8 +156,7 @@ export default function Home() {
                   <tr>
                     <th scope="col">Capability</th>
                     <th scope="col" className="anqi-column">
-                      <span className="model-column-name">Anqi Qu</span>
-                      Anqi
+                      <span className="model-column-name">Anqi</span>
                     </th>
                     <th scope="col">ChatGPT</th>
                   </tr>
