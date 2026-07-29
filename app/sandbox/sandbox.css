@@ -1,0 +1,55 @@
+.sandbox-world { min-height: 100svh; overflow: hidden; background: #7bcdf8; color: #fff7df; font-family: Georgia, "Times New Roman", serif; }
+.sandbox-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+.sandbox-scene { position: relative; width: 100vw; min-height: 100svh; overflow: hidden; isolation: isolate; }
+.sandbox-sky, .sandbox-terrain { position: absolute; inset: 0; }
+.sandbox-sky img, .sandbox-terrain img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sandbox-sky { z-index: 0; }
+.sandbox-terrain { z-index: 1; }
+.sandbox-decoration, .sandbox-location { position: absolute; top: var(--desktop-top); left: var(--desktop-left); z-index: var(--layer); width: var(--desktop-width); transform-origin: 50% 100%; }
+.sandbox-decoration picture, .sandbox-location-art, .sandbox-location-art picture { display: block; width: 100%; }
+.sandbox-decoration img, .sandbox-location-art img { display: block; width: 100%; height: auto; filter: drop-shadow(0 12px 12px rgb(45 72 40 / 0.16)); }
+.sandbox-location { color: inherit; }
+.sandbox-label { position: absolute; top: 52%; left: 80%; display: grid; min-width: max-content; gap: 2px; padding: 9px 13px 10px; border: 1px solid rgb(255 235 182 / 0.5); border-radius: 12px; background: rgb(28 38 31 / 0.88); box-shadow: 0 10px 24px rgb(27 57 72 / 0.22); color: #fff8e8; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity 160ms ease, transform 160ms ease; }
+.sandbox-label strong { font-size: clamp(12px, 1.15vw, 17px); line-height: 1.18; }
+.sandbox-label small { color: #f3e6c8; font-family: var(--font-exo), sans-serif; font-size: clamp(8px, 0.75vw, 11px); }
+.sandbox-location:hover .sandbox-label { opacity: 1; transform: translateY(0); }
+.sandbox-location-garden .sandbox-label { top: 58%; left: 70%; }
+.sandbox-location-pond .sandbox-label { top: 54%; left: 65%; }
+.sandbox-location-unfinished-bridge .sandbox-label { top: 58%; left: 18%; }
+.sandbox-return-sign { display: block; border-radius: 24px; transition: filter 160ms ease, transform 160ms ease; }
+.sandbox-return-sign:hover { filter: brightness(1.07) drop-shadow(0 0 16px rgb(255 228 135 / 0.42)); transform: translateY(-2px); }
+.sandbox-return-sign:focus-visible { outline: 4px solid #fff3b1; outline-offset: 5px; }
+.sandbox-review-note { position: absolute; right: 16px; bottom: 12px; z-index: 20; margin: 0; padding: 5px 8px; border-radius: 999px; background: rgb(25 47 54 / 0.58); color: rgb(255 255 255 / 0.78); font-family: var(--font-exo), sans-serif; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; backdrop-filter: blur(7px); }
+
+@media (min-width: 721px) {
+  .sandbox-scene { height: 100svh; min-height: 620px; }
+  .sandbox-scene::after { position: absolute; z-index: 15; inset: 0; box-shadow: inset 0 0 90px rgb(38 85 104 / 0.12); content: ""; pointer-events: none; }
+}
+
+@media (max-width: 720px) {
+  html:has(.sandbox-world) { background: #70c4f0; scroll-padding-top: 0; }
+  body:has(.sandbox-world) { background: #70c4f0; }
+  .sandbox-world { min-height: max(100svh, 210vw); overflow: visible; }
+  .sandbox-scene { width: 100%; height: max(100svh, 210vw); min-height: 700px; overflow: hidden; }
+  .sandbox-sky img, .sandbox-terrain img { object-position: center top; }
+  .sandbox-decoration, .sandbox-location { top: var(--mobile-top); left: var(--mobile-left); width: var(--mobile-width); }
+  .sandbox-label { top: 58%; left: 58%; gap: 1px; padding: 7px 10px 8px; border-radius: 10px; opacity: 1; transform: none; }
+  .sandbox-label strong { max-width: 132px; font-size: clamp(11px, 3.6vw, 15px); }
+  .sandbox-label small { font-size: clamp(7px, 2.4vw, 10px); }
+  .sandbox-location-observatory .sandbox-label { top: 56%; left: 62%; }
+  .sandbox-location-archive .sandbox-label { top: 54%; left: 6%; }
+  .sandbox-location-garden .sandbox-label { top: 61%; right: 0; left: auto; text-align: right; }
+  .sandbox-location-pond .sandbox-label { top: 56%; left: 61%; }
+  .sandbox-location-unfinished-bridge .sandbox-label { top: 52%; left: 10%; }
+  .sandbox-review-note { display: none; }
+}
+
+@media (max-width: 360px) {
+  .sandbox-scene { height: 220vw; min-height: 700px; }
+  .sandbox-label strong { font-size: 11px; }
+  .sandbox-label small { font-size: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sandbox-location, .sandbox-decoration { transition: none !important; }
+}

@@ -1,0 +1,668 @@
+[
+  {
+    "filename": "observatory",
+    "category": "landmarks",
+    "width": 610,
+    "height": 392,
+    "pngBytes": 567432,
+    "webpBytes": 75732,
+    "pngPath": "/sandbox/assets/landmarks/observatory.png",
+    "webpPath": "/sandbox/assets/landmarks/observatory.webp",
+    "status": "READY",
+    "relatedAlternates": [],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "landmarks-and-environment.png"
+  },
+  {
+    "filename": "archive-closed",
+    "category": "landmarks",
+    "width": 385,
+    "height": 352,
+    "pngBytes": 341106,
+    "webpBytes": 45990,
+    "pngPath": "/sandbox/assets/landmarks/archive-closed.png",
+    "webpPath": "/sandbox/assets/landmarks/archive-closed.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "archive-open"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "landmarks-and-environment.png"
+  },
+  {
+    "filename": "archive-open",
+    "category": "landmarks",
+    "width": 374,
+    "height": 348,
+    "pngBytes": 333359,
+    "webpBytes": 46314,
+    "pngPath": "/sandbox/assets/landmarks/archive-open.png",
+    "webpPath": "/sandbox/assets/landmarks/archive-open.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "archive-closed"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "landmarks-and-environment.png"
+  },
+  {
+    "filename": "garden",
+    "category": "landmarks",
+    "width": 437,
+    "height": 290,
+    "pngBytes": 336165,
+    "webpBytes": 49178,
+    "pngPath": "/sandbox/assets/landmarks/garden.png",
+    "webpPath": "/sandbox/assets/landmarks/garden.webp",
+    "status": "READY",
+    "relatedAlternates": [],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "landmarks-and-environment.png"
+  },
+  {
+    "filename": "pond",
+    "category": "landmarks",
+    "width": 475,
+    "height": 300,
+    "pngBytes": 350429,
+    "webpBytes": 49138,
+    "pngPath": "/sandbox/assets/landmarks/pond.png",
+    "webpPath": "/sandbox/assets/landmarks/pond.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "pond-ripple"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "landmarks-and-environment.png"
+  },
+  {
+    "filename": "unfinished-bridge",
+    "category": "landmarks",
+    "width": 455,
+    "height": 335,
+    "pngBytes": 270509,
+    "webpBytes": 37750,
+    "pngPath": "/sandbox/assets/landmarks/unfinished-bridge.png",
+    "webpPath": "/sandbox/assets/landmarks/unfinished-bridge.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "bridge-rope",
+      "loose-bridge-plank"
+    ],
+    "anchor": "bottom-left",
+    "issue": "",
+    "sourceSheet": "landmarks-and-environment.png"
+  },
+  {
+    "filename": "return-sign",
+    "category": "navigation",
+    "width": 256,
+    "height": 324,
+    "pngBytes": 145703,
+    "webpBytes": 21226,
+    "pngPath": "/sandbox/assets/navigation/return-sign.png",
+    "webpPath": "/sandbox/assets/navigation/return-sign.webp",
+    "status": "READY",
+    "relatedAlternates": [],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "landmarks-and-environment.png"
+  },
+  {
+    "filename": "lantern",
+    "category": "environment",
+    "width": 141,
+    "height": 279,
+    "pngBytes": 54372,
+    "webpBytes": 7232,
+    "pngPath": "/sandbox/assets/environment/lantern.png",
+    "webpPath": "/sandbox/assets/environment/lantern.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "lantern-glow"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "landmarks-and-environment.png"
+  },
+  {
+    "filename": "wind-turbine",
+    "category": "environment",
+    "width": 279,
+    "height": 380,
+    "pngBytes": 147875,
+    "webpBytes": 21092,
+    "pngPath": "/sandbox/assets/environment/wind-turbine.png",
+    "webpPath": "/sandbox/assets/environment/wind-turbine.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "turbine-blades"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "landmarks-and-environment.png"
+  },
+  {
+    "filename": "golden-dog-idle",
+    "category": "creatures",
+    "width": 340,
+    "height": 238,
+    "pngBytes": 141784,
+    "webpBytes": 15798,
+    "pngPath": "/sandbox/assets/creatures/golden-dog-idle.png",
+    "webpPath": "/sandbox/assets/creatures/golden-dog-idle.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "golden-dog-sitting",
+      "golden-dog-running"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "golden-dog-sitting",
+    "category": "creatures",
+    "width": 244,
+    "height": 242,
+    "pngBytes": 109862,
+    "webpBytes": 12914,
+    "pngPath": "/sandbox/assets/creatures/golden-dog-sitting.png",
+    "webpPath": "/sandbox/assets/creatures/golden-dog-sitting.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "golden-dog-idle",
+      "golden-dog-running"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "golden-dog-running",
+    "category": "creatures",
+    "width": 390,
+    "height": 232,
+    "pngBytes": 164944,
+    "webpBytes": 23640,
+    "pngPath": "/sandbox/assets/creatures/golden-dog-running.png",
+    "webpPath": "/sandbox/assets/creatures/golden-dog-running.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "golden-dog-idle",
+      "golden-dog-sitting"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "black-white-dog-idle",
+    "category": "creatures",
+    "width": 330,
+    "height": 239,
+    "pngBytes": 135429,
+    "webpBytes": 16066,
+    "pngPath": "/sandbox/assets/creatures/black-white-dog-idle.png",
+    "webpPath": "/sandbox/assets/creatures/black-white-dog-idle.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "black-white-dog-sitting",
+      "black-white-dog-running"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "black-white-dog-sitting",
+    "category": "creatures",
+    "width": 244,
+    "height": 244,
+    "pngBytes": 103244,
+    "webpBytes": 12812,
+    "pngPath": "/sandbox/assets/creatures/black-white-dog-sitting.png",
+    "webpPath": "/sandbox/assets/creatures/black-white-dog-sitting.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "black-white-dog-idle",
+      "black-white-dog-running"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "black-white-dog-running",
+    "category": "creatures",
+    "width": 355,
+    "height": 220,
+    "pngBytes": 132312,
+    "webpBytes": 19108,
+    "pngPath": "/sandbox/assets/creatures/black-white-dog-running.png",
+    "webpPath": "/sandbox/assets/creatures/black-white-dog-running.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "black-white-dog-idle",
+      "black-white-dog-sitting"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "butterfly",
+    "category": "creatures",
+    "width": 227,
+    "height": 189,
+    "pngBytes": 67726,
+    "webpBytes": 9380,
+    "pngPath": "/sandbox/assets/creatures/butterfly.png",
+    "webpPath": "/sandbox/assets/creatures/butterfly.webp",
+    "status": "READY",
+    "relatedAlternates": [],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "blue-bird",
+    "category": "creatures",
+    "width": 175,
+    "height": 118,
+    "pngBytes": 38171,
+    "webpBytes": 5492,
+    "pngPath": "/sandbox/assets/creatures/blue-bird.png",
+    "webpPath": "/sandbox/assets/creatures/blue-bird.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "yellow-bird"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "yellow-bird",
+    "category": "creatures",
+    "width": 175,
+    "height": 126,
+    "pngBytes": 39612,
+    "webpBytes": 5706,
+    "pngPath": "/sandbox/assets/creatures/yellow-bird.png",
+    "webpPath": "/sandbox/assets/creatures/yellow-bird.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "blue-bird"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "koi-orange",
+    "category": "creatures",
+    "width": 209,
+    "height": 184,
+    "pngBytes": 61982,
+    "webpBytes": 7986,
+    "pngPath": "/sandbox/assets/creatures/koi-orange.png",
+    "webpPath": "/sandbox/assets/creatures/koi-orange.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "koi-calico"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "koi-calico",
+    "category": "creatures",
+    "width": 215,
+    "height": 182,
+    "pngBytes": 63927,
+    "webpBytes": 8202,
+    "pngPath": "/sandbox/assets/creatures/koi-calico.png",
+    "webpPath": "/sandbox/assets/creatures/koi-calico.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "koi-orange"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "lily-pads",
+    "category": "environment",
+    "width": 268,
+    "height": 130,
+    "pngBytes": 66960,
+    "webpBytes": 8636,
+    "pngPath": "/sandbox/assets/environment/lily-pads.png",
+    "webpPath": "/sandbox/assets/environment/lily-pads.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "water-lilies"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "water-lilies",
+    "category": "environment",
+    "width": 295,
+    "height": 191,
+    "pngBytes": 107531,
+    "webpBytes": 13574,
+    "pngPath": "/sandbox/assets/environment/water-lilies.png",
+    "webpPath": "/sandbox/assets/environment/water-lilies.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "lily-pads"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "flower-cluster",
+    "category": "environment",
+    "width": 350,
+    "height": 297,
+    "pngBytes": 230646,
+    "webpBytes": 36812,
+    "pngPath": "/sandbox/assets/environment/flower-cluster.png",
+    "webpPath": "/sandbox/assets/environment/flower-cluster.webp",
+    "status": "READY",
+    "relatedAlternates": [],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "hanging-vines",
+    "category": "environment",
+    "width": 252,
+    "height": 285,
+    "pngBytes": 131585,
+    "webpBytes": 20766,
+    "pngPath": "/sandbox/assets/environment/hanging-vines.png",
+    "webpPath": "/sandbox/assets/environment/hanging-vines.webp",
+    "status": "READY",
+    "relatedAlternates": [],
+    "anchor": "top-center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "solar-blimp-large",
+    "category": "environment",
+    "width": 412,
+    "height": 257,
+    "pngBytes": 202132,
+    "webpBytes": 21584,
+    "pngPath": "/sandbox/assets/environment/solar-blimp-large.png",
+    "webpPath": "/sandbox/assets/environment/solar-blimp-large.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "solar-blimp-medium",
+      "solar-blimp-small"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "solar-blimp-medium",
+    "category": "environment",
+    "width": 246,
+    "height": 161,
+    "pngBytes": 69824,
+    "webpBytes": 8292,
+    "pngPath": "/sandbox/assets/environment/solar-blimp-medium.png",
+    "webpPath": "/sandbox/assets/environment/solar-blimp-medium.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "solar-blimp-large",
+      "solar-blimp-small"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "solar-blimp-small",
+    "category": "environment",
+    "width": 121,
+    "height": 55,
+    "pngBytes": 14790,
+    "webpBytes": 2436,
+    "pngPath": "/sandbox/assets/environment/solar-blimp-small.png",
+    "webpPath": "/sandbox/assets/environment/solar-blimp-small.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "solar-blimp-large",
+      "solar-blimp-medium"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "creatures-and-blimps.png"
+  },
+  {
+    "filename": "telescope",
+    "category": "animation",
+    "width": 188,
+    "height": 295,
+    "pngBytes": 98335,
+    "webpBytes": 14030,
+    "pngPath": "/sandbox/assets/animation/telescope.png",
+    "webpPath": "/sandbox/assets/animation/telescope.webp",
+    "status": "READY",
+    "relatedAlternates": [],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "solar-panels",
+    "category": "environment",
+    "width": 358,
+    "height": 255,
+    "pngBytes": 218419,
+    "webpBytes": 30824,
+    "pngPath": "/sandbox/assets/environment/solar-panels.png",
+    "webpPath": "/sandbox/assets/environment/solar-panels.webp",
+    "status": "READY",
+    "relatedAlternates": [],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "turbine-blades",
+    "category": "animation",
+    "width": 300,
+    "height": 345,
+    "pngBytes": 156589,
+    "webpBytes": 20990,
+    "pngPath": "/sandbox/assets/animation/turbine-blades.png",
+    "webpPath": "/sandbox/assets/animation/turbine-blades.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "wind-turbine"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "archive-door-closed",
+    "category": "animation",
+    "width": 365,
+    "height": 286,
+    "pngBytes": 272550,
+    "webpBytes": 38742,
+    "pngPath": "/sandbox/assets/animation/archive-door-closed.png",
+    "webpPath": "/sandbox/assets/animation/archive-door-closed.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "archive-door-open"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "archive-door-open",
+    "category": "animation",
+    "width": 330,
+    "height": 290,
+    "pngBytes": 258781,
+    "webpBytes": 36778,
+    "pngPath": "/sandbox/assets/animation/archive-door-open.png",
+    "webpPath": "/sandbox/assets/animation/archive-door-open.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "archive-door-closed"
+    ],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "lantern-glow",
+    "category": "effects",
+    "width": 145,
+    "height": 136,
+    "pngBytes": 27422,
+    "webpBytes": 4674,
+    "pngPath": "/sandbox/assets/effects/lantern-glow.png",
+    "webpPath": "/sandbox/assets/effects/lantern-glow.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "lantern"
+    ],
+    "anchor": "center",
+    "issue": "",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "bridge-rope",
+    "category": "animation",
+    "width": 325,
+    "height": 223,
+    "pngBytes": 109629,
+    "webpBytes": 16282,
+    "pngPath": "/sandbox/assets/animation/bridge-rope.png",
+    "webpPath": "/sandbox/assets/animation/bridge-rope.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "unfinished-bridge"
+    ],
+    "anchor": "bottom-center",
+    "issue": "Thin rope retained; verify at dark-background review.",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "loose-bridge-plank",
+    "category": "animation",
+    "width": 282,
+    "height": 246,
+    "pngBytes": 144907,
+    "webpBytes": 21038,
+    "pngPath": "/sandbox/assets/animation/loose-bridge-plank.png",
+    "webpPath": "/sandbox/assets/animation/loose-bridge-plank.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "unfinished-bridge"
+    ],
+    "anchor": "bottom-left",
+    "issue": "",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "pond-ripple",
+    "category": "effects",
+    "width": 316,
+    "height": 213,
+    "pngBytes": 121411,
+    "webpBytes": 16866,
+    "pngPath": "/sandbox/assets/effects/pond-ripple.png",
+    "webpPath": "/sandbox/assets/effects/pond-ripple.webp",
+    "status": "READY",
+    "relatedAlternates": [
+      "pond"
+    ],
+    "anchor": "center",
+    "issue": "Soft pale edge; intended for water-only compositing.",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "foreground-plants",
+    "category": "environment",
+    "width": 240,
+    "height": 237,
+    "pngBytes": 118880,
+    "webpBytes": 21760,
+    "pngPath": "/sandbox/assets/environment/foreground-plants.png",
+    "webpPath": "/sandbox/assets/environment/foreground-plants.webp",
+    "status": "READY",
+    "relatedAlternates": [],
+    "anchor": "bottom-center",
+    "issue": "",
+    "sourceSheet": "animation-parts.png"
+  },
+  {
+    "filename": "fog",
+    "category": "effects",
+    "status": "NEEDS_REGENERATION",
+    "issue": "No isolated fog element is present in the supplied source sheets.",
+    "width": null,
+    "height": null,
+    "pngBytes": null,
+    "webpBytes": null,
+    "pngPath": null,
+    "webpPath": null,
+    "relatedAlternates": [],
+    "anchor": "center",
+    "sourceSheet": null
+  },
+  {
+    "filename": "drifting-petals",
+    "category": "effects",
+    "status": "NEEDS_REGENERATION",
+    "issue": "Available petals are fused to running-dog ground shadows.",
+    "width": null,
+    "height": null,
+    "pngBytes": null,
+    "webpBytes": null,
+    "pngPath": null,
+    "webpPath": null,
+    "relatedAlternates": [],
+    "anchor": "center",
+    "sourceSheet": null
+  },
+  {
+    "filename": "blimp-propeller",
+    "category": "animation",
+    "status": "NEEDS_REGENERATION",
+    "issue": "No clean standalone propeller state is present in the supplied source sheets.",
+    "width": null,
+    "height": null,
+    "pngBytes": null,
+    "webpBytes": null,
+    "pngPath": null,
+    "webpPath": null,
+    "relatedAlternates": [],
+    "anchor": "center",
+    "sourceSheet": null
+  }
+]

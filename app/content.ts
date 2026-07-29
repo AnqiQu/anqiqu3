@@ -4,6 +4,7 @@ export const navigation = [
   { label: "Changelog", href: "/#changelog" },
   { label: "Comparison", href: "/#comparison" },
   { label: "Compliance", href: "/#compliance" },
+  { label: "Sandbox", href: "/sandbox" },
 ] as const;
 
 export const companies = [

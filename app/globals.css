@@ -102,6 +102,8 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .desktop-nav { display: flex; align-items: center; gap: clamp(18px, 2.2vw, 34px); color: var(--muted); font-size: 13px; }
 .desktop-nav a, .footer-meta a { transition: color 180ms ease; }
 .desktop-nav a:hover, .footer-meta a:hover { color: var(--white); }
+.sandbox-nav-link { display: inline-flex; align-items: center; gap: 7px; }
+.sandbox-nav-link::before { width: 6px; height: 6px; border-radius: 50%; background: var(--bright-green); box-shadow: 0 0 9px rgb(128 237 153 / 0.68); content: ""; }
 .header-cta { justify-self: end; }
 .mobile-nav { display: none; }
 

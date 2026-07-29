@@ -72,6 +72,36 @@ test("server-renders contact options with supplied URLs", async () => {
   assert.doesNotMatch(html, />Instagram<|>LinkedIn<|>Email<|>X</);
 });
 
+test("server-renders the static Sandbox review checkpoint", async () => {
+  const response = await render("/sandbox");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<title>Sandbox \| Anqi Intelligence<\/title>/i);
+  assert.match(html, /A floating solarpunk island above the clouds/);
+  assert.match(html, /Observatory/);
+  assert.match(html, /Garden of Preferences/);
+  assert.match(html, /No productivity detected/);
+  assert.match(html, /Return to the server room/);
+  assert.match(html, /aria-label="Return to the server room and go back to the main website"/);
+  assert.match(html, /sandbox-mobile-terrain-transparent\.webp/);
+  assert.match(html, /sandbox-desktop-terrain-transparent\.webp/);
+  assert.doesNotMatch(html, /site-header|desktop-nav|Book a demo/);
+});
+
+test("keeps the asset review route private from search indexing", async () => {
+  const response = await render("/sandbox/asset-review");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<title>Sandbox Asset Review \| Anqi Intelligence<\/title>/i);
+  assert.match(html, /name="robots" content="noindex, nofollow, nocache"/i);
+  assert.match(html, /observatory/);
+  assert.match(html, /archive-open/);
+  assert.match(html, /NEEDS_REGENERATION/);
+  assert.match(html, /blimp-propeller/);
+});
+
 test("keeps production content centralized and reduced-motion safe", async () => {
   const [content, css, layout, packageJson] = await Promise.all([
     readFile(new URL("../app/content.ts", import.meta.url), "utf8"),

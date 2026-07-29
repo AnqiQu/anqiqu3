@@ -105,7 +105,7 @@ export default function Home() {
                             </strong>
                           ))}
                         </span>
-                      ) : "href" in row ? (
+                      ) : "href" in row && typeof row.href === "string" ? (
                         <Link href={row.href}>{row.value} ↗</Link>
                       ) : (
                         row.value

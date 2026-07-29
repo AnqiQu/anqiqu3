@@ -15,7 +15,11 @@ export function Header() {
 
         <nav className="desktop-nav" aria-label="Primary navigation">
           {navigation.map((item) => (
-            <Link key={item.href} href={item.href}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={item.href === "/sandbox" ? "sandbox-nav-link" : undefined}
+            >
               {item.label}
             </Link>
           ))}
@@ -30,7 +34,11 @@ export function Header() {
           <summary aria-label="Open navigation">Menu</summary>
           <nav aria-label="Mobile navigation">
             {navigation.map((item) => (
-              <Link key={item.href} href={item.href}>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={item.href === "/sandbox" ? "sandbox-nav-link" : undefined}
+              >
                 {item.label}
               </Link>
             ))}
