@@ -9,8 +9,21 @@ import type { WorldModule } from "../types";
 export function buildBridge(x: number, z: number, rotationY: number): WorldModule {
   const group = new THREE.Group();
   const geometries: THREE.BufferGeometry[] = [];
-  const y = terrainHeight(x, z);
-  group.position.set(x, y + 0.3, z);
+
+  // Local → world for terrain sampling under the rotated deck.
+  const cos = Math.cos(rotationY);
+  const sin = Math.sin(rotationY);
+  const groundAt = (lx: number, lz: number) =>
+    terrainHeight(x + lx * cos + lz * sin, z - lx * sin + lz * cos);
+
+  // The deck must clear the terrain along its whole on-island span — the rim
+  // lip rises under the middle of the bridge, so one end-sample isn't enough.
+  let deckY = -Infinity;
+  for (const lx of [-1.2, 0, 1, 2, 3, 4]) {
+    deckY = Math.max(deckY, groundAt(lx, 0));
+  }
+  deckY += 0.4;
+  group.position.set(x, deckY, z);
   group.rotation.y = rotationY;
 
   const add = (geo: THREE.BufferGeometry, material: THREE.Material, px: number, py: number, pz: number) => {
@@ -47,11 +60,19 @@ export function buildBridge(x: number, z: number, rotationY: number): WorldModul
   }
   group.add(planks);
 
-  // Posts at the island end + mid-deck.
+  // Posts at the island end + mid-deck, each stretched down to the actual
+  // ground beneath it so nothing floats.
   for (const [postX, postZ] of [
     [-0.4, -0.75], [-0.4, 0.75], [3.2, -0.75], [3.2, 0.75],
   ] as Array<[number, number]>) {
-    add(new THREE.CylinderGeometry(0.09, 0.11, 1.1, 7), mat(P.woodDark, { flat: true }), postX, 0.55, postZ);
+    const groundLocal = groundAt(postX, postZ) - deckY; // negative: below deck
+    const top = 1.05;
+    const bottom = groundLocal - 0.15;
+    add(
+      new THREE.CylinderGeometry(0.09, 0.11, top - bottom, 7),
+      mat(P.woodDark, { flat: true }),
+      postX, (top + bottom) / 2, postZ,
+    );
   }
 
   // Sagging ropes between post tops, continuing past the last post to fray

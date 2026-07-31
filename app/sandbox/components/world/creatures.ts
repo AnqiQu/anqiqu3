@@ -10,7 +10,7 @@ import { rng } from "./util";
 // Circles the dogs may not enter: water, buildings, and other solids. Steering
 // repels them near the edge, and a hard projection guarantees no penetration.
 const DOG_OBSTACLES: Array<{ x: number; z: number; r: number }> = [
-  { x: 2, z: 8, r: 4.6 }, // pond + rocky rim
+  { x: 2, z: 8, r: 6.2 }, // pond + rocky rim
   { x: 6, z: -4, r: 3.6 }, // greenhouse deck
   { x: -6, z: -14, r: 4.6 }, // observatory
   { x: -16, z: -2, r: 3.6 }, // archive mound
@@ -246,7 +246,7 @@ export function buildCreatures(): WorldModule {
     const pivot = new THREE.Group();
     pivot.position.set(POND_CENTER.x, -0.3, POND_CENTER.z);
     const fish = new THREE.Group();
-    const radius = 1 + (i % 3) * 0.55;
+    const radius = 1.5 + (i % 3) * 0.85;
     fish.position.x = radius;
     fish.rotation.y = Math.PI; // nose along the direction of travel
     const bodyMesh = new THREE.Mesh(koiBodyGeo, mat(koiColors[i]));

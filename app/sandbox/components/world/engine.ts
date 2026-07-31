@@ -102,12 +102,12 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   ];
   for (const m of modules) scene.add(m.group);
 
-  // Hover highlight targets + archive door flourish.
+  // Hover highlight targets + archive door flourish. The pond is deliberately
+  // absent: it's not selectable — clicking its water makes ripples instead.
   const landmarkGroups = new Map<string, THREE.Group>([
     ["observatory", observatory.group],
     ["archive", archive.group],
     ["garden", greenhouse.group],
-    ["pond", pond.group],
     ["unfinished-bridge", bridge.group],
     ["return-sign", returnSign.group],
   ]);
@@ -127,7 +127,14 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     if (obj.userData.occluder) occluders.push(obj);
   });
   rig.setColliders(occluders);
-  const interactions = createInteractions(scene, canvas, locations, landmarkGroups, occluders, ui);
+  const pondApi = pond as unknown as {
+    waterMesh: THREE.Mesh;
+    spawnRipple: (p: THREE.Vector3) => void;
+  };
+  const interactions = createInteractions(scene, canvas, locations, landmarkGroups, occluders, ui, {
+    mesh: pondApi.waterMesh,
+    onHit: (point) => pondApi.spawnRipple(point),
+  });
 
   const applySize = () => {
     size = viewportSize();

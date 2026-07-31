@@ -64,8 +64,13 @@ Hover/focus reveals a label chip (2D `.sandbox-label` visual language, projected
 from world space; chip CSS must stay at the end of sandbox.css to out-cascade the
 2D mobile label rules). Terrain occluders keep landmarks hidden behind the hill
 from being hovered through it. Only the return sign navigates (fade →
-`router.push("/")`); the archive door swings open on click as a flourish. A
-visually-hidden nav lists all locations for keyboard users (entries fly the
+`router.push("/")`); the archive door swings open on click as a flourish. The
+pond (water radius 4.8) is not selectable — no hotspot, no chip; clicking its
+water spawns two staggered expanding ripple rings (pool of 6, `spawnRipple` on
+the pond module). Rings expand freely; a shader mask (`onBeforeCompile` radial
+alpha fade near the waterline) dissolves just the arc that reaches the shore
+while the rest of the ring carries on across the water.
+A visually-hidden nav lists all locations for keyboard users (entries fly the
 camera to face the landmark via `rig.flyTo`); a persistent "← server room" chip
 is always available. Config `href`s for the four content sub-routes remain inert
 data until those pages exist.

@@ -24,6 +24,9 @@ export function SandboxOverlay({
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const worldLocations = locations.filter((l) => l.world3d);
+  // Ambient spots (the pond) get no label chip — they're scenery, not
+  // selectable landmarks. They stay in the keyboard nav for camera fly-to.
+  const chipLocations = worldLocations.filter((l) => l.interaction !== "ambient");
 
   useEffect(() => {
     // First drag or zoom dismisses the hint and fades the floating title.
@@ -81,7 +84,7 @@ export function SandboxOverlay({
         ← server room
       </Link>
 
-      {worldLocations.map((location) => {
+      {chipLocations.map((location) => {
         const isLink = location.id === "return-sign";
         return (
           <div

@@ -14,7 +14,7 @@ import {
 // The stepping-stone path winds sign → pond → greenhouse → archive → hill so
 // every landmark reads as connected. Lanterns and flower clusters hang off it.
 const PATH_POINTS: Array<[number, number]> = [
-  [-9, 9.5], [-4, 12], [2, 13], [7, 10], [8, 4], [6, -1.5],
+  [-9, 9.5], [-4.5, 13.5], [2, 14.4], [8, 10.5], [8.5, 4], [6, -1.5],
   [-2, -3], [-9, -3.5], [-14, -2.5], [-13, -6.5], [-10, -10.5], [-7, -13.5],
 ];
 
@@ -75,7 +75,7 @@ export function buildIsland(): WorldModule {
     const droop = THREE.MathUtils.smoothstep(reNow, 0.94, 1);
     if (droop > 0) scratch.lerp(new THREE.Color(P.earth), droop * 0.8);
     const pondDist = Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z);
-    if (pondDist < 4.8) scratch.lerp(cSand, THREE.MathUtils.smoothstep(4.8 - pondDist, 0, 1.6));
+    if (pondDist < 6.6) scratch.lerp(cSand, THREE.MathUtils.smoothstep(6.6 - pondDist, 0, 2));
     capColors.push(scratch.r, scratch.g, scratch.b);
   }
   capGeo.setAttribute("color", new THREE.Float32BufferAttribute(capColors, 3));
@@ -90,24 +90,28 @@ export function buildIsland(): WorldModule {
   materials.push(capMat);
 
   // ===== Cliff skirt + rocky underside =====
-  const cliffGeo = new THREE.CylinderGeometry(ISLAND_RX + 1, 4.5, 17, 26, 4, true);
+  // The top ring sits slightly INSIDE the meadow ellipse and just below its
+  // drooping rim, with displacement noise faded to zero at the join — a wider
+  // or noisy top ring reads as a brown sheet sticking out past the grass.
+  const cliffGeo = new THREE.CylinderGeometry(ISLAND_RX - 0.4, 4.5, 16, 26, 4, true);
   const cliffPos = cliffGeo.attributes.position;
   for (let i = 0; i < cliffPos.count; i++) {
     const x = cliffPos.getX(i);
     const y = cliffPos.getY(i);
     const z = cliffPos.getZ(i);
     const len = Math.hypot(x, z) || 1;
-    const bump = (valueNoise(x * 0.35 + 9, z * 0.35 + y * 0.3) - 0.5) * 2.4;
+    const fade = (8 - y) / 16; // 0 at the top ring, 1 at the bottom tip
+    const bump = (valueNoise(x * 0.35 + 9, z * 0.35 + y * 0.3) - 0.5) * 2.4 * fade;
     cliffPos.setX(i, x + (x / len) * bump);
     cliffPos.setZ(i, z + (z / len) * bump);
-    cliffPos.setY(i, y + (valueNoise(x * 0.5, z * 0.5) - 0.5) * 1.2);
+    cliffPos.setY(i, y + (valueNoise(x * 0.5, z * 0.5) - 0.5) * 1.2 * fade);
   }
   cliffGeo.computeVertexNormals();
   // Warm emissive floor: the skirt faces mostly downward and would otherwise
   // render near-black.
   const cliff = new THREE.Mesh(cliffGeo, mat(P.earth, { flat: true, emissive: 0x33261a }));
-  cliff.position.y = -8.7;
-  cliff.scale.z = (ISLAND_RZ + 1) / (ISLAND_RX + 1);
+  cliff.position.y = -9.9; // top ring at y ≈ −1.9, tucked under the grass rim
+  cliff.scale.z = ISLAND_RZ / ISLAND_RX;
   cliff.userData.occluder = true;
   group.add(cliff);
   geometries.push(cliffGeo);
@@ -201,7 +205,7 @@ export function buildIsland(): WorldModule {
   // per-instance blossom colors without tinting stems.
   const clusters: Array<[number, number, number, number]> = [
     // [cx, cz, radius, count] — around landmarks, plus scatter below.
-    [6, -4, 4, 34], [-16, -2, 3.5, 26], [-9, 9, 2.5, 20], [2, 8, 5.4, 26],
+    [6, -4, 4, 34], [-16, -2, 3.5, 26], [-9, 9, 2.5, 20], [2, 8, 7, 26],
     [-6, -14, 5, 30], [16, 9, 2.5, 14], [-13, -15, 3, 10],
   ];
   const flowerSpots: Array<[number, number]> = [];
@@ -213,7 +217,7 @@ export function buildIsland(): WorldModule {
       const z = cz + Math.sin(angle) * dist;
       if (ellipticalRadius(x, z) > 0.95) continue;
       // Keep blossoms off the pond water.
-      if (Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 3.6) continue;
+      if (Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 5.6) continue;
       flowerSpots.push([x, z]);
     }
   }
@@ -221,7 +225,7 @@ export function buildIsland(): WorldModule {
     const x = (rand() * 2 - 1) * ISLAND_RX * 0.9;
     const z = (rand() * 2 - 1) * ISLAND_RZ * 0.9;
     if (ellipticalRadius(x, z) > 0.92) continue;
-    if (Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 3.6) continue;
+    if (Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 5.6) continue;
     flowerSpots.push([x, z]);
   }
 

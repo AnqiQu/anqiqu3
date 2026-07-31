@@ -19,6 +19,11 @@ export type Interactions = {
   dispose: () => void;
 };
 
+export type WaterClick = {
+  mesh: THREE.Mesh;
+  onHit: (point: THREE.Vector3) => void;
+};
+
 export function createInteractions(
   scene: THREE.Scene,
   canvas: HTMLCanvasElement,
@@ -26,6 +31,7 @@ export function createInteractions(
   landmarkGroups: Map<string, THREE.Group>,
   occluders: THREE.Object3D[],
   ui: UiBridge,
+  waterClick?: WaterClick,
 ): Interactions {
   const raycaster = new THREE.Raycaster();
   // Raw client coords; converted to NDC per frame (event-time layout can be
@@ -36,13 +42,15 @@ export function createInteractions(
   let pointerInside = false;
   let dragging = false;
   let downAt: { x: number; y: number; time: number } | null = null;
+  let lastCamera: THREE.PerspectiveCamera | null = null;
 
   const proxyGeo = new THREE.SphereGeometry(1, 8, 6);
   const proxyMat = new THREE.MeshBasicMaterial({ visible: false });
   const hotspots: Hotspot[] = [];
   for (const location of locations) {
     const w = location.world3d;
-    if (!w) continue;
+    // Ambient spots (the pond) are scenery, not selectable landmarks.
+    if (!w || location.interaction === "ambient") continue;
     const proxy = new THREE.Mesh(proxyGeo, proxyMat);
     proxy.position.set(w.position[0], w.position[1] + w.labelOffsetY * 0.4, w.position[2]);
     proxy.scale.setScalar(w.hitRadius);
@@ -77,6 +85,18 @@ export function createInteractions(
     if (moved > 8 || elapsed > 500) return; // orbit drag, not a click
     if (api.hoveredId === "return-sign") ui.navigate("/");
     else if (api.hoveredId === "archive") ui.toggleArchive?.();
+    else if (waterClick && lastCamera) {
+      // A plain click on the pond water makes ripples.
+      const width = document.documentElement.clientWidth;
+      const height = document.documentElement.clientHeight;
+      if (width > 0 && height > 0) {
+        pointer.x = (event.clientX / width) * 2 - 1;
+        pointer.y = -((event.clientY / height) * 2 - 1);
+        raycaster.setFromCamera(pointer, lastCamera);
+        const hit = raycaster.intersectObject(waterClick.mesh, false)[0];
+        if (hit) waterClick.onHit(hit.point);
+      }
+    }
   };
   canvas.addEventListener("pointermove", setPointer, { passive: true });
   canvas.addEventListener("pointerdown", onDown, { passive: true });
@@ -92,6 +112,7 @@ export function createInteractions(
   const api: Interactions = {
     hoveredId: null,
     update(camera) {
+      lastCamera = camera;
       let hovered: string | null = null;
       const width = document.documentElement.clientWidth;
       const height = document.documentElement.clientHeight;

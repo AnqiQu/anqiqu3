@@ -10,7 +10,7 @@ export const ISLAND_RZ = 20;
 
 export const HILL_CENTER = { x: -8, z: -14 };
 export const POND_CENTER = { x: 2, z: 8 };
-export const POND_RADIUS = 3.4;
+export const POND_RADIUS = 4.8; // water radius; rocks/reeds ring just outside
 
 // Normalized elliptical radius: 1 at the island rim.
 export function ellipticalRadius(x: number, z: number): number {
@@ -32,7 +32,7 @@ export function terrainHeight(x: number, z: number): number {
 
   // Pond basin.
   const pd = (x - POND_CENTER.x) ** 2 + (z - POND_CENTER.z) ** 2;
-  h -= 1.1 * Math.exp(-pd / (2 * 3.2 * 3.2));
+  h -= 1.2 * Math.exp(-pd / (2 * 4.8 * 4.8));
 
   // Flat terraces so the observatory and greenhouse sit level.
   const od = (x + 6) ** 2 + (z + 14) ** 2;
