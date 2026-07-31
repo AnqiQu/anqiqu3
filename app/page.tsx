@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Benchmarks } from "./components/benchmarks";
 import { HeroTechnical } from "./components/hero-technical";
 import { Footer, Header, SectionHeader } from "./components/site-shell";
 import {
@@ -7,9 +8,19 @@ import {
   companies,
   comparisons,
   compliance,
-  knownIssues,
   specifications,
 } from "./content";
+
+const CHANGELOG_TONES: Record<string, string> = {
+  Added: "positive",
+  Improved: "positive",
+  Fixed: "positive",
+  Changed: "warn",
+  Deprecated: "warn",
+  "Known issues": "warn",
+  "Breaking changes": "negative",
+  "Known regressions": "negative",
+};
 
 function Result({ value }: { value: string }) {
   return <span className="result">{value}</span>;
@@ -77,6 +88,10 @@ export default function Home() {
                 ))}
               </div>
             </div>
+            <div className="company-more-wrap">
+              <p className="company-more">…and many more*</p>
+              <p className="company-more-note">*there are no more.</p>
+            </div>
           </div>
         </section>
 
@@ -114,23 +129,6 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-
-              <aside className="known-issues" aria-labelledby="issues-title">
-                <div className="panel-heading">
-                  <p className="eyebrow" id="issues-title">
-                    KNOWN BUGS
-                  </p>
-                  <span>5 OPEN</span>
-                </div>
-                <div className="issue-list">
-                  {knownIssues.map((issue) => (
-                    <div className="issue" key={issue.id}>
-                      <span>{issue.id}</span>
-                      <p>{issue.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </aside>
             </div>
           </div>
         </section>
@@ -140,15 +138,31 @@ export default function Home() {
             <SectionHeader title="Changelog" />
             <div className="timeline">
               {changelog.map((entry) => (
-                <article className="timeline-entry" key={entry.year}>
+                <article className="timeline-entry" key={entry.version}>
                   <span className="timeline-node" aria-hidden="true" />
                   <div className="timeline-content">
                     <div className="timeline-primary">
-                      <time>{entry.year}</time>
+                      <span className="release-version">{entry.version}</span>
                       <span className="timeline-divider" aria-hidden="true" />
-                      <p>{entry.text}</p>
+                      <p>
+                        <time className="release-year">{entry.year}</time>
+                        {entry.headline}
+                      </p>
                     </div>
-                    <p className="timeline-details">{entry.details}</p>
+                    <ul className="release-notes">
+                      {entry.notes.map((note) => (
+                        <li key={note.label}>
+                          <span
+                            className={`release-tag release-tag-${
+                              CHANGELOG_TONES[note.label] ?? "warn"
+                            }`}
+                          >
+                            {note.label}
+                          </span>
+                          <span className="release-note-text">{note.text}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </article>
               ))}
@@ -203,7 +217,19 @@ export default function Home() {
             </div>
             <p className="footnote">
               Benchmark results are self-reported and have not been independently
-              reproduced.
+              reproduced. OpenAI did not authorise this comparison.
+            </p>
+          </div>
+        </section>
+
+        <section className="section reveal" id="benchmarks">
+          <div className="container">
+            <SectionHeader title="Benchmarks" />
+            <Benchmarks />
+            <p className="footnote">
+              AnqiBench is an internal benchmark suite. Results are self-reported,
+              unpublished, and not reproducible by design. Higher is better.
+              Certain categories omitted for clarity.
             </p>
           </div>
         </section>
@@ -225,10 +251,6 @@ export default function Home() {
                 </article>
               ))}
             </div>
-            <p className="disclosure">
-              No formal guarantees, service-level agreements, or emotional
-              availability commitments are currently offered.
-            </p>
           </div>
         </section>
 

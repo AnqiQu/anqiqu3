@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Audiowide, Exo_2 } from "next/font/google";
 import "./globals.css";
+import { CookieBanner } from "./components/cookie-banner";
 
 const audiowide = Audiowide({
   variable: "--font-audiowide",
@@ -63,6 +64,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${audiowide.variable} ${exo.variable}`}>
         {children}
+        <CookieBanner />
       </body>
     </html>
   );
