@@ -1,14 +1,51 @@
-.sandbox-world { min-height: 100svh; overflow: hidden; background: #7bcdf8; color: #fff7df; font-family: Georgia, "Times New Roman", serif; }
-
 /* ===== 3D experience gate =====
-   data-mode="flat": server-rendered 2D scene shows; canvas hidden.
+   data-mode="loading": server-rendered state — near-black "underground"
+   screen with light streaks while the world chunk loads (no other scene
+   ever flashes first).
    data-mode="3d": canvas takes over (drag orbits, pinch/wheel zooms — the
-   page itself never scrolls); 2D scene fully removed from layout. */
-.sandbox-experience { position: relative; background: #7bcdf8; }
-.sandbox-experience[data-mode="flat"] .sandbox-3d-canvas { display: none; }
-.sandbox-experience[data-mode="3d"] { height: 100svh; overflow: hidden; }
-.sandbox-experience[data-mode="3d"] .sandbox-world { display: none; }
+   page itself never scrolls).
+   data-mode="flat": static text card for ?flat / reduced-motion / no-WebGL. */
+.sandbox-experience { position: relative; height: 100svh; overflow: hidden; background: #7bcdf8; }
+.sandbox-experience[data-mode="loading"] { background: #070b0d; }
 .sandbox-3d-canvas { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; touch-action: none; }
+.sandbox-experience[data-mode="flat"] .sandbox-3d-canvas { display: none; }
+.sandbox-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+/* ===== Underground loader: black screen, shafts of light from above,
+   then the whole screen floods with daylight once the world is ready. ===== */
+.sandbox-cavern { position: fixed; inset: 0; z-index: 40; overflow: hidden; background-color: #070b0d; pointer-events: none; }
+.sandbox-cavern-glow { position: absolute; top: -28vh; left: 50%; width: 130vw; height: 55vh; background: radial-gradient(closest-side, rgb(255 247 223 / 0.16), transparent 72%); transform: translateX(-50%); animation: sandbox-glow-pulse 3.4s ease-in-out infinite; }
+.sandbox-cavern-streak { position: absolute; top: -12vh; left: 50%; width: clamp(40px, 6vw, 90px); height: 70vh; background: linear-gradient(180deg, rgb(255 247 223 / 0.34), rgb(255 247 223 / 0.06) 62%, transparent); filter: blur(6px); transform-origin: 50% 0; animation: sandbox-streak-sway 3.4s ease-in-out infinite; }
+.sandbox-cavern-streak:nth-of-type(1) { transform: translateX(-170%) rotate(14deg); animation-delay: -0.6s; }
+.sandbox-cavern-streak:nth-of-type(2) { width: clamp(60px, 9vw, 130px); transform: translateX(-50%) rotate(-3deg); animation-delay: -1.8s; }
+.sandbox-cavern-streak:nth-of-type(3) { transform: translateX(95%) rotate(-16deg); animation-delay: -2.6s; }
+@keyframes sandbox-glow-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@keyframes sandbox-streak-sway { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+
+/* Surfacing into daylight: dark → warm light flood → gone. The streaks are
+   cream, so they melt into the flood on their own. */
+.sandbox-cavern[data-reveal="emerge"] { animation: sandbox-emerge 1.15s ease-in forwards; }
+@keyframes sandbox-emerge {
+  0% { background-color: #070b0d; opacity: 1; }
+  55% { background-color: #f2e5bd; opacity: 1; }
+  75% { background-color: #fff7df; opacity: 1; }
+  100% { background-color: #fff7df; opacity: 0; }
+}
+/* Warm cache: the wait was imperceptible, so skip the flourish. */
+.sandbox-cavern[data-reveal="quick"] { animation: sandbox-cavern-fade 320ms ease forwards; }
+@keyframes sandbox-cavern-fade { to { opacity: 0; } }
+
+/* ===== Flat fallback: static card (?flat / reduced motion / no WebGL) ===== */
+.sandbox-flat { display: grid; place-content: center; justify-items: center; gap: 14px; height: 100%; padding: 24px; background: linear-gradient(#7bcdf8, #d9f2ff); color: #274a33; font-family: var(--font-exo), sans-serif; text-align: center; }
+.sandbox-flat-kicker { margin: 0; font-size: 13px; letter-spacing: 0.34em; text-transform: uppercase; }
+.sandbox-flat-title { margin: 0; font-family: var(--font-audiowide), sans-serif; font-size: clamp(40px, 8vw, 72px); line-height: 1.05; }
+.sandbox-flat-note { margin: 0; max-width: 46ch; font-size: 15px; line-height: 1.55; }
+.sandbox-flat-return { margin-top: 6px; padding: 9px 16px; border: 1px solid rgb(39 74 51 / 0.3); border-radius: 999px; background: rgb(255 247 223 / 0.85); color: #274a33; font-size: 14px; letter-spacing: 0.05em; text-decoration: none; transition: transform 160ms ease, box-shadow 160ms ease; }
+.sandbox-flat-return:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgb(27 57 72 / 0.2); }
+.sandbox-flat-return:focus-visible { outline: 3px solid #2f7d4f; outline-offset: 3px; }
+
+.sandbox-noscript { position: fixed; inset: auto 16px 16px; z-index: 60; margin: 0; padding: 12px 16px; border-radius: 12px; background: rgb(255 247 223 / 0.92); color: #274a33; font-family: var(--font-exo), sans-serif; font-size: 14px; text-align: center; }
+.sandbox-noscript a { color: inherit; }
 
 /* ===== 3D overlay: title, hint, return link ===== */
 .sandbox-3d-overlay { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-family: var(--font-exo), sans-serif; }
@@ -23,67 +60,23 @@
 
 .sandbox-3d-fade { position: fixed; inset: 0; z-index: 30; background: #fff7df; opacity: 0; pointer-events: none; transition: opacity 400ms ease; }
 .sandbox-3d-fade[data-active="true"] { opacity: 1; pointer-events: auto; }
-.sandbox-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
-.sandbox-scene { position: relative; width: 100vw; min-height: 100svh; overflow: hidden; isolation: isolate; }
-.sandbox-sky, .sandbox-terrain { position: absolute; inset: 0; }
-.sandbox-sky img, .sandbox-terrain img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.sandbox-sky { z-index: 0; }
-.sandbox-terrain { z-index: 1; }
-.sandbox-decoration, .sandbox-location { position: absolute; top: var(--desktop-top); left: var(--desktop-left); z-index: var(--layer); width: var(--desktop-width); transform-origin: 50% 100%; }
-.sandbox-decoration picture, .sandbox-location-art, .sandbox-location-art picture { display: block; width: 100%; }
-.sandbox-decoration img, .sandbox-location-art img { display: block; width: 100%; height: auto; filter: drop-shadow(0 12px 12px rgb(45 72 40 / 0.16)); }
-.sandbox-location { color: inherit; }
-.sandbox-label { position: absolute; top: 52%; left: 80%; display: grid; min-width: max-content; gap: 2px; padding: 9px 13px 10px; border: 1px solid rgb(255 235 182 / 0.5); border-radius: 12px; background: rgb(28 38 31 / 0.88); box-shadow: 0 10px 24px rgb(27 57 72 / 0.22); color: #fff8e8; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity 160ms ease, transform 160ms ease; }
-.sandbox-label strong { font-size: clamp(12px, 1.15vw, 17px); line-height: 1.18; }
-.sandbox-label small { color: #f3e6c8; font-family: var(--font-exo), sans-serif; font-size: clamp(8px, 0.75vw, 11px); }
-.sandbox-location:hover .sandbox-label { opacity: 1; transform: translateY(0); }
-.sandbox-location-garden .sandbox-label { top: 58%; left: 70%; }
-.sandbox-location-pond .sandbox-label { top: 54%; left: 65%; }
-.sandbox-location-unfinished-bridge .sandbox-label { top: 58%; left: 18%; }
-.sandbox-return-sign { display: block; border-radius: 24px; transition: filter 160ms ease, transform 160ms ease; }
-.sandbox-return-sign:hover { filter: brightness(1.07) drop-shadow(0 0 16px rgb(255 228 135 / 0.42)); transform: translateY(-2px); }
-.sandbox-return-sign:focus-visible { outline: 4px solid #fff3b1; outline-offset: 5px; }
-.sandbox-review-note { position: absolute; right: 16px; bottom: 12px; z-index: 20; margin: 0; padding: 5px 8px; border-radius: 999px; background: rgb(25 47 54 / 0.58); color: rgb(255 255 255 / 0.78); font-family: var(--font-exo), sans-serif; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; backdrop-filter: blur(7px); }
 
-@media (min-width: 721px) {
-  .sandbox-scene { height: 100svh; min-height: 620px; }
-  .sandbox-scene::after { position: absolute; z-index: 15; inset: 0; box-shadow: inset 0 0 90px rgb(38 85 104 / 0.12); content: ""; pointer-events: none; }
-}
+/* ===== Label chips: anchored at the overlay origin, placed via inline
+   transform from the 3D projection; visible only while hovered/focused. ===== */
+.sandbox-label--chip { position: absolute; top: 0; left: 0; display: grid; min-width: max-content; gap: 2px; margin: -10px 0 0; padding: 9px 13px 10px; border: 1px solid rgb(255 235 182 / 0.5); border-radius: 12px; background: rgb(28 38 31 / 0.88); box-shadow: 0 10px 24px rgb(27 57 72 / 0.22); color: #fff8e8; opacity: 0; pointer-events: none; transform: translate(-50%, -100%); transition: opacity 180ms ease; }
+.sandbox-label--chip strong { font-size: clamp(12px, 1.15vw, 17px); line-height: 1.18; }
+.sandbox-label--chip small { color: #f3e6c8; font-size: clamp(8px, 0.75vw, 11px); }
+.sandbox-label--chip[data-inphase="true"][data-hovered="true"] { opacity: 1; }
+.sandbox-label--chip a { display: grid; gap: 2px; color: inherit; text-decoration: none; }
+.sandbox-label--chip[data-inphase="true"][data-hovered="true"] a { pointer-events: auto; }
 
 @media (max-width: 720px) {
-  html:has(.sandbox-world) { background: #70c4f0; scroll-padding-top: 0; }
-  body:has(.sandbox-world) { background: #70c4f0; }
-  .sandbox-world { min-height: max(100svh, 210vw); overflow: visible; }
-  .sandbox-scene { width: 100%; height: max(100svh, 210vw); min-height: 700px; overflow: hidden; }
-  .sandbox-sky img, .sandbox-terrain img { object-position: center top; }
-  .sandbox-decoration, .sandbox-location { top: var(--mobile-top); left: var(--mobile-left); width: var(--mobile-width); }
-  .sandbox-label { top: 58%; left: 58%; gap: 1px; padding: 7px 10px 8px; border-radius: 10px; opacity: 1; transform: none; }
-  .sandbox-label strong { max-width: 132px; font-size: clamp(11px, 3.6vw, 15px); }
-  .sandbox-label small { font-size: clamp(7px, 2.4vw, 10px); }
-  .sandbox-location-observatory .sandbox-label { top: 56%; left: 62%; }
-  .sandbox-location-archive .sandbox-label { top: 54%; left: 6%; }
-  .sandbox-location-garden .sandbox-label { top: 61%; right: 0; left: auto; text-align: right; }
-  .sandbox-location-pond .sandbox-label { top: 56%; left: 61%; }
-  .sandbox-location-unfinished-bridge .sandbox-label { top: 52%; left: 10%; }
-  .sandbox-review-note { display: none; }
-}
-
-@media (max-width: 360px) {
-  .sandbox-scene { height: 220vw; min-height: 700px; }
-  .sandbox-label strong { font-size: 11px; }
-  .sandbox-label small { font-size: 8px; }
+  .sandbox-label--chip strong { max-width: 132px; font-size: clamp(11px, 3.6vw, 15px); }
+  .sandbox-label--chip small { font-size: clamp(7px, 2.4vw, 10px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sandbox-location, .sandbox-decoration { transition: none !important; }
+  /* Reduced-motion visitors flip to the flat card right after hydration;
+     this covers the pre-hydration moment. */
+  .sandbox-cavern-glow, .sandbox-cavern-streak, .sandbox-3d-hint { animation: none; }
 }
-
-/* ===== 3D label chips (must stay last: overrides the 2D .sandbox-label
-   positioning above, including the mobile media block that shows painted
-   labels without hover). Chips reuse .sandbox-label visuals but are anchored
-   at the overlay origin and placed via inline transform from 3D projection;
-   visible only while hovered/focused and in scroll phase. ===== */
-.sandbox-3d-overlay .sandbox-label--chip { top: 0; left: 0; margin: -10px 0 0; opacity: 0; pointer-events: none; transform: translate(-50%, -100%); transition: opacity 180ms ease; }
-.sandbox-3d-overlay .sandbox-label--chip[data-inphase="true"][data-hovered="true"] { opacity: 1; }
-.sandbox-3d-overlay .sandbox-label--chip a { display: grid; gap: 2px; color: inherit; text-decoration: none; }
-.sandbox-3d-overlay .sandbox-label--chip[data-inphase="true"][data-hovered="true"] a { pointer-events: auto; }

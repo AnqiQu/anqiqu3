@@ -72,20 +72,23 @@ test("server-renders contact options with supplied URLs", async () => {
   assert.doesNotMatch(html, />Instagram<|>LinkedIn<|>Email<|>X</);
 });
 
-test("server-renders the static Sandbox review checkpoint", async () => {
+test("server-renders the Sandbox underground loading gate", async () => {
   const response = await render("/sandbox");
   assert.equal(response.status, 200);
 
   const html = await response.text();
   assert.match(html, /<title>Sandbox \| Anqi Intelligence<\/title>/i);
+  assert.match(html, /Anqi Intelligence Sandbox/);
   assert.match(html, /A floating solarpunk island above the clouds/);
-  assert.match(html, /Observatory/);
-  assert.match(html, /Garden of Preferences/);
-  assert.match(html, /No productivity detected/);
+  assert.match(html, /data-mode="loading"/);
+  assert.match(html, /sandbox-cavern/);
+  assert.match(html, /sandbox-3d-canvas/);
+  assert.match(html, /<noscript>/);
   assert.match(html, /Return to the server room/);
-  assert.match(html, /aria-label="Return to the server room and go back to the main website"/);
-  assert.match(html, /sandbox-mobile-terrain-transparent\.webp/);
-  assert.match(html, /sandbox-desktop-terrain-transparent\.webp/);
+  // The painted 2D scene is fully retired: no terrain art, no positioned
+  // location markup in the SSR payload.
+  assert.doesNotMatch(html, /sandbox-scene|sandbox-terrain|sandbox-decoration|sandbox-location/);
+  assert.doesNotMatch(html, /terrain-transparent\.webp/);
   assert.doesNotMatch(html, /site-header|desktop-nav|Book a demo/);
 });
 

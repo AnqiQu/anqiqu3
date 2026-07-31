@@ -2,20 +2,27 @@
 
 `/sandbox` is now a drag-explorable Three.js open world: the camera orbits the
 floating island video-game style (drag rotates/tilts, pinch or wheel zooms
-within limits), with raycast hover labels and fade-to-navigate, while
-preserving the painted 2D solarpunk world as the server-rendered fallback.
+within limits), with raycast hover labels and fade-to-navigate.
 The original scroll-rail descent (danielqli-style) shipped first and was
-replaced by orbit controls at user request on 2026-07-30.
+replaced by orbit controls at user request on 2026-07-30. The painted 2D
+scene was fully retired on 2026-07-31 (component, config art fields, and CSS
+deleted); its assets remain only for the private `/sandbox/asset-review` page.
 
 ## Architecture
 
-- **Progressive enhancement.** [page.tsx](../../app/sandbox/page.tsx) wraps the
-  unchanged server-rendered 2D scene in a `"use client"` gate
+- **Loading gate.** [page.tsx](../../app/sandbox/page.tsx) renders only the
+  `"use client"` gate
   ([sandbox-experience.tsx](../../app/sandbox/components/sandbox-experience.tsx)).
-  The gate stays in `data-mode="flat"` for `?flat`, `prefers-reduced-motion`, or
-  missing WebGL; otherwise it lazy-imports the world (three.js lives only in that
-  chunk, ~503KB raw / ≈125KB gz) and flips to `data-mode="3d"` after the first
-  rendered frame. All rendered-HTML test assertions stay server-side and green.
+  The server-rendered state is `data-mode="loading"`: a near-black "underground"
+  screen with swaying cream light shafts, so nothing else ever flashes while the
+  lazy chunk loads (three.js lives only in that chunk, ~503KB raw / ≈125KB gz).
+  After the world's first frame, the gate flips to `data-mode="3d"` and the dark
+  screen surfaces into daylight (`sandbox-emerge`, ~1.15s dark → warm flood →
+  fade) — or just quick-fades in 320ms when the chunk was cached and load took
+  <400ms, with a 1.6s JS backstop in case animations never fire. Visitors with
+  `?flat`, `prefers-reduced-motion`, or no WebGL get `data-mode="flat"`: a static
+  sky-gradient text card with a return link. A `<noscript>` note covers no-JS
+  visitors, and sr-only heading/description keep the SSR payload meaningful.
 - **Config-driven placement.** `SandboxLocation.world3d` in
   [config.ts](../../app/sandbox/config.ts): `position`, `rotationY?`,
   `labelOffsetY`, `hitRadius`. Modules sample `terrainHeight(x, z)`
@@ -60,9 +67,8 @@ Title + hint dismiss on first pointer/wheel interaction.
 
 ## Interaction (v1 scope, user-confirmed)
 
-Hover/focus reveals a label chip (2D `.sandbox-label` visual language, projected
-from world space; chip CSS must stay at the end of sandbox.css to out-cascade the
-2D mobile label rules). Terrain occluders keep landmarks hidden behind the hill
+Hover/focus reveals a label chip (`.sandbox-label--chip`, projected from world
+space). Terrain occluders keep landmarks hidden behind the hill
 from being hovered through it. Only the return sign navigates (fade →
 `router.push("/")`); the archive door swings open on click as a flourish. The
 pond (water radius 4.8) is not selectable — no hotspot, no chip; clicking its
@@ -85,7 +91,7 @@ data until those pages exist.
 
 - `npm run lint` clean; `npm run test` (build + rendered-HTML suite) 5/5.
 - three.js absent from all non-sandbox chunks.
-- `?flat=1` serves the painted scene ("Classic painted view" badge).
+- `?flat=1` serves the static fallback card (no WebGL/three.js loaded).
 - Desktop keyframes t=0/0.25/0.5/0.75/1 and mobile 375×812 screenshot-reviewed
   against `review/sandbox-1440x900.png` composition beats.
 - Hover chip verified (Observatory), return-sign navigation verified end-to-end.
