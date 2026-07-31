@@ -20,9 +20,14 @@ export function buildObservatory(x: number, z: number): WorldModule {
     return mesh;
   };
 
+  // Foundation plinth: a slightly wider skirt sunk into the hilltop pad. The
+  // terrain under the pad is dead flat (see OBSERVATORY_PAD), and this buries
+  // the seam so no edge of the building ever reads as hovering off the hill.
+  add(new THREE.CylinderGeometry(3.72, 3.92, 1.3, 14), mat(P.stonePale, { flat: true }), 0, -0.5, 0);
+
   // Stone drum + glass dome. Both are camera/hover solids: the orbit camera
   // pulls in front of them instead of clipping inside.
-  const drum = add(new THREE.CylinderGeometry(3.2, 3.6, 2.6, 14), mat(P.stone, { flat: true }), 0, 1.3, 0);
+  const drum = add(new THREE.CylinderGeometry(3.2, 3.6, 2.6, 14), mat(P.stonePale, { flat: true }), 0, 1.3, 0);
   drum.userData.occluder = true;
   const dome = add(
     new THREE.SphereGeometry(3.05, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2),
@@ -52,24 +57,32 @@ export function buildObservatory(x: number, z: number): WorldModule {
   const lens = add(new THREE.SphereGeometry(0.3, 10, 8), mat(P.glassTeal, { transparent: true, opacity: 0.7 }), 0, 5.6, 2.6);
   lens.renderOrder = 2;
 
-  // Arched door + steps down the south face.
+  // Arched door + steps down the south face. Each slab is bedded into the
+  // ground it stands on rather than stacked at fixed heights, so the flight
+  // follows the pad and then the slope instead of floating off it.
   add(new THREE.BoxGeometry(1.1, 1.6, 0.24), mat(P.woodDark, { flat: true }), 0, 0.8, 3.32);
   add(new THREE.TorusGeometry(0.55, 0.1, 6, 12, Math.PI), mat(P.brass), 0, 1.6, 3.34);
   for (let i = 0; i < 4; i++) {
-    add(new THREE.BoxGeometry(1.6 + i * 0.3, 0.18, 0.55), mat(P.stone, { flat: true }), 0, -0.05 - i * 0.18, 3.7 + i * 0.5);
+    const pz = 3.7 + i * 0.5;
+    add(
+      new THREE.BoxGeometry(1.6 + i * 0.3, 0.18, 0.55),
+      mat(P.stonePale, { flat: true }),
+      0, terrainHeight(x, z + pz) - y + 0.02, pz,
+    );
   }
 
-  // Dressing: vine ring around the base, two planters with bushes.
-  add(new THREE.TorusGeometry(3.5, 0.14, 6, 20).rotateX(Math.PI / 2), mat(P.moss), 0, 0.35, 0);
+  // Dressing: mossy ring around the plinth rim, two planters with bushes
+  // standing clear of it on the pad beside the door.
+  add(new THREE.TorusGeometry(3.85, 0.14, 6, 20).rotateX(Math.PI / 2), mat(P.moss), 0, 0.12, 0);
   for (const side of [-1, 1]) {
-    add(new THREE.BoxGeometry(0.9, 0.4, 0.45), mat(P.wood, { flat: true }), side * 2.4, 0.2, 2.6);
-    add(new THREE.IcosahedronGeometry(0.32, 0), mat(P.canopyLight, { flat: true }), side * 2.4 - 0.18, 0.55, 2.6);
-    add(new THREE.IcosahedronGeometry(0.26, 0), mat(P.canopy, { flat: true }), side * 2.4 + 0.2, 0.5, 2.6);
+    add(new THREE.BoxGeometry(0.9, 0.4, 0.45), mat(P.wood, { flat: true }), side * 2.9, 0.2, 3.15);
+    add(new THREE.IcosahedronGeometry(0.32, 0), mat(P.canopyLight, { flat: true }), side * 2.9 - 0.18, 0.55, 3.15);
+    add(new THREE.IcosahedronGeometry(0.26, 0), mat(P.canopy, { flat: true }), side * 2.9 + 0.2, 0.5, 3.15);
   }
 
   // Blob shadow.
   const shadow = add(
-    new THREE.CircleGeometry(4.1, 20).rotateX(-Math.PI / 2),
+    new THREE.CircleGeometry(4.4, 20).rotateX(-Math.PI / 2),
     new THREE.MeshBasicMaterial({ color: 0x1c3020, transparent: true, opacity: 0.14, depthWrite: false }),
     0, 0.05, 0,
   );

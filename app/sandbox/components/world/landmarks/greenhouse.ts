@@ -120,15 +120,8 @@ export function buildGreenhouse(x: number, z: number, rotationY: number): WorldM
   }
   group.add(blossoms);
 
-  // Vines draped over one gable + a lantern by the door.
-  const vineGeo = new THREE.CapsuleGeometry(0.05, 0.7, 3, 6);
-  geometries.push(vineGeo);
-  for (let i = 0; i < 4; i++) {
-    const vine = new THREE.Mesh(vineGeo, mat(P.canopyDark));
-    vine.position.set(-W / 2 + 0.1, 0.35 + H + 0.4 - i * 0.12, -D / 2 + 0.5 + i * 0.7);
-    vine.rotation.z = 0.35 + i * 0.1;
-    group.add(vine);
-  }
+  // Lantern by the door. (No gable vines: at this scale they poked straight
+  // through the glass roof and read as stray green sticks.)
   add(new THREE.CylinderGeometry(0.05, 0.07, 1.2, 6), mat(P.woodDark), W / 2 + 0.5, 0.6, D / 2 + 0.4);
   add(new THREE.SphereGeometry(0.11, 8, 6), new THREE.MeshBasicMaterial({ color: P.lanternGlow }), W / 2 + 0.5, 1.15, D / 2 + 0.4);
 

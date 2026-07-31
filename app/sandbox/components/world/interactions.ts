@@ -83,8 +83,7 @@ export function createInteractions(
     const elapsed = performance.now() - downAt.time;
     downAt = null;
     if (moved > 8 || elapsed > 500) return; // orbit drag, not a click
-    if (api.hoveredId === "return-sign") ui.navigate("/");
-    else if (api.hoveredId === "archive") ui.toggleArchive?.();
+    if (api.hoveredId === "archive") ui.toggleArchive?.();
     else if (waterClick && lastCamera) {
       // A plain click on the pond water makes ripples.
       const width = document.documentElement.clientWidth;
@@ -129,11 +128,7 @@ export function createInteractions(
         ui.setHover(effective);
       }
       canvas.style.cursor =
-        effective === "return-sign" || effective === "archive"
-          ? "pointer"
-          : dragging
-            ? "grabbing"
-            : "grab";
+        effective === "archive" ? "pointer" : dragging ? "grabbing" : "grab";
 
       // Project label anchors to screen space.
       for (const h of hotspots) {

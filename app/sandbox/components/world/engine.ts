@@ -12,9 +12,8 @@ import { buildEnergy } from "./landmarks/energy";
 import { buildGreenhouse } from "./landmarks/greenhouse";
 import { buildObservatory } from "./landmarks/observatory";
 import { buildPond } from "./landmarks/pond";
-import { buildReturnSign } from "./landmarks/return-sign";
 import { createOrbitRig, fovForAspect } from "./orbit-rig";
-import { buildSky } from "./sky";
+import { SUN_POSITION, buildSky } from "./sky";
 import type { WorldModule } from "./types";
 
 export type WorldOptions = {
@@ -61,10 +60,15 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   // light comes from the front-top-right so camera-facing slopes stay bright.
   // Warm sand ground color keeps undersides (cliff, cloud bottoms) from going
   // muddy dark.
-  const hemi = new THREE.HemisphereLight(0xbfe8ff, 0xd9c39a, 1.0);
-  const sunLight = new THREE.DirectionalLight(0xfff2cc, 1.15);
+  const hemi = new THREE.HemisphereLight(0xbfe8ff, 0xd9c39a, 0.95);
+  const sunLight = new THREE.DirectionalLight(0xfff0c0, 1.5);
   sunLight.position.set(30, 60, 40);
-  scene.add(hemi, sunLight);
+  // Rim light down the visible sun's own vector: it can't be the key (it would
+  // backlight the vista) but it puts a warm sunlit edge on the far side of
+  // everything, which is what actually sells the sunshine.
+  const sunRim = new THREE.DirectionalLight(0xffd79c, 0.55);
+  sunRim.position.copy(SUN_POSITION);
+  scene.add(hemi, sunLight, sunRim);
 
   // Landmark placement comes from config world3d (x/z only — modules sample
   // the terrain height field themselves).
@@ -78,14 +82,12 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   const arc = at("archive");
   const gar = at("garden");
   const bri = at("unfinished-bridge");
-  const sig = at("return-sign");
 
   const observatory = buildObservatory(obs.x, obs.z);
   const archive = buildArchive(arc.x, arc.z, arc.rotationY);
   const greenhouse = buildGreenhouse(gar.x, gar.z, gar.rotationY);
   const pond = buildPond();
   const bridge = buildBridge(bri.x, bri.z, bri.rotationY);
-  const returnSign = buildReturnSign(sig.x, sig.z, sig.rotationY);
 
   const modules: WorldModule[] = [
     buildSky(),
@@ -96,7 +98,6 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     greenhouse,
     pond,
     bridge,
-    returnSign,
     buildCreatures(),
     buildBlimps(),
   ];
@@ -109,7 +110,6 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     ["archive", archive.group],
     ["garden", greenhouse.group],
     ["unfinished-bridge", bridge.group],
-    ["return-sign", returnSign.group],
   ]);
   let archiveOpen = false;
   ui.toggleArchive = () => {

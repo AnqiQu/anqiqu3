@@ -4,24 +4,29 @@ import * as THREE from "three";
 // 2D scene. Authored in sRGB — the renderer keeps NoToneMapping so these hexes
 // reach the screen as-is.
 export const P = {
-  skyTop: 0x7bcdf8,
-  skyHorizon: 0xd9f2ff,
-  fog: 0xcfeeff,
-  cloud: 0xfff7df,
-  sun: 0xfff3c4,
+  skyTop: 0x1a96f2,
+  skyHorizon: 0x8fd3fd,
+  fog: 0xbbe4ff,
+  cloud: 0xfffdf7,
+  // Sun: a near-white disc, plus the pale warm wash it lays over the sky
+  // around it (see buildSky) so that stretch of sky reads as sunlit.
+  sun: 0xfffdf0,
+  sunGlow: 0xfff2d8,
 
-  meadow: 0x8fce6f,
-  meadowDark: 0x5da24f,
-  meadowLight: 0xb6e388,
-  moss: 0x6fae5a,
-  canopy: 0x77c46d,
-  canopyLight: 0xa8dd7c,
-  canopyDark: 0x4d9e5f,
+  meadow: 0x86d462,
+  meadowDark: 0x52a842,
+  meadowLight: 0xace77a,
+  moss: 0x64b44c,
+  canopy: 0x6cca5e,
+  canopyLight: 0x9ee36c,
+  canopyDark: 0x40a452,
 
   earth: 0x8a6a4a,
   cliff: 0x7d5f43,
   rock: 0x9c8468,
   stone: 0xe8d9b8,
+  // Pale masonry for the observatory so it reads bright against the hill.
+  stonePale: 0xf6efdf,
   path: 0xd9c39a,
 
   wood: 0xa9744a,
@@ -48,11 +53,11 @@ export const P = {
   dogWhite: 0xf5f1e8,
   bird: 0x3b4a52,
 
-  blimpCream: 0xfff2d0,
+  blimpCream: 0xfffcf6,
   blimpTeal: 0x7fc9c0,
   panelNavy: 0x2f5d8a,
   panelLine: 0x7ea6c9,
-  turbineWhite: 0xf7f4ec,
+  turbineWhite: 0xffffff,
   lanternGlow: 0xffd98a,
 } as const;
 

@@ -84,66 +84,33 @@ export function SandboxOverlay({
         ← server room
       </Link>
 
-      {chipLocations.map((location) => {
-        const isLink = location.id === "return-sign";
-        return (
-          <div
-            key={location.id}
-            className="sandbox-label sandbox-label--chip"
-            data-hovered={hoveredId === location.id ? "true" : "false"}
-            ref={(el) => {
-              if (el) chipRefs.current.set(location.id, el);
-              else chipRefs.current.delete(location.id);
-            }}
-          >
-            {isLink ? (
-              <Link
-                href="/"
-                aria-label="Return to the server room and go back to the main website"
-                onClick={(event) => {
-                  event.preventDefault();
-                  bridge.navigate("/");
-                }}
-              >
-                <strong>{location.label}</strong>
-                <small>{location.description}</small>
-              </Link>
-            ) : (
-              <>
-                <strong>{location.label}</strong>
-                <small>{location.description}</small>
-              </>
-            )}
-          </div>
-        );
-      })}
+      {chipLocations.map((location) => (
+        <div
+          key={location.id}
+          className="sandbox-label sandbox-label--chip"
+          data-hovered={hoveredId === location.id ? "true" : "false"}
+          ref={(el) => {
+            if (el) chipRefs.current.set(location.id, el);
+            else chipRefs.current.delete(location.id);
+          }}
+        >
+          <strong>{location.label}</strong>
+          <small>{location.description}</small>
+        </div>
+      ))}
 
       <nav className="sandbox-sr-only" aria-label="Sandbox locations">
         <ul>
           {worldLocations.map((location) => (
             <li key={location.id}>
-              {location.id === "return-sign" ? (
-                <Link
-                  href="/"
-                  onFocus={() => bridge.onFocusHover?.(location.id)}
-                  onBlur={() => bridge.onFocusHover?.(null)}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    bridge.navigate("/");
-                  }}
-                >
-                  {location.label} — {location.description}
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onFocus={() => bridge.onFocusHover?.(location.id)}
-                  onBlur={() => bridge.onFocusHover?.(null)}
-                  onClick={() => jumpTo(location)}
-                >
-                  {location.label} — {location.description}
-                </button>
-              )}
+              <button
+                type="button"
+                onFocus={() => bridge.onFocusHover?.(location.id)}
+                onBlur={() => bridge.onFocusHover?.(null)}
+                onClick={() => jumpTo(location)}
+              >
+                {location.label} — {location.description}
+              </button>
             </li>
           ))}
         </ul>

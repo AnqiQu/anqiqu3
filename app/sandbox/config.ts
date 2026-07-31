@@ -60,12 +60,4 @@ export const sandboxLocations: SandboxLocation[] = [
     interaction: "navigate",
     world3d: { position: [16, 0.4, 10], rotationY: -0.35, labelOffsetY: 2.4, hitRadius: 3.8 },
   },
-  {
-    id: "return-sign",
-    label: "Return to the server room",
-    description: "Main website",
-    href: "/",
-    interaction: "navigate",
-    world3d: { position: [-9, 0.3, 9], rotationY: 0.35, labelOffsetY: 2.2, hitRadius: 1.8 },
-  },
 ];

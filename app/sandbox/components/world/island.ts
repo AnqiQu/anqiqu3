@@ -5,15 +5,19 @@ import { rng, valueNoise } from "./util";
 import {
   ISLAND_RX,
   ISLAND_RZ,
+  OBSERVATORY_CENTER,
   POND_CENTER,
   ellipticalRadius,
   terrainHeight,
   terrainNormal,
 } from "./terrain";
 
-// The stepping-stone path winds sign → pond → greenhouse → archive → hill so
+// The stepping-stone path winds bench → pond → greenhouse → archive → hill so
 // every landmark reads as connected. Lanterns and flower clusters hang off it.
+// The first two points are the spur up to the north-west tree grove; it ends
+// facing the bench (see BENCH below).
 const PATH_POINTS: Array<[number, number]> = [
+  [-10.1, 13.3], [-10.3, 11.3],
   [-9, 9.5], [-4.5, 13.5], [2, 14.4], [8, 10.5], [8.5, 4], [6, -1.5],
   [-2, -3], [-9, -3.5], [-14, -2.5], [-13, -6.5], [-10, -10.5], [-7, -13.5],
 ];
@@ -28,6 +32,10 @@ const TREE_SPOTS: Array<[number, number]> = [
 const LANTERN_SPOTS: Array<[number, number]> = [
   [-10.6, 8.2], [-3.5, 13.3], [4, 13.8], [8.8, 5], [3, -4.5], [-11, -4.8],
 ];
+
+// Bench at the end of the grove spur: back to the trunk of TREE_SPOTS[2],
+// facing back down the path across the meadow toward the pond.
+const BENCH = { x: -11.2, z: 13.71, rotationY: 1.92 };
 
 export function buildIsland(): WorldModule {
   const group = new THREE.Group();
@@ -208,6 +216,11 @@ export function buildIsland(): WorldModule {
     [6, -4, 4, 34], [-16, -2, 3.5, 26], [-9, 9, 2.5, 20], [2, 8, 7, 26],
     [-6, -14, 5, 30], [16, 9, 2.5, 14], [-13, -15, 3, 10],
   ];
+  // Blossoms keep off the pond water and out of the observatory's stone
+  // footprint, where they would poke up through the plinth ring.
+  const flowerBlocked = (x: number, z: number) =>
+    Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 5.6 ||
+    Math.hypot(x - OBSERVATORY_CENTER.x, z - OBSERVATORY_CENTER.z) < 4.2;
   const flowerSpots: Array<[number, number]> = [];
   for (const [cx, cz, radius, count] of clusters) {
     for (let i = 0; i < count; i++) {
@@ -216,8 +229,7 @@ export function buildIsland(): WorldModule {
       const x = cx + Math.cos(angle) * dist;
       const z = cz + Math.sin(angle) * dist;
       if (ellipticalRadius(x, z) > 0.95) continue;
-      // Keep blossoms off the pond water.
-      if (Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 5.6) continue;
+      if (flowerBlocked(x, z)) continue;
       flowerSpots.push([x, z]);
     }
   }
@@ -225,7 +237,7 @@ export function buildIsland(): WorldModule {
     const x = (rand() * 2 - 1) * ISLAND_RX * 0.9;
     const z = (rand() * 2 - 1) * ISLAND_RZ * 0.9;
     if (ellipticalRadius(x, z) > 0.92) continue;
-    if (Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 5.6) continue;
+    if (flowerBlocked(x, z)) continue;
     flowerSpots.push([x, z]);
   }
 
@@ -256,7 +268,7 @@ export function buildIsland(): WorldModule {
     PATH_POINTS.map(([x, z]) => new THREE.Vector3(x, 0, z)),
   );
   const stoneGeo = new THREE.CylinderGeometry(0.42, 0.5, 0.09, 7);
-  const stoneCount = 46;
+  const stoneCount = 49; // tracks the curve length: ~1.4 units of spacing
   const stones = new THREE.InstancedMesh(stoneGeo, mat(P.stone, { flat: true }), stoneCount);
   const up = new THREE.Vector3(0, 1, 0);
   for (let i = 0; i < stoneCount; i++) {
@@ -295,7 +307,40 @@ export function buildIsland(): WorldModule {
     group.add(post, cap, glow);
   }
 
-  // ===== Blob shadows (trees + lanterns) =====
+  // ===== Bench =====
+  // Plank seat on dark legs, laid flush to the slope (same up→normal trick the
+  // stepping stones use) so it never hovers on the meadow's rolls.
+  const bench = new THREE.Group();
+  bench.position.set(BENCH.x, terrainHeight(BENCH.x, BENCH.z) - 0.04, BENCH.z);
+  bench.quaternion.setFromUnitVectors(up, terrainNormal(BENCH.x, BENCH.z));
+  bench.rotateY(BENCH.rotationY);
+  const benchLegGeo = new THREE.BoxGeometry(0.14, 0.46, 0.52);
+  const benchPostGeo = new THREE.BoxGeometry(0.12, 0.66, 0.12);
+  const benchSeatGeo = new THREE.BoxGeometry(1.85, 0.1, 0.56);
+  const benchRailGeo = new THREE.BoxGeometry(1.85, 0.16, 0.08);
+  geometries.push(benchLegGeo, benchPostGeo, benchSeatGeo, benchRailGeo);
+  const benchWood = mat(P.woodDark, { flat: true });
+  const benchPlank = mat(P.plank, { flat: true });
+  for (const side of [-1, 1]) {
+    const leg = new THREE.Mesh(benchLegGeo, benchWood);
+    leg.position.set(side * 0.74, 0.23, 0.02);
+    const post = new THREE.Mesh(benchPostGeo, benchWood);
+    post.position.set(side * 0.74, 0.8, -0.26);
+    post.rotation.x = -0.14; // backrest leans back
+    bench.add(leg, post);
+  }
+  const seat = new THREE.Mesh(benchSeatGeo, benchPlank);
+  seat.position.set(0, 0.51, 0.02);
+  bench.add(seat);
+  for (const [ry, rz] of [[0.78, -0.29], [1.0, -0.32]] as Array<[number, number]>) {
+    const rail = new THREE.Mesh(benchRailGeo, benchPlank);
+    rail.position.set(0, ry, rz);
+    rail.rotation.x = -0.14;
+    bench.add(rail);
+  }
+  group.add(bench);
+
+  // ===== Blob shadows (trees + lanterns + bench) =====
   const shadowGeo = new THREE.CircleGeometry(1, 14);
   shadowGeo.rotateX(-Math.PI / 2);
   const shadowMat = new THREE.MeshBasicMaterial({
@@ -307,6 +352,7 @@ export function buildIsland(): WorldModule {
   const shadowSpots: Array<[number, number, number]> = [
     ...TREE_SPOTS.map(([x, z]) => [x, z, 1.5] as [number, number, number]),
     ...LANTERN_SPOTS.map(([x, z]) => [x, z, 0.35] as [number, number, number]),
+    [BENCH.x, BENCH.z, 1.0],
   ];
   const shadows = new THREE.InstancedMesh(shadowGeo, shadowMat, shadowSpots.length);
   shadowSpots.forEach(([x, z, r], i) => {
