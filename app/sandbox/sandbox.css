@@ -1,4 +1,28 @@
 .sandbox-world { min-height: 100svh; overflow: hidden; background: #7bcdf8; color: #fff7df; font-family: Georgia, "Times New Roman", serif; }
+
+/* ===== 3D experience gate =====
+   data-mode="flat": server-rendered 2D scene shows; canvas hidden.
+   data-mode="3d": canvas takes over (drag orbits, pinch/wheel zooms — the
+   page itself never scrolls); 2D scene fully removed from layout. */
+.sandbox-experience { position: relative; background: #7bcdf8; }
+.sandbox-experience[data-mode="flat"] .sandbox-3d-canvas { display: none; }
+.sandbox-experience[data-mode="3d"] { height: 100svh; overflow: hidden; }
+.sandbox-experience[data-mode="3d"] .sandbox-world { display: none; }
+.sandbox-3d-canvas { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; touch-action: none; }
+
+/* ===== 3D overlay: title, hint, return link ===== */
+.sandbox-3d-overlay { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-family: var(--font-exo), sans-serif; }
+.sandbox-3d-title { position: absolute; top: 16vh; left: 0; right: 0; display: grid; justify-items: center; gap: 4px; color: #274a33; text-shadow: 0 2px 18px rgb(255 255 255 / 0.55); }
+.sandbox-3d-title small { font-size: clamp(12px, 1.4vw, 17px); letter-spacing: 0.34em; text-transform: uppercase; }
+.sandbox-3d-title span { font-family: var(--font-audiowide), sans-serif; font-size: clamp(38px, 7vw, 84px); line-height: 1.05; }
+.sandbox-3d-hint { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border: 1px solid rgb(39 74 51 / 0.28); border-radius: 999px; background: rgb(255 247 223 / 0.82); color: #274a33; font-size: 13px; letter-spacing: 0.06em; backdrop-filter: blur(6px); animation: sandbox-hint-bob 2.2s ease-in-out infinite; }
+@keyframes sandbox-hint-bob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+.sandbox-3d-return { position: absolute; top: 18px; left: 18px; pointer-events: auto; padding: 8px 14px; border: 1px solid rgb(39 74 51 / 0.28); border-radius: 999px; background: rgb(255 247 223 / 0.82); color: #274a33; font-size: 13px; letter-spacing: 0.05em; text-decoration: none; backdrop-filter: blur(6px); transition: transform 160ms ease, box-shadow 160ms ease; }
+.sandbox-3d-return:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgb(27 57 72 / 0.25); }
+.sandbox-3d-return:focus-visible { outline: 3px solid #2f7d4f; outline-offset: 3px; }
+
+.sandbox-3d-fade { position: fixed; inset: 0; z-index: 30; background: #fff7df; opacity: 0; pointer-events: none; transition: opacity 400ms ease; }
+.sandbox-3d-fade[data-active="true"] { opacity: 1; pointer-events: auto; }
 .sandbox-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 .sandbox-scene { position: relative; width: 100vw; min-height: 100svh; overflow: hidden; isolation: isolate; }
 .sandbox-sky, .sandbox-terrain { position: absolute; inset: 0; }
@@ -53,3 +77,13 @@
 @media (prefers-reduced-motion: reduce) {
   .sandbox-location, .sandbox-decoration { transition: none !important; }
 }
+
+/* ===== 3D label chips (must stay last: overrides the 2D .sandbox-label
+   positioning above, including the mobile media block that shows painted
+   labels without hover). Chips reuse .sandbox-label visuals but are anchored
+   at the overlay origin and placed via inline transform from 3D projection;
+   visible only while hovered/focused and in scroll phase. ===== */
+.sandbox-3d-overlay .sandbox-label--chip { top: 0; left: 0; margin: -10px 0 0; opacity: 0; pointer-events: none; transform: translate(-50%, -100%); transition: opacity 180ms ease; }
+.sandbox-3d-overlay .sandbox-label--chip[data-inphase="true"][data-hovered="true"] { opacity: 1; }
+.sandbox-3d-overlay .sandbox-label--chip a { display: grid; gap: 2px; color: inherit; text-decoration: none; }
+.sandbox-3d-overlay .sandbox-label--chip[data-inphase="true"][data-hovered="true"] a { pointer-events: auto; }

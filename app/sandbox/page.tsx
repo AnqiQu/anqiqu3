@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { SandboxExperience } from "./components/sandbox-experience";
 import { SandboxScene } from "./components/sandbox-scene";
 import "./sandbox.css";
 
@@ -11,5 +12,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#79cfff", colorScheme: "light" };
 
 export default function SandboxPage() {
-  return <SandboxScene />;
+  return (
+    <SandboxExperience>
+      <SandboxScene />
+    </SandboxExperience>
+  );
 }

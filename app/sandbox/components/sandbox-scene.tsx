@@ -92,7 +92,7 @@ export function SandboxScene() {
           );
         })}
 
-        <p className="sandbox-review-note">Static world · first review</p>
+        <p className="sandbox-review-note">Classic painted view</p>
       </div>
     </main>
   );

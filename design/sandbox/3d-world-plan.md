@@ -1,174 +1,91 @@
-# Sandbox 3D World — Implementation Plan
+# Sandbox 3D World — As Built (updated 2026-07-30)
 
-Goal: replace the static 2D solarpunk collage at `/sandbox` with a scroll-explorable
-Three.js open world, mechanically similar to danielqli (scroll-driven camera descent,
-raycast-clickable landmarks, HTML overlay labels), while preserving the existing
-landscape features and the light-solarpunk look.
+`/sandbox` is now a drag-explorable Three.js open world: the camera orbits the
+floating island video-game style (drag rotates/tilts, pinch or wheel zooms
+within limits), with raycast hover labels and fade-to-navigate, while
+preserving the painted 2D solarpunk world as the server-rendered fallback.
+The original scroll-rail descent (danielqli-style) shipped first and was
+replaced by orbit controls at user request on 2026-07-30.
 
-## Reference mechanism (from danielqli)
+## Architecture
 
-- The page body is taller than the viewport (~300–400vh). `scrollT` = normalized
-  `window.scrollY`, smoothed each frame (`scrollT += (targetT - scrollT) * 0.07`).
-- Camera position + lookAt lerp along a fixed path as `scrollT` goes 0 → 1
-  (sky view → ground-level close-up). Native page scroll means touch/trackpad/keyboard
-  all work for free.
-- Raycast hitboxes are gated by scroll phase (only near things are clickable).
-- Hover shows an HTML label overlay projected from 3D world positions; click fades
-  the screen and navigates.
-- Perf guardrails: pixel ratio cap at 2, logarithmic depth buffer, Lambert materials,
-  InstancedMesh for repeated geometry, animation loop paused when tab hidden,
-  vertical-FOV compensation for portrait phones.
+- **Progressive enhancement.** [page.tsx](../../app/sandbox/page.tsx) wraps the
+  unchanged server-rendered 2D scene in a `"use client"` gate
+  ([sandbox-experience.tsx](../../app/sandbox/components/sandbox-experience.tsx)).
+  The gate stays in `data-mode="flat"` for `?flat`, `prefers-reduced-motion`, or
+  missing WebGL; otherwise it lazy-imports the world (three.js lives only in that
+  chunk, ~503KB raw / ≈125KB gz) and flips to `data-mode="3d"` after the first
+  rendered frame. All rendered-HTML test assertions stay server-side and green.
+- **Config-driven placement.** `SandboxLocation.world3d` in
+  [config.ts](../../app/sandbox/config.ts): `position`, `rotationY?`,
+  `labelOffsetY`, `hitRadius`. Modules sample `terrainHeight(x, z)`
+  ([terrain.ts](../../app/sandbox/components/world/terrain.ts)) rather than
+  trusting config Y.
+- **UI bridge.** Engine ↔ overlay communicate through
+  [ui-bridge.ts](../../app/sandbox/components/ui-bridge.ts) (chip positioning via
+  inline transforms, hover state, fade-then-navigate) so neither side holds React
+  or Three references of the other.
 
-## Scene inventory (preserved from the 2D world)
+## World modules (app/sandbox/components/world/)
 
-| Feature | Role | Interaction |
-|---|---|---|
-| Floating island in clouds | Terrain | — |
-| Observatory (glass dome + telescope) on hilltop | Papers & research → `/sandbox/research` | navigate |
-| Solar panel array + wind turbines | Ambient solarpunk set dressing | turbine spins |
-| Archive (round green door in hillside) | Old ideas & memories → `/sandbox/archive` | door opens on hover/click, then navigate |
-| Garden of Preferences (greenhouse shelves) | Things I like → `/sandbox/preferences` | navigate |
-| Pond (koi, lily pads, water lilies) | "No productivity detected" | ambient only |
-| Unfinished Bridge (planks stop mid-air, rope, loose plank) | Ideas in progress → `/sandbox/ideas` | navigate |
-| Return sign ("Return to the server room") | Back to `/` | navigate |
-| Golden dog + border collie | Creatures | run loops around the meadow |
-| Blimps (3 sizes, solar canopies) | Sky ambience | drift slowly |
-| Birds, butterflies | Ambience | flutter paths |
-| Lanterns, flower clusters, vines, stone paths | Set dressing | — |
+`engine.ts` (renderer, lights, fog, viewport self-healing, rAF + hidden-tab pause,
+dispose) · `palette.ts` (solarpunk hexes + cached Lambert factory) · `terrain.ts`
+(shared height field: hill, pond basin, terraces, rim droop) · `sky.ts` (gradient
+dome, sun + halo, instanced cloud puffs + cloud sea) · `island.ts` (vertex-colored
+meadow cap, cliff skirt, under-rocks, vines, islets, instanced trees/flowers/path
+stones, lanterns, blob shadows; cap + cliff tagged `userData.occluder`) ·
+`orbit-rig.ts` (OrbitControls: pan disabled so the island stays centered, damping,
+distance 15–110, polar 0.35–1.68, portrait FOV compensation, `flyTo` easing for
+keyboard nav, `?view=azimuth,polar,distance` pin for QA screenshots) ·
+`interactions.ts` (invisible raycast proxies + terrain occluders in one raycast,
+hover, click, grab/grabbing/pointer cursors) · `creatures.ts` (dogs with
+run/idle/sit state machine on a patrol loop, koi, birds, butterflies) ·
+`blimps.ts` (3 solar blimps drifting) · `landmarks/` (observatory, energy =
+turbines + solar array, archive with openable door, greenhouse, pond, unfinished
+bridge with dangling plank, return sign).
 
-## Key decisions
+## Camera (orbit)
 
-1. **Procedural low-poly geometry, not billboard sprites.** Rebuild each landmark as
-   simple Three.js primitives (the danielqli approach) using a palette sampled from
-   the existing paintings (meadow greens, sky `#7bcdf8`, cream `#fff7df`, warm wood,
-   glass teal). Billboards of the painted PNGs would look flat the moment the camera
-   moves. The painted 2D scene is kept intact as the fallback (below), so the art
-   is not thrown away.
-2. **Scroll-driven camera rail, not free roam.** Mechanism parity with danielqli.
-   (A freecam easter egg can come later.)
-3. **Three.js from npm** (`three@^0.1xx`), bundled by Vite — no CDN importmap.
-   Loaded via dynamic `import()` inside a `"use client"` component so the main
-   site's bundles are untouched.
-4. **The current 2D scene becomes the fallback** for `prefers-reduced-motion`,
-   WebGL-unavailable, and a `?flat=1` escape hatch. Server-rendered HTML keeps a
-   real `<nav>` of location links for SEO/a11y regardless of renderer.
+Home view: azimuth 0, polar 1.12, distance 85 — the island floating among
+clouds with the floating title. Drag orbits (three.js OrbitControls defaults:
+drag down = camera rises), wheel/pinch dollies. The page never scrolls in 3D
+mode (`height: 100svh; overflow: hidden`; `touch-action: none` on the canvas).
+Title + hint dismiss on first pointer/wheel interaction.
 
-## File structure
+## Interaction (v1 scope, user-confirmed)
 
-```
-app/sandbox/
-  page.tsx                    server shell: metadata + <SandboxWorld/>
-  config.ts                   extend SandboxLocation with world3d fields
-  content.ts                  unchanged
-  sandbox.css                 add canvas/overlay/hint styles; keep 2D styles
-  components/
-    sandbox-scene.tsx         existing 2D scene → fallback renderer
-    sandbox-world.tsx         "use client": WebGL/motion detection, canvas mount,
-                              overlay DOM (labels, scroll hint, fader), router bridge
-  world/
-    engine.ts                 renderer, scene, camera, resize, loop, visibility pause
-    palette.ts                shared colors + materials
-    sky.ts                    gradient dome, sun, instanced cloud puffs
-    island.ts                 grass top, cliff sides, rocky underside, stone paths
-    scroll-rig.ts             scrollT smoothing, camera path, FOV-for-aspect
-    interactions.ts           raycaster, phase gating, hover labels, click → fade → navigate
-    landmarks/
-      observatory.ts  archive.ts  garden.ts  pond.ts  bridge.ts  sign.ts
-      turbine.ts  solar-panels.ts
-    creatures.ts              dogs, koi, birds, butterflies
-    blimps.ts
-```
+Hover/focus reveals a label chip (2D `.sandbox-label` visual language, projected
+from world space; chip CSS must stay at the end of sandbox.css to out-cascade the
+2D mobile label rules). Terrain occluders keep landmarks hidden behind the hill
+from being hovered through it. Only the return sign navigates (fade →
+`router.push("/")`); the archive door swings open on click as a flourish. A
+visually-hidden nav lists all locations for keyboard users (entries fly the
+camera to face the landmark via `rig.flyTo`); a persistent "← server room" chip
+is always available. Config `href`s for the four content sub-routes remain inert
+data until those pages exist.
 
-`config.ts` gains per-location 3D data while keeping the 2D fields (fallback still
-reads them):
+## Measured footprint
 
-```ts
-world3d: {
-  position: [x, y, z];          // island-local
-  rotationY?: number;
-  clickablePhase: [min, max];   // scrollT range where raycast is active
-  labelOffsetY: number;         // world-space label anchor above the landmark
-}
-```
+243 draw calls · 48.5k triangles · 13 shader programs · 0 textures ·
+141 geometries. Pixel ratio capped at 2, log depth buffer, no shadow maps
+(blob shadows), ≤3 lights, `NoToneMapping` (palette is authored in sRGB).
 
-## Camera path (scrollT 0 → 1)
+## Verification checklist (all passing 2026-07-28)
 
-Island laid out like the painting: observatory hill at back-center, archive burrow
-left slope, greenhouse mid-center, pond front-center, bridge off the right edge,
-return sign front-left.
+- `npm run lint` clean; `npm run test` (build + rendered-HTML suite) 5/5.
+- three.js absent from all non-sandbox chunks.
+- `?flat=1` serves the painted scene ("Classic painted view" badge).
+- Desktop keyframes t=0/0.25/0.5/0.75/1 and mobile 375×812 screenshot-reviewed
+  against `review/sandbox-1440x900.png` composition beats.
+- Hover chip verified (Observatory), return-sign navigation verified end-to-end.
+- Route-change dispose: no console errors or GL context warnings after round trips.
 
-- **0.0 – 0.2 · Sky view.** High and far; whole island floats among clouds; blimps
-  drift past. "Anqi Intelligence Sandbox" floating title (CSS overlay). "scroll ↓" hint.
-- **0.2 – 0.5 · Descent.** Swoop toward the observatory hill; turbine and solar
-  panels pass by. Observatory becomes clickable.
-- **0.5 – 0.8 · Meadow.** Glide down the slope past archive and greenhouse; dogs
-  visible running. Archive + garden clickable.
-- **0.8 – 1.0 · Waterside.** Settle at ground level framing pond, bridge-to-nowhere,
-  and return sign. Pond ripples/koi visible; bridge + sign clickable.
+## Notes / future work
 
-## Phases
-
-Each phase ends with a dev-server screenshot check (desktop 1440×900 + mobile 390×844).
-
-**Phase 0 — Scaffolding.** `npm i three @types/three`; `sandbox-world.tsx` client
-component with capability detection and dynamic import; `engine.ts` (renderer with
-pixel-ratio cap + log depth buffer, resize, rAF loop with hidden-tab pause); splash
-until first frame; fallback wiring; SSR nav links preserved. *Check: empty sky-blue
-scene renders, fallback works with `?flat=1`.*
-
-**Phase 1 — Sky + island.** Gradient sky dome, sun + hemisphere/directional lights
-(fixed bright late-morning, light-solarpunk), instanced cloud puffs (above and a
-cloud sea below the island), island terrain: noise-displaced grass cap, low-poly
-cliff skirt, stalactite rock underside, winding stone path, instanced trees/flowers/
-grass tufts. Distance fog tinted sky-blue. *Check: island floats convincingly in clouds.*
-
-**Phase 2 — Scroll rig.** Body height ~350vh, scrollT smoothing, camera path
-keyframes (positions + lookAts, eased), portrait FOV compensation, scroll hint that
-fades after first scroll. *Check: full descent feels smooth on desktop + phone.*
-
-**Phase 3 — Landmarks.** One module each: observatory (stone drum, glass dome with
-mullions, telescope tube, terrace stairs), solar panels (tilted instanced quads),
-turbine (spinning blades), archive (round door + frame recessed into slope, vine
-trim; door swings open), greenhouse (glass box, shelf rows, potted plants), pond
-(animated water plane, lily pads, stones), bridge (planks thinning out to missing,
-rope rails, one dangling plank), return sign (post + two boards, readable text via
-CanvasTexture). *Check: composition matches the painting's layout beats.*
-
-**Phase 4 — Life.** Dogs as simple articulated low-poly bodies running a loop path
-with idle/sit pauses; koi as orange/calico ellipsoids swimming under lily pads;
-2–3 birds on spline paths; butterflies near flowers; blimps drifting on long
-ellipses; turbine + water + lantern flicker tied to one clock. All animation
-respects `prefers-reduced-motion` (fallback renders instead). *Check: world feels
-alive but calm.*
-
-**Phase 5 — Interaction.** Raycast hover → pointer cursor + HTML label
-(label + description, styled like current `.sandbox-label`) projected from 3D
-position; phase-gated clickability; click → archive door opens / others fade via
-`#fader` → `router.push(href)`; return sign → `/`. Keyboard: overlay nav links
-focusable in DOM order, Enter triggers same flow. *Check: every landmark reachable
-by mouse, touch, and keyboard.*
-
-**Phase 6 — Polish + QA.** Perf pass (draw-call budget ~100: merge static geometry,
-instance everything repeated; target 60fps desktop / 30fps mid-phone), mobile
-portrait framing pass, `tests/rendered-html.test.mjs` updated (sandbox HTML asserts:
-canvas mount node, fallback nav links, metadata), lint, optional Playwright
-screenshot script mirroring `scripts/` conventions. *Check: tests green, both
-viewports screenshot-reviewed.*
-
-## Out of scope (deliberate)
-
-- Enterable interiors for the buildings (danielqli-style) — the landmarks navigate
-  to the existing content subpages instead. Revisit once subpage content exists.
-- Time-of-day system — fixed bright daylight fits "light solarpunk"; the golden-hour
-  variant can be a later toggle.
-- Freecam easter egg, audio.
-
-## Risks
-
-- **Style drift:** low-poly geometry may read "generic" instead of solarpunk-painted.
-  Mitigate by strict palette reuse, dense flowers/vines on structures, and comparing
-  each phase's screenshot against `design/sandbox/review/sandbox-1440x900.png`.
-- **Mobile perf:** cloud-sea + instancing counts need a low-tier device budget;
-  test early on the 390×844 viewport with CPU throttle.
-- **Bundle size:** three.js ≈ 160KB gz — acceptable for this route, but keep it
-  route-isolated via dynamic import (verify with build output).
+- Interiors, time-of-day, and freecam were deliberately out of scope (v1).
+- When `/sandbox/research|archive|preferences|ideas` pages exist, wire clicks by
+  extending `interactions.ts` click dispatch (the fade + navigate path already
+  exists for the return sign).
+- Embedded-browser quirk worth remembering: hidden documents can report a 0×0
+  viewport; the engine self-heals per frame and never lets the renderer write
+  inline canvas styles.
