@@ -126,6 +126,7 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   scene.traverse((obj) => {
     if (obj.userData.occluder) occluders.push(obj);
   });
+  rig.setColliders(occluders);
   const interactions = createInteractions(scene, canvas, locations, landmarkGroups, occluders, ui);
 
   const applySize = () => {

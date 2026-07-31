@@ -1,9 +1,11 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { ellipticalRadius, terrainHeight } from "./terrain";
 
 // Video-game style exploration: drag orbits the camera around the floating
-// island, wheel/pinch zooms between vista and close-up. Limits keep the user
-// from flying under the meadow, straight overhead, or out into the fog.
+// island, wheel/pinch zooms between vista and close-up. Limits plus two
+// collision guards (terrain clearance + a pull-in-front-of-solids raycast)
+// keep the camera from ever passing inside the ground or a building.
 
 const TARGET = new THREE.Vector3(0, 2, 0);
 const HOME = { distance: 85, polar: 1.12, azimuth: 0 };
@@ -25,6 +27,8 @@ export type OrbitRig = {
   // Ease the camera to face a world position from a given distance (keyboard
   // nav). Any pointer input cancels the flight.
   flyTo: (worldPos: [number, number, number], distance?: number) => void;
+  // Solid meshes the camera may not pass through (set once modules exist).
+  setColliders: (objects: THREE.Object3D[]) => void;
   dispose: () => void;
 };
 
@@ -39,7 +43,10 @@ export function createOrbitRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanv
   controls.minDistance = 15;
   controls.maxDistance = 110;
   controls.minPolarAngle = 0.35; // not straight overhead
-  controls.maxPolarAngle = 1.68; // may dip just below the horizon, not under the island
+  // ~89°: the camera never drops below the orbit target's height, so it can
+  // never come up underneath the island (where backface culling makes the
+  // ground vanish).
+  controls.maxPolarAngle = 1.55;
 
   // ?view=azimuth,polar,distance pins the camera for reproducible QA shots.
   const spherical = new THREE.Spherical(HOME.distance, HOME.polar, HOME.azimuth);
@@ -65,6 +72,37 @@ export function createOrbitRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanv
 
   const scratch = new THREE.Spherical();
   const offset = new THREE.Vector3();
+  let colliders: THREE.Object3D[] = [];
+  const collideRay = new THREE.Raycaster();
+  const rayDir = new THREE.Vector3();
+
+  // Collision guards, applied after every camera move. OrbitControls re-derives
+  // its spherical state from the camera position next update, so nudging the
+  // camera here is safe.
+  const resolveCollisions = () => {
+    // 1. Anything solid between the island center and the camera pulls the
+    //    camera in front of it (classic third-person camera collision).
+    if (colliders.length > 0) {
+      rayDir.copy(camera.position).sub(controls.target);
+      const camDist = rayDir.length();
+      rayDir.normalize();
+      collideRay.set(controls.target, rayDir);
+      collideRay.far = camDist;
+      const hit = collideRay.intersectObjects(colliders, false)[0];
+      if (hit && hit.distance < camDist - 0.6) {
+        camera.position
+          .copy(controls.target)
+          .addScaledVector(rayDir, Math.max(6, hit.distance - 0.8));
+      }
+    }
+    // 2. Hard floor above the meadow while over the island footprint, so
+    //    grazing orbits can't dip into terrain bumps the ray misses.
+    if (ellipticalRadius(camera.position.x, camera.position.z) < 1.15) {
+      const minY = terrainHeight(camera.position.x, camera.position.z) + 1.2;
+      if (camera.position.y < minY) camera.position.y = minY;
+    }
+    camera.lookAt(controls.target);
+  };
 
   return {
     update(dt) {
@@ -83,6 +121,7 @@ export function createOrbitRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanv
         }
       }
       controls.update(dt);
+      resolveCollisions();
     },
     flyTo(worldPos, distance = 32) {
       flight = new THREE.Spherical(
@@ -90,6 +129,9 @@ export function createOrbitRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanv
         1.15,
         Math.atan2(worldPos[0] - TARGET.x, worldPos[2] - TARGET.z),
       );
+    },
+    setColliders(objects) {
+      colliders = objects;
     },
     dispose() {
       canvas.removeEventListener("pointerdown", cancelFlight);

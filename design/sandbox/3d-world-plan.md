@@ -35,11 +35,17 @@ dome, sun + halo, instanced cloud puffs + cloud sea) · `island.ts` (vertex-colo
 meadow cap, cliff skirt, under-rocks, vines, islets, instanced trees/flowers/path
 stones, lanterns, blob shadows; cap + cliff tagged `userData.occluder`) ·
 `orbit-rig.ts` (OrbitControls: pan disabled so the island stays centered, damping,
-distance 15–110, polar 0.35–1.68, portrait FOV compensation, `flyTo` easing for
-keyboard nav, `?view=azimuth,polar,distance` pin for QA screenshots) ·
+distance 15–110, polar 0.35–1.55, portrait FOV compensation, `flyTo` easing for
+keyboard nav, `?view=azimuth,polar,distance` pin for QA screenshots; camera
+collision = terrain-clearance clamp over the island footprint + a
+pull-in-front-of-solids raycast against `userData.occluder` meshes: terrain cap,
+cliff, observatory drum + dome, archive mound) ·
 `interactions.ts` (invisible raycast proxies + terrain occluders in one raycast,
 hover, click, grab/grabbing/pointer cursors) · `creatures.ts` (dogs with
-run/idle/sit state machine on a patrol loop, koi, birds, butterflies) ·
+run/idle/sit state machine, free-roaming wander targets anywhere on the island
+with circle-obstacle steering + hard no-penetration projection around the pond,
+greenhouse, observatory, archive, turbines, sign, and bridge foot; koi, birds,
+butterflies) ·
 `blimps.ts` (3 solar blimps drifting) · `landmarks/` (observatory, energy =
 turbines + solar array, archive with openable door, greenhouse, pond, unfinished
 bridge with dangling plank, return sign).

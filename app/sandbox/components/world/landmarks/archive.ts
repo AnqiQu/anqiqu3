@@ -21,9 +21,10 @@ export function buildArchive(x: number, z: number, rotationY: number): WorldModu
     return mesh;
   };
 
-  // Burrow mound sunk into the slope.
+  // Burrow mound sunk into the slope. A camera/hover solid like the terrain.
   const mound = add(new THREE.SphereGeometry(3.2, 18, 12), mat(P.moss, { flat: true }), 0, 0.1, -1.2);
   mound.scale.set(1.15, 0.62, 1);
+  mound.userData.occluder = true;
 
   // Flat cut face the door is set into — otherwise the rim reads as a
   // free-standing arc on the mound's curve.

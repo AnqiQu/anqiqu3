@@ -20,14 +20,17 @@ export function buildObservatory(x: number, z: number): WorldModule {
     return mesh;
   };
 
-  // Stone drum + glass dome.
-  add(new THREE.CylinderGeometry(3.2, 3.6, 2.6, 14), mat(P.stone, { flat: true }), 0, 1.3, 0);
+  // Stone drum + glass dome. Both are camera/hover solids: the orbit camera
+  // pulls in front of them instead of clipping inside.
+  const drum = add(new THREE.CylinderGeometry(3.2, 3.6, 2.6, 14), mat(P.stone, { flat: true }), 0, 1.3, 0);
+  drum.userData.occluder = true;
   const dome = add(
     new THREE.SphereGeometry(3.05, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2),
     mat(P.glassTeal, { transparent: true, opacity: 0.42, depthWrite: false }),
     0, 2.6, 0,
   );
   dome.renderOrder = 2;
+  dome.userData.occluder = true;
 
   // Brass meridian ribs — half-tori draped over the dome.
   const ribGeo = new THREE.TorusGeometry(3.08, 0.06, 6, 24, Math.PI);

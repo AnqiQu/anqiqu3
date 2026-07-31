@@ -1,10 +1,25 @@
 import * as THREE from "three";
 import { P, mat } from "./palette";
-import { POND_CENTER, terrainHeight } from "./terrain";
+import { POND_CENTER, ellipticalRadius, terrainHeight } from "./terrain";
 import type { WorldModule } from "./types";
+import { rng } from "./util";
 
-// The island's residents: two dogs on a play loop around the meadow, koi in
+// The island's residents: two dogs roaming freely around the meadow, koi in
 // the pond, birds on high orbits, butterflies among the flowers.
+
+// Circles the dogs may not enter: water, buildings, and other solids. Steering
+// repels them near the edge, and a hard projection guarantees no penetration.
+const DOG_OBSTACLES: Array<{ x: number; z: number; r: number }> = [
+  { x: 2, z: 8, r: 4.6 }, // pond + rocky rim
+  { x: 6, z: -4, r: 3.6 }, // greenhouse deck
+  { x: -6, z: -14, r: 4.6 }, // observatory
+  { x: -16, z: -2, r: 3.6 }, // archive mound
+  { x: -13, z: -15, r: 1.2 }, // large turbine
+  { x: -17.5, z: -11, r: 1 }, // small turbine
+  { x: -9, z: 9, r: 1.2 }, // return sign
+  { x: 15, z: 10, r: 1.8 }, // bridge foot
+];
+const RIM_LIMIT = 0.88; // normalized elliptical radius the dogs stay within
 
 type DogColors = { coat: number; accent: number };
 
@@ -14,11 +29,16 @@ type Dog = {
   tail: THREE.Group;
   body: THREE.Group; // pitches when sitting
   shadow: THREE.Mesh;
-  u: number; // position along the play loop
+  pos: THREE.Vector2; // x/z on the island
+  heading: number; // radians, world y-axis
+  target: THREE.Vector2;
+  rand: () => number;
   offset: number; // desynchronizes the state machine
 };
 
 const CYCLE = 16.5; // run 10s → idle 2.5s → sit 4s
+const DOG_SPEED = 2.4; // m/s while running
+const TURN_RATE = 3; // rad/s
 
 function buildDog({ coat, accent }: DogColors, geos: THREE.BufferGeometry[]): Dog {
   const root = new THREE.Group();
@@ -81,7 +101,35 @@ function buildDog({ coat, accent }: DogColors, geos: THREE.BufferGeometry[]): Do
   shadow.renderOrder = 1;
   root.add(shadow);
 
-  return { root, legs, tail, body, shadow, u: 0, offset: 0 };
+  return {
+    root,
+    legs,
+    tail,
+    body,
+    shadow,
+    pos: new THREE.Vector2(),
+    heading: 0,
+    target: new THREE.Vector2(),
+    rand: () => 0,
+    offset: 0,
+  };
+}
+
+function insideObstacle(x: number, z: number, margin: number): boolean {
+  return DOG_OBSTACLES.some((o) => Math.hypot(x - o.x, z - o.z) < o.r + margin);
+}
+
+function pickTarget(dog: Dog): void {
+  for (let i = 0; i < 24; i++) {
+    const x = (dog.rand() * 2 - 1) * 24;
+    const z = (dog.rand() * 2 - 1) * 18;
+    if (ellipticalRadius(x, z) > RIM_LIMIT - 0.06) continue;
+    if (insideObstacle(x, z, 0.6)) continue;
+    if (Math.hypot(x - dog.pos.x, z - dog.pos.y) < 5) continue; // actually travel
+    dog.target.set(x, z);
+    return;
+  }
+  dog.target.set(8, 2); // safe meadow fallback
 }
 
 export function buildCreatures(): WorldModule {
@@ -89,35 +137,83 @@ export function buildCreatures(): WorldModule {
   const geometries: THREE.BufferGeometry[] = [];
 
   // ===== Dogs =====
-  const loop = new THREE.CatmullRomCurve3(
-    [
-      [12, 2], [10, 7], [4, 5], [-1, 6], [-4, 2], [0, -1], [6, -2], [11, -1],
-    ].map(([x, z]) => new THREE.Vector3(x, 0, z)),
-    true,
-  );
   const golden = buildDog({ coat: P.dogGolden, accent: P.dogCream }, geometries);
   const collie = buildDog({ coat: P.dogBlack, accent: P.dogWhite }, geometries);
-  golden.u = 0;
+  golden.pos.set(10, 3);
+  golden.rand = rng(1201);
   golden.offset = 0;
-  collie.u = 0.45;
+  collie.pos.set(-2, 5);
+  collie.rand = rng(3407);
   collie.offset = 7.5;
   const dogs = [golden, collie];
-  for (const dog of dogs) group.add(dog.root);
-
-  const tangent = new THREE.Vector3();
-  const pos = new THREE.Vector3();
+  for (const dog of dogs) {
+    dog.heading = dog.rand() * Math.PI * 2;
+    pickTarget(dog);
+    group.add(dog.root);
+  }
 
   const updateDog = (dog: Dog, t: number, dt: number) => {
     const phase = (t + dog.offset) % CYCLE;
     const running = phase < 10;
     const sitting = phase >= 12.5;
 
-    if (running) dog.u = (dog.u + dt / 14) % 1;
-    loop.getPointAt(dog.u, pos);
-    const groundY = terrainHeight(pos.x, pos.z);
-    dog.root.position.set(pos.x, groundY, pos.z);
-    loop.getTangentAt(dog.u, tangent);
-    dog.root.rotation.y = Math.atan2(tangent.x, tangent.z);
+    if (running) {
+      // Steer toward the wander target, repelled by obstacle rims and the
+      // island edge.
+      let steerX = dog.target.x - dog.pos.x;
+      let steerZ = dog.target.y - dog.pos.y;
+      const seekLen = Math.hypot(steerX, steerZ) || 1;
+      steerX /= seekLen;
+      steerZ /= seekLen;
+      for (const o of DOG_OBSTACLES) {
+        const dx = dog.pos.x - o.x;
+        const dz = dog.pos.y - o.z;
+        const d = Math.hypot(dx, dz) || 1;
+        if (d < o.r + 1.8) {
+          const w = ((o.r + 1.8 - d) / 1.8) * 2.5;
+          steerX += (dx / d) * w;
+          steerZ += (dz / d) * w;
+        }
+      }
+      const re = ellipticalRadius(dog.pos.x, dog.pos.y);
+      if (re > RIM_LIMIT - 0.12) {
+        const inward = ((re - (RIM_LIMIT - 0.12)) / 0.12) * 2.5;
+        const len = Math.hypot(dog.pos.x, dog.pos.y) || 1;
+        steerX -= (dog.pos.x / len) * inward;
+        steerZ -= (dog.pos.y / len) * inward;
+      }
+
+      // Turn gradually, then advance.
+      const desired = Math.atan2(steerX, steerZ);
+      let delta = desired - dog.heading;
+      delta = Math.atan2(Math.sin(delta), Math.cos(delta));
+      dog.heading += THREE.MathUtils.clamp(delta, -TURN_RATE * dt, TURN_RATE * dt);
+      dog.pos.x += Math.sin(dog.heading) * DOG_SPEED * dt;
+      dog.pos.y += Math.cos(dog.heading) * DOG_SPEED * dt;
+
+      // Hard guarantees: project out of any obstacle and back inside the rim.
+      for (const o of DOG_OBSTACLES) {
+        const dx = dog.pos.x - o.x;
+        const dz = dog.pos.y - o.z;
+        const d = Math.hypot(dx, dz) || 1;
+        if (d < o.r) {
+          dog.pos.x = o.x + (dx / d) * o.r;
+          dog.pos.y = o.z + (dz / d) * o.r;
+        }
+      }
+      const reNow = ellipticalRadius(dog.pos.x, dog.pos.y);
+      if (reNow > RIM_LIMIT) {
+        dog.pos.x *= RIM_LIMIT / reNow;
+        dog.pos.y *= RIM_LIMIT / reNow;
+      }
+
+      if (Math.hypot(dog.target.x - dog.pos.x, dog.target.y - dog.pos.y) < 1.4) {
+        pickTarget(dog);
+      }
+    }
+
+    dog.root.position.set(dog.pos.x, terrainHeight(dog.pos.x, dog.pos.y), dog.pos.y);
+    dog.root.rotation.y = dog.heading;
 
     // Legs: diagonal pairs swing while running; hind legs fold when sitting.
     const swing = running ? Math.sin(t * 10) * 0.6 : 0;
