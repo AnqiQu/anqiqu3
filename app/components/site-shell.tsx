@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { navigation } from "../content";
 
 export function LogoMark() {
   return <span className="brand-wordmark">Anqi Qu</span>;
@@ -13,38 +12,10 @@ export function Header() {
           <LogoMark />
         </Link>
 
-        <nav className="desktop-nav" aria-label="Primary navigation">
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={item.href === "/sandbox" ? "sandbox-nav-link" : undefined}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
         <Link href="/contact" className="button button-compact header-cta">
           Book a demo
           <span aria-hidden="true">↗</span>
         </Link>
-
-        <details className="mobile-nav">
-          <summary aria-label="Open navigation">Menu</summary>
-          <nav aria-label="Mobile navigation">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={item.href === "/sandbox" ? "sandbox-nav-link" : undefined}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <Link href="/contact">Book a demo</Link>
-          </nav>
-        </details>
       </div>
     </header>
   );

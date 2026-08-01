@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useCallback, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "anqi-cookie-credibility";
@@ -24,6 +25,7 @@ function getServerSnapshot() {
 }
 
 export function CookieBanner() {
+  const pathname = usePathname();
   const accepted = useSyncExternalStore(
     subscribe,
     getSnapshot,
@@ -35,6 +37,7 @@ export function CookieBanner() {
     listeners.forEach((listener) => listener());
   }, []);
 
+  if (pathname?.startsWith("/sandbox")) return null;
   if (accepted) return null;
 
   return (

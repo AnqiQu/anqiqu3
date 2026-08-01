@@ -45,8 +45,8 @@ export default function Home() {
                 Our most advanced multimodal human model yet.
               </p>
               <div className="hero-actions">
-                <Link href="/contact" className="button">
-                  Book a demo <span aria-hidden="true">↗</span>
+                <Link href="/sandbox" className="button">
+                  Sandbox <span aria-hidden="true" className="button-square" />
                 </Link>
                 <Link href="#specs" className="button button-secondary">
                   View specifications <span aria-hidden="true">↓</span>
@@ -129,7 +129,13 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+
+              <Benchmarks />
             </div>
+            <p className="footnote">
+              AnqiBench is an internal benchmark suite. Results are self-reported,
+              unpublished, and not reproducible by design. Higher is better.
+            </p>
           </div>
         </section>
 
@@ -143,11 +149,10 @@ export default function Home() {
                   <div className="timeline-content">
                     <div className="timeline-primary">
                       <span className="release-version">{entry.version}</span>
-                      <span className="timeline-divider" aria-hidden="true" />
-                      <p>
+                      <div className="release-body">
                         <time className="release-year">{entry.year}</time>
-                        {entry.headline}
-                      </p>
+                        <p className="release-headline">{entry.headline}</p>
+                      </div>
                     </div>
                     <ul className="release-notes">
                       {entry.notes.map((note) => (
@@ -218,18 +223,6 @@ export default function Home() {
             <p className="footnote">
               Benchmark results are self-reported and have not been independently
               reproduced. OpenAI did not authorise this comparison.
-            </p>
-          </div>
-        </section>
-
-        <section className="section reveal" id="benchmarks">
-          <div className="container">
-            <SectionHeader title="Benchmarks" />
-            <Benchmarks />
-            <p className="footnote">
-              AnqiBench is an internal benchmark suite. Results are self-reported,
-              unpublished, and not reproducible by design. Higher is better.
-              Certain categories omitted for clarity.
             </p>
           </div>
         </section>

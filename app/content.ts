@@ -1,13 +1,3 @@
-export const navigation = [
-  { label: "Overview", href: "/#overview" },
-  { label: "Specs", href: "/#specs" },
-  { label: "Changelog", href: "/#changelog" },
-  { label: "Comparison", href: "/#comparison" },
-  { label: "Benchmarks", href: "/#benchmarks" },
-  { label: "Compliance", href: "/#compliance" },
-  { label: "Sandbox", href: "/sandbox" },
-] as const;
-
 export const companies = [
   { name: "Anthropic", logo: "/brand/company-logos/anthropic.svg" },
   { name: "OpenAI", logo: "/brand/company-logos/openai.svg" },
@@ -87,7 +77,7 @@ export const changelog = [
   },
   {
     version: "v1.0",
-    year: "2003",
+    year: "2002",
     headline: "Initial release. Shipped from South Africa.",
     notes: [
       {
@@ -121,13 +111,9 @@ export const benchmarks = {
     { key: "empathy", label: "EmoBench", full: "Emotional support" },
   ],
   models: [
-    { name: "Anqi", tone: "anqi", scores: [99, 62, 71, 93, 100, 97] },
+    { name: "Anqi", tone: "anqi", scores: [100, 100, 100, 100, 100, 100] },
     { name: "ChatGPT 5.6", tone: "chatgpt", scores: [34, 95, 96, 90, 8, 64] },
     { name: "Claude Fable", tone: "claude", scores: [31, 97, 93, 92, 12, 69] },
-  ],
-  excluded: [
-    { label: "Response latency (LatencyBench)", note: "not shown" },
-    { label: "Waking up before 9am (AlarmBench-Hard)", note: "not shown" },
   ],
 } as const;
 
