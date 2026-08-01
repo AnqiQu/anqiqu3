@@ -6,9 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import type { SandboxLocation } from "../config";
 import type { UiBridge } from "./ui-bridge";
 
-// DOM overlay for the 3D world: floating title, one-time scroll hint, a
-// persistent return link, hover label chips projected from 3D space, a
-// visually-hidden jump nav for keyboard users, and the navigation fade.
+// DOM overlay for the 3D world: one-time scroll hint, a persistent return
+// button, hover label chips projected from 3D space, a visually-hidden jump nav
+// for keyboard users, and the navigation fade. The title itself is not here —
+// it hangs in the sky as 3D block letters (see world/sky-title).
 export function SandboxOverlay({
   bridge,
   locations,
@@ -17,7 +18,6 @@ export function SandboxOverlay({
   locations: SandboxLocation[];
 }) {
   const router = useRouter();
-  const titleRef = useRef<HTMLDivElement>(null);
   const fadeRef = useRef<HTMLDivElement>(null);
   const chipRefs = useRef(new Map<string, HTMLDivElement>());
   const [hintDismissed, setHintDismissed] = useState(false);
@@ -29,11 +29,9 @@ export function SandboxOverlay({
   const chipLocations = worldLocations.filter((l) => l.interaction !== "ambient");
 
   useEffect(() => {
-    // First drag or zoom dismisses the hint and fades the floating title.
-    const onFirstInteraction = () => {
-      setHintDismissed(true);
-      if (titleRef.current) titleRef.current.style.opacity = "0";
-    };
+    // First drag or zoom dismisses the hint. (The sky title clears itself off
+    // the same gesture, from inside the world — see world/engine.)
+    const onFirstInteraction = () => setHintDismissed(true);
     window.addEventListener("pointerdown", onFirstInteraction, { passive: true, once: true });
     window.addEventListener("wheel", onFirstInteraction, { passive: true, once: true });
 
@@ -66,22 +64,23 @@ export function SandboxOverlay({
 
   return (
     <div className="sandbox-3d-overlay">
-      <div className="sandbox-3d-title" ref={titleRef} aria-hidden="true">
-        <small>Anqi Intelligence</small>
-        <span>Sandbox</span>
-      </div>
       {!hintDismissed && <div className="sandbox-3d-hint">drag to explore · pinch or scroll to zoom</div>}
 
       <Link
         href="/"
         className="sandbox-3d-return"
-        aria-label="Return to the server room and go back to the main website"
+        aria-label="Back to the server room"
         onClick={(event) => {
           event.preventDefault();
           bridge.navigate("/");
         }}
       >
-        ← server room
+        <span className="sandbox-3d-return-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>
+        </span>
+        <span className="sandbox-3d-return-label">Back to server room</span>
       </Link>
 
       {chipLocations.map((location) => (

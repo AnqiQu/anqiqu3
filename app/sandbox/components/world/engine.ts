@@ -14,6 +14,7 @@ import { buildObservatory } from "./landmarks/observatory";
 import { buildPond } from "./landmarks/pond";
 import { createOrbitRig, fovForAspect } from "./orbit-rig";
 import { SUN_POSITION, buildSky } from "./sky";
+import { buildSkyTitle } from "./sky-title";
 import type { WorldModule } from "./types";
 
 export type WorldOptions = {
@@ -89,8 +90,11 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   const pond = buildPond();
   const bridge = buildBridge(bri.x, bri.z, bri.rotationY);
 
+  const skyTitle = buildSkyTitle();
+
   const modules: WorldModule[] = [
     buildSky(),
+    skyTitle,
     buildIsland(),
     observatory,
     buildEnergy(),
@@ -102,6 +106,11 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     buildBlimps(),
   ];
   for (const m of modules) scene.add(m.group);
+
+  // The sky title is the opening card: the first drag or zoom clears it.
+  const dismissTitle = () => skyTitle.dismiss();
+  canvas.addEventListener("pointerdown", dismissTitle, { once: true, passive: true });
+  canvas.addEventListener("wheel", dismissTitle, { once: true, passive: true });
 
   // Hover highlight targets + archive door flourish. The pond is deliberately
   // absent: it's not selectable — clicking its water makes ripples instead.
@@ -184,6 +193,8 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
       cancelAnimationFrame(rafId);
       rig.dispose();
       interactions.dispose();
+      canvas.removeEventListener("pointerdown", dismissTitle);
+      canvas.removeEventListener("wheel", dismissTitle);
       window.removeEventListener("resize", applySize);
       document.removeEventListener("visibilitychange", onVisibility);
       for (const m of modules) m.dispose();

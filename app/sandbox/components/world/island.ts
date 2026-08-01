@@ -12,14 +12,17 @@ import {
   terrainNormal,
 } from "./terrain";
 
-// The stepping-stone path winds bench → pond → greenhouse → archive → hill so
-// every landmark reads as connected. Lanterns and flower clusters hang off it.
-// The first two points are the spur up to the north-west tree grove; it ends
-// facing the bench (see BENCH below).
+// The stepping-stone path winds bench → pond → greenhouse → archive →
+// observatory steps so every landmark reads as connected. Lanterns and flower
+// clusters hang off it. The first two points are the spur up to the north-west
+// tree grove, ending facing the bench (see BENCH below); the last four climb
+// the hill's south-east flank to the foot of the observatory stair, keeping
+// clear of the solar array on the north-west side.
 const PATH_POINTS: Array<[number, number]> = [
   [-10.1, 13.3], [-10.3, 11.3],
   [-9, 9.5], [-4.5, 13.5], [2, 14.4], [8, 10.5], [8.5, 4], [6, -1.5],
-  [-2, -3], [-9, -3.5], [-14, -2.5], [-13, -6.5], [-10, -10.5], [-7, -13.5],
+  [-2, -3], [-9, -3.5], [-14, -2.5], [-13.6, -5.4], [-9.6, -6], [-7.2, -6.6],
+  [-6.1, -8.1],
 ];
 
 // Note: keep the corridor around (5..7, 16..20) clear — the final camera
@@ -155,11 +158,10 @@ export function buildIsland(): WorldModule {
   geometries.push(vineGeo);
   instanced.push(vines);
 
-  // Distant floating islets give the sky depth.
+  // Distant floating islets give the sky depth. Bare rock, no grass cap: the
+  // caps read as flat green discs pasted on at this distance.
   const isletRockGeo = new THREE.DodecahedronGeometry(2.2, 0);
-  const isletCapGeo = new THREE.CircleGeometry(1.9, 14);
-  isletCapGeo.rotateX(-Math.PI / 2);
-  geometries.push(isletRockGeo, isletCapGeo);
+  geometries.push(isletRockGeo);
   for (const [x, y, z] of [
     [-40, -5, -14], [38, -9, 8], [-30, -13, 24],
   ] as Array<[number, number, number]>) {
@@ -167,9 +169,7 @@ export function buildIsland(): WorldModule {
     rock.position.set(x, y, z);
     rock.scale.set(1, 0.75, 1);
     rock.rotation.y = rand() * Math.PI;
-    const cap = new THREE.Mesh(isletCapGeo, mat(P.meadow, { flat: true }));
-    cap.position.set(x, y + 1.35, z);
-    group.add(rock, cap);
+    group.add(rock);
   }
 
   // ===== Trees =====
@@ -268,7 +268,7 @@ export function buildIsland(): WorldModule {
     PATH_POINTS.map(([x, z]) => new THREE.Vector3(x, 0, z)),
   );
   const stoneGeo = new THREE.CylinderGeometry(0.42, 0.5, 0.09, 7);
-  const stoneCount = 49; // tracks the curve length: ~1.4 units of spacing
+  const stoneCount = 48; // tracks the curve length: ~1.4 units of spacing
   const stones = new THREE.InstancedMesh(stoneGeo, mat(P.stone, { flat: true }), stoneCount);
   const up = new THREE.Vector3(0, 1, 0);
   for (let i = 0; i < stoneCount; i++) {

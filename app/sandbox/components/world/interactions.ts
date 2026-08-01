@@ -44,6 +44,35 @@ export function createInteractions(
   let downAt: { x: number; y: number; time: number } | null = null;
   let lastCamera: THREE.PerspectiveCamera | null = null;
 
+  // Hover glow. Landmark meshes draw their materials from the shared palette
+  // cache, so lighting one up in place would light every object anywhere that
+  // happens to share a color — each landmark gets private clones instead, and
+  // hover lifts their emissive off whatever floor the original set.
+  const GLOW = new THREE.Color(0x3a3524);
+  type Glow = { material: THREE.MeshLambertMaterial; base: THREE.Color };
+  const glows = new Map<string, Glow[]>();
+  const glowLevels = new Map<string, number>();
+  for (const [id, group] of landmarkGroups) {
+    const cloned = new Map<THREE.Material, THREE.MeshLambertMaterial>();
+    group.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const source = mesh.material;
+      if (Array.isArray(source) || !(source instanceof THREE.MeshLambertMaterial)) return;
+      let clone = cloned.get(source);
+      if (!clone) {
+        clone = source.clone();
+        cloned.set(source, clone);
+      }
+      mesh.material = clone;
+    });
+    glows.set(
+      id,
+      [...cloned.values()].map((material) => ({ material, base: material.emissive.clone() })),
+    );
+    glowLevels.set(id, 0);
+  }
+
   const proxyGeo = new THREE.SphereGeometry(1, 8, 6);
   const proxyMat = new THREE.MeshBasicMaterial({ visible: false });
   const hotspots: Hotspot[] = [];
@@ -146,6 +175,17 @@ export function createInteractions(
         const target = id === api.hoveredId ? 1.03 : 1;
         group.scale.setScalar(group.scale.x + (target - group.scale.x) * 0.15);
       }
+
+      // ...and a soft glow, eased in and out over the same beat.
+      for (const [id, list] of glows) {
+        const settled = glowLevels.get(id) ?? 0;
+        const target = id === api.hoveredId ? 1 : 0;
+        let level = settled + (target - settled) * 0.16;
+        if (target === 0 && level < 0.004) level = 0;
+        if (level === settled) continue;
+        glowLevels.set(id, level);
+        for (const { material, base } of list) material.emissive.copy(base).lerp(GLOW, level);
+      }
     },
     dispose() {
       canvas.removeEventListener("pointermove", setPointer);
@@ -153,6 +193,9 @@ export function createInteractions(
       canvas.removeEventListener("pointerup", onUp);
       canvas.removeEventListener("pointerleave", onLeave);
       for (const h of hotspots) scene.remove(h.proxy);
+      for (const list of glows.values()) {
+        for (const { material } of list) material.dispose();
+      }
       proxyGeo.dispose();
       proxyMat.dispose();
     },

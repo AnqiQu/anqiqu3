@@ -47,16 +47,20 @@
 .sandbox-noscript { position: fixed; inset: auto 16px 16px; z-index: 60; margin: 0; padding: 12px 16px; border-radius: 12px; background: rgb(255 247 223 / 0.92); color: #274a33; font-family: var(--font-exo), sans-serif; font-size: 14px; text-align: center; }
 .sandbox-noscript a { color: inherit; }
 
-/* ===== 3D overlay: title, hint, return link ===== */
+/* ===== 3D overlay: hint, return button ===== */
+/* The title is not here — it hangs in the sky as 3D letters (world/sky-title). */
 .sandbox-3d-overlay { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-family: var(--font-exo), sans-serif; }
-.sandbox-3d-title { position: absolute; top: 16vh; left: 0; right: 0; display: grid; justify-items: center; gap: 4px; color: #274a33; text-shadow: 0 2px 18px rgb(255 255 255 / 0.55); }
-.sandbox-3d-title small { font-size: clamp(12px, 1.4vw, 17px); letter-spacing: 0.34em; text-transform: uppercase; }
-.sandbox-3d-title span { font-family: var(--font-audiowide), sans-serif; font-size: clamp(38px, 7vw, 84px); line-height: 1.05; }
 .sandbox-3d-hint { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border: 1px solid rgb(39 74 51 / 0.28); border-radius: 999px; background: rgb(255 247 223 / 0.82); color: #274a33; font-size: 13px; letter-spacing: 0.06em; backdrop-filter: blur(6px); animation: sandbox-hint-bob 2.2s ease-in-out infinite; }
 @keyframes sandbox-hint-bob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
-.sandbox-3d-return { position: absolute; top: 18px; left: 18px; pointer-events: auto; padding: 8px 14px; border: 1px solid rgb(39 74 51 / 0.28); border-radius: 999px; background: rgb(255 247 223 / 0.82); color: #274a33; font-size: 13px; letter-spacing: 0.05em; text-decoration: none; backdrop-filter: blur(6px); transition: transform 160ms ease, box-shadow 160ms ease; }
-.sandbox-3d-return:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgb(27 57 72 / 0.25); }
-.sandbox-3d-return:focus-visible { outline: 3px solid #2f7d4f; outline-offset: 3px; }
+/* Back button. At rest it belongs to the sky — a white disc with a thick light
+   blue arrow — and on hover it snaps into the server room's own idiom: pointy
+   cornered black square, bright green outline, and the words spelled out. */
+.sandbox-3d-return { position: absolute; top: 18px; left: 18px; display: inline-flex; align-items: center; height: 48px; overflow: hidden; pointer-events: auto; border: 3px solid #7cc7f7; border-radius: 999px; background: #fff; color: #2f9bea; text-decoration: none; box-shadow: 0 8px 22px rgb(23 61 92 / 0.22); transition: border-radius 220ms ease, border-color 200ms ease, background 200ms ease, color 200ms ease, box-shadow 200ms ease; }
+.sandbox-3d-return-icon { display: grid; flex: 0 0 auto; place-items: center; width: 42px; height: 100%; }
+.sandbox-3d-return-label { max-width: 0; overflow: hidden; opacity: 0; font-size: 13px; font-weight: 650; letter-spacing: 0.06em; white-space: nowrap; transition: max-width 260ms ease, padding-right 260ms ease, opacity 200ms ease; }
+.sandbox-3d-return:hover, .sandbox-3d-return:focus-visible { border-radius: 0; border-color: var(--bright-green); background: var(--black); color: var(--bright-green); box-shadow: 0 8px 26px rgb(6 20 12 / 0.45); }
+.sandbox-3d-return:hover .sandbox-3d-return-label, .sandbox-3d-return:focus-visible .sandbox-3d-return-label { max-width: 220px; padding-right: 16px; opacity: 1; }
+.sandbox-3d-return:focus-visible { outline: 2px solid var(--bright-green); outline-offset: 3px; }
 
 .sandbox-3d-fade { position: fixed; inset: 0; z-index: 30; background: #fff7df; opacity: 0; pointer-events: none; transition: opacity 400ms ease; }
 .sandbox-3d-fade[data-active="true"] { opacity: 1; pointer-events: auto; }

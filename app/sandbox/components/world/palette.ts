@@ -29,6 +29,10 @@ export const P = {
   stonePale: 0xf6efdf,
   path: 0xd9c39a,
 
+  // Pastel yellow for the sky title. Pitched bright because Lambert shading
+  // knocks roughly a third off before it reaches the screen.
+  titleYellow: 0xffee9e,
+
   wood: 0xa9744a,
   woodDark: 0x7d4f2e,
   plank: 0xc98f5e,
