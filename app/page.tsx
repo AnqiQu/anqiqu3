@@ -44,11 +44,6 @@ export default function Home() {
               <p className="hero-subtitle">
                 Our most advanced multimodal human model yet.
               </p>
-              <div className="hero-actions">
-                <Link href="/sandbox" className="button">
-                  Sandbox <span aria-hidden="true" className="button-square" />
-                </Link>
-              </div>
             </div>
 
           </div>

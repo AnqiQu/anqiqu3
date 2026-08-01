@@ -342,10 +342,10 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .benchmark-chart-card { display: flex; flex-direction: column; gap: 12px; padding: 22px; border: 1px solid var(--border); border-radius: 12px; background: radial-gradient(circle at 78% 4%, rgb(87 204 153 / 0.1), transparent 42%), var(--surface); }
 .benchmark-chart-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .benchmark-badge { flex-shrink: 0; padding: 5px 8px; border: 1px solid var(--border-bright); border-radius: 999px; color: var(--pale-green); font-size: 8px; font-weight: 650; letter-spacing: 0.14em; line-height: 1; }
-.benchmark-radar { display: block; width: 100%; max-width: 440px; height: auto; margin: 2px auto 0; }
+.benchmark-radar { display: block; width: 100%; max-width: 330px; height: auto; margin: 2px auto 0; }
 .benchmark-ring { fill: none; stroke: rgb(128 237 153 / 0.14); stroke-width: 1; }
 .benchmark-spoke { stroke: rgb(255 255 255 / 0.12); stroke-width: 1; }
-.benchmark-axis-label { fill: var(--muted); font-family: var(--font-exo), sans-serif; font-size: 13px; letter-spacing: 0.02em; }
+.benchmark-axis-label { fill: var(--muted); font-family: var(--font-exo), sans-serif; font-size: 15px; letter-spacing: 0.02em; }
 .benchmark-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; margin: 0; padding: 14px 4px 0; border-top: 1px solid var(--border); list-style: none; }
 .benchmark-legend li { display: flex; align-items: center; gap: 8px; }
 .benchmark-swatch { width: 11px; height: 11px; flex-shrink: 0; border-radius: 3px; }
