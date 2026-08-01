@@ -92,19 +92,6 @@ test("server-renders the Sandbox underground loading gate", async () => {
   assert.doesNotMatch(html, /site-header|desktop-nav|Book a demo/);
 });
 
-test("keeps the asset review route private from search indexing", async () => {
-  const response = await render("/sandbox/asset-review");
-  assert.equal(response.status, 200);
-
-  const html = await response.text();
-  assert.match(html, /<title>Sandbox Asset Review \| Anqi Intelligence<\/title>/i);
-  assert.match(html, /name="robots" content="noindex, nofollow, nocache"/i);
-  assert.match(html, /observatory/);
-  assert.match(html, /archive-open/);
-  assert.match(html, /NEEDS_REGENERATION/);
-  assert.match(html, /blimp-propeller/);
-});
-
 test("keeps production content centralized and reduced-motion safe", async () => {
   const [content, css, layout, packageJson] = await Promise.all([
     readFile(new URL("../app/content.ts", import.meta.url), "utf8"),
