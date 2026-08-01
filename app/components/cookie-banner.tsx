@@ -47,14 +47,14 @@ export function CookieBanner() {
       </p>
       <div className="cookie-banner-actions">
         <button type="button" className="button button-compact" onClick={accept}>
-          Accept
+          Agree
         </button>
         <button
           type="button"
           className="button button-compact button-secondary"
           onClick={accept}
         >
-          Also accept
+          Yes
         </button>
       </div>
     </div>

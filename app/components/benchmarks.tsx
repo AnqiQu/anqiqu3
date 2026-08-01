@@ -43,7 +43,7 @@ export function Benchmarks() {
   return (
     <div className="benchmark-chart-card">
       <div className="benchmark-chart-head">
-        <p className="eyebrow">ANQIBENCH · INTERNAL, UNPUBLISHED</p>
+        <p className="eyebrow">ANQBENCH · INTERNAL, UNPUBLISHED</p>
         <span className="benchmark-badge">v2 · 0-SHOT</span>
       </div>
 
@@ -51,7 +51,7 @@ export function Benchmarks() {
         className="benchmark-radar"
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         role="img"
-        aria-label="AnqiBench radar chart. Anqi scores the maximum on every benchmark; ChatGPT 5.6 and Claude Fable trail on all axes."
+        aria-label="AnqBench radar chart. Anqi scores the maximum on every benchmark; ChatGPT 5.6 and Claude Fable trail on all axes."
       >
         {RINGS.map((ring) => (
           <polygon

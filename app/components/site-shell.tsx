@@ -12,10 +12,16 @@ export function Header() {
           <LogoMark />
         </Link>
 
-        <Link href="/contact" className="button button-compact header-cta">
-          Book a demo
-          <span aria-hidden="true">↗</span>
-        </Link>
+        <div className="header-actions">
+          <Link href="/sandbox" className="button button-compact">
+            Sandbox
+            <span aria-hidden="true" className="button-square" />
+          </Link>
+          <Link href="/contact" className="button button-white button-compact">
+            Book a demo
+            <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
       </div>
     </header>
   );

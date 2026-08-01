@@ -48,9 +48,6 @@ export default function Home() {
                 <Link href="/sandbox" className="button">
                   Sandbox <span aria-hidden="true" className="button-square" />
                 </Link>
-                <Link href="#specs" className="button button-secondary">
-                  View specifications <span aria-hidden="true">↓</span>
-                </Link>
               </div>
             </div>
 
@@ -133,7 +130,7 @@ export default function Home() {
               <Benchmarks />
             </div>
             <p className="footnote">
-              AnqiBench is an internal benchmark suite. Results are self-reported,
+              AnqBench is an internal benchmark suite. Results are self-reported,
               unpublished, and not reproducible by design. Higher is better.
             </p>
           </div>
@@ -187,6 +184,7 @@ export default function Home() {
                       <span className="model-column-name">Anqi</span>
                     </th>
                     <th scope="col">ChatGPT</th>
+                    <th scope="col">Claude</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -198,6 +196,9 @@ export default function Home() {
                       </td>
                       <td>
                         <Result value={row.chatgpt} />
+                      </td>
+                      <td>
+                        <Result value={row.claude} />
                       </td>
                     </tr>
                   ))}
@@ -216,13 +217,17 @@ export default function Home() {
                       <span>ChatGPT</span>
                       <Result value={row.chatgpt} />
                     </div>
+                    <div>
+                      <span>Claude</span>
+                      <Result value={row.claude} />
+                    </div>
                   </article>
                 ))}
               </div>
             </div>
             <p className="footnote">
               Benchmark results are self-reported and have not been independently
-              reproduced. OpenAI did not authorise this comparison.
+              reproduced. Neither OpenAI nor Anthropic authorised this comparison.
             </p>
           </div>
         </section>

@@ -90,18 +90,24 @@ export const changelog = [
 ] as const;
 
 export const comparisons = [
-  { capability: "Can write emails", anqi: "Yes", chatgpt: "Yes" },
-  { capability: "Knows machine learning", anqi: "Yes", chatgpt: "Yes" },
+  { capability: "Can write emails", anqi: "Yes", chatgpt: "Yes", claude: "Yes" },
+  {
+    capability: "Knows machine learning",
+    anqi: "Yes",
+    chatgpt: "Yes",
+    claude: "Yes",
+  },
   {
     capability: "Multimodal support",
     anqi: "Text, image, voice, touch",
     chatgpt: "Text, image, voice",
+    claude: "Text, image, voice",
   },
-  { capability: "Hallucinations", anqi: "Yes", chatgpt: "Yes" },
+  { capability: "Hallucinations", anqi: "Yes", chatgpt: "Yes", claude: "Yes" },
 ] as const;
 
 export const benchmarks = {
-  suite: "AnqiBench",
+  suite: "AnqBench",
   axes: [
     { key: "soup", label: "SoupEval-2", full: "Soup evaluation" },
     { key: "bugs", label: "Bug-STOMP", full: "Catching bugs" },
@@ -112,7 +118,7 @@ export const benchmarks = {
   ],
   models: [
     { name: "Anqi", tone: "anqi", scores: [100, 100, 100, 100, 100, 100] },
-    { name: "ChatGPT 5.6", tone: "chatgpt", scores: [34, 95, 96, 90, 8, 64] },
+    { name: "ChatGPT 5.6", tone: "chatgpt", scores: [38, 96, 97, 92, 11, 68] },
     { name: "Claude Fable", tone: "claude", scores: [31, 97, 93, 92, 12, 69] },
   ],
 } as const;
