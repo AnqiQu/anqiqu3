@@ -32,6 +32,11 @@ export function terrainHeight(x: number, z: number): number {
   const hd = (x - HILL_CENTER.x) ** 2 + (z - HILL_CENTER.z) ** 2;
   h += 8 * Math.exp(-hd / 98);
 
+  // Archive burrow: a low rise centred just behind the door, so the ground
+  // climbs into the mound instead of leaving the dome sitting on flat meadow.
+  const bd = (x + 14.7) ** 2 + (z + 4.1) ** 2;
+  h += 1.6 * Math.exp(-bd / 28);
+
   // Slight raised lip near the rim, like the painting's mossy edges.
   h += 0.5 * Math.exp(-(((re - 0.9) / 0.06) ** 2));
 

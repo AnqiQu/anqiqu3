@@ -36,28 +36,32 @@
 @keyframes sandbox-cavern-fade { to { opacity: 0; } }
 
 /* ===== Flat fallback: static card (?flat / reduced motion / no WebGL) ===== */
-.sandbox-flat { display: grid; place-content: center; justify-items: center; gap: 14px; height: 100%; padding: 24px; background: linear-gradient(#7bcdf8, #d9f2ff); color: #274a33; font-family: var(--font-exo), sans-serif; text-align: center; }
+.sandbox-flat { display: grid; place-content: center; justify-items: center; gap: 14px; height: 100%; padding: 24px; background: linear-gradient(#7bcdf8, #d9f2ff); color: #274a33; font-family: var(--font-jakarta), sans-serif; text-align: center; }
 .sandbox-flat-kicker { margin: 0; font-size: 13px; letter-spacing: 0.34em; text-transform: uppercase; }
-.sandbox-flat-title { margin: 0; font-family: var(--font-audiowide), sans-serif; font-size: clamp(40px, 8vw, 72px); line-height: 1.05; }
+.sandbox-flat-title { margin: 0; font-family: var(--font-philosopher), sans-serif; font-size: clamp(40px, 8vw, 72px); line-height: 1.05; }
 .sandbox-flat-note { margin: 0; max-width: 46ch; font-size: 15px; line-height: 1.55; }
 .sandbox-flat-return { margin-top: 6px; padding: 9px 16px; border: 1px solid rgb(39 74 51 / 0.3); border-radius: 999px; background: rgb(255 247 223 / 0.85); color: #274a33; font-size: 14px; letter-spacing: 0.05em; text-decoration: none; transition: transform 160ms ease, box-shadow 160ms ease; }
 .sandbox-flat-return:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgb(27 57 72 / 0.2); }
 .sandbox-flat-return:focus-visible { outline: 3px solid #2f7d4f; outline-offset: 3px; }
 
-.sandbox-noscript { position: fixed; inset: auto 16px 16px; z-index: 60; margin: 0; padding: 12px 16px; border-radius: 12px; background: rgb(255 247 223 / 0.92); color: #274a33; font-family: var(--font-exo), sans-serif; font-size: 14px; text-align: center; }
+.sandbox-noscript { position: fixed; inset: auto 16px 16px; z-index: 60; margin: 0; padding: 12px 16px; border-radius: 12px; background: rgb(255 247 223 / 0.92); color: #274a33; font-family: var(--font-jakarta), sans-serif; font-size: 14px; text-align: center; }
 .sandbox-noscript a { color: inherit; }
 
 /* ===== 3D overlay: hint, return button ===== */
 /* The title is not here — it hangs in the sky as 3D letters (world/sky-title). */
-.sandbox-3d-overlay { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-family: var(--font-exo), sans-serif; }
+.sandbox-3d-overlay { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-family: var(--font-jakarta), sans-serif; }
 .sandbox-3d-hint { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border: 1px solid rgb(39 74 51 / 0.28); border-radius: 999px; background: rgb(255 247 223 / 0.82); color: #274a33; font-size: 13px; letter-spacing: 0.06em; backdrop-filter: blur(6px); animation: sandbox-hint-bob 2.2s ease-in-out infinite; }
 @keyframes sandbox-hint-bob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
 /* Back button. At rest it belongs to the sky — a white disc with a thick light
    blue arrow — and on hover it snaps into the server room's own idiom: pointy
    cornered black square, bright green outline, and the words spelled out. */
-.sandbox-3d-return { position: absolute; top: 18px; left: 18px; display: inline-flex; align-items: center; height: 48px; overflow: hidden; pointer-events: auto; border: 3px solid #7cc7f7; border-radius: 999px; background: #fff; color: #2f9bea; text-decoration: none; box-shadow: 0 8px 22px rgb(23 61 92 / 0.22); transition: border-radius 220ms ease, border-color 200ms ease, background 200ms ease, color 200ms ease, box-shadow 200ms ease; }
+/* The resting radius is 24px, not 999px, on purpose: the browser interpolates
+   the authored value, so from 999px the corners sit visually circular for most
+   of the transition and then snap square at the very end. 24px is exactly half
+   the height — still a circle — and animates evenly the whole way. */
+.sandbox-3d-return { position: absolute; top: 18px; left: 18px; display: inline-flex; align-items: center; height: 48px; overflow: hidden; pointer-events: auto; border: 3px solid #7cc7f7; border-radius: 24px; background: #fff; color: #2f9bea; text-decoration: none; box-shadow: 0 8px 22px rgb(23 61 92 / 0.22); transition: border-radius 300ms cubic-bezier(0.33, 1, 0.68, 1), border-color 240ms ease, background 240ms ease, color 240ms ease, box-shadow 240ms ease; }
 .sandbox-3d-return-icon { display: grid; flex: 0 0 auto; place-items: center; width: 42px; height: 100%; }
-.sandbox-3d-return-label { max-width: 0; overflow: hidden; opacity: 0; font-size: 13px; font-weight: 650; letter-spacing: 0.06em; white-space: nowrap; transition: max-width 260ms ease, padding-right 260ms ease, opacity 200ms ease; }
+.sandbox-3d-return-label { max-width: 0; overflow: hidden; opacity: 0; font-size: 13px; font-weight: 650; letter-spacing: 0.06em; white-space: nowrap; transition: max-width 300ms cubic-bezier(0.33, 1, 0.68, 1), padding-right 300ms cubic-bezier(0.33, 1, 0.68, 1), opacity 220ms ease; }
 .sandbox-3d-return:hover, .sandbox-3d-return:focus-visible { border-radius: 0; border-color: var(--bright-green); background: var(--black); color: var(--bright-green); box-shadow: 0 8px 26px rgb(6 20 12 / 0.45); }
 .sandbox-3d-return:hover .sandbox-3d-return-label, .sandbox-3d-return:focus-visible .sandbox-3d-return-label { max-width: 220px; padding-right: 16px; opacity: 1; }
 .sandbox-3d-return:focus-visible { outline: 2px solid var(--bright-green); outline-offset: 3px; }
@@ -68,9 +72,20 @@
 /* ===== Label chips: anchored at the overlay origin, placed via inline
    transform from the 3D projection; visible only while hovered/focused. ===== */
 .sandbox-label--chip { position: absolute; top: 0; left: 0; display: grid; min-width: max-content; gap: 2px; margin: -10px 0 0; padding: 9px 13px 10px; border: 1px solid rgb(255 235 182 / 0.5); border-radius: 12px; background: rgb(28 38 31 / 0.88); box-shadow: 0 10px 24px rgb(27 57 72 / 0.22); color: #fff8e8; opacity: 0; pointer-events: none; transform: translate(-50%, -100%); transition: opacity 180ms ease; }
-.sandbox-label--chip strong { font-size: clamp(12px, 1.15vw, 17px); line-height: 1.18; }
+.sandbox-label--chip strong { font-family: var(--font-philosopher), sans-serif; font-size: clamp(13px, 1.2vw, 18px); line-height: 1.18; }
 .sandbox-label--chip small { color: #f3e6c8; font-size: clamp(8px, 0.75vw, 11px); }
 .sandbox-label--chip[data-inphase="true"][data-hovered="true"] { opacity: 1; }
+
+/* ===== Panel: the plaque itself, enlarged. A square pale gold plate with an
+   engraved-looking inscription and an × in the corner. ===== */
+.sandbox-panel { position: absolute; top: 50%; left: 50%; z-index: 20; display: grid; place-content: center; width: min(370px, calc(100vw - 44px)); aspect-ratio: 1; padding: 40px 34px; border: 2px solid #b0904a; background: linear-gradient(158deg, #f7e8b8 6%, #ecd79c 52%, #e3ca8b); box-shadow: 0 22px 50px rgb(46 34 8 / 0.42), inset 0 0 0 1px rgb(255 255 255 / 0.45); color: #4b3a15; text-align: center; pointer-events: auto; transform: translate(-50%, -50%) scale(0.9); opacity: 0; animation: sandbox-panel-open 300ms cubic-bezier(0.33, 1, 0.68, 1) forwards; }
+.sandbox-panel-body { margin: 0; font-family: var(--font-philosopher), sans-serif; font-size: clamp(15px, 1.35vw, 18px); line-height: 1.66; letter-spacing: 0.01em; }
+.sandbox-panel-close { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; color: #7a6224; font-size: 20px; line-height: 1; cursor: pointer; transition: color 160ms ease, transform 160ms ease; }
+.sandbox-panel-close:hover { color: #4b3a15; transform: scale(1.12); }
+.sandbox-panel-close:focus-visible { outline: 2px solid #7a6224; outline-offset: 2px; }
+.sandbox-panel:focus { outline: none; }
+.sandbox-panel:focus-visible { outline: 2px solid #7a6224; outline-offset: 4px; }
+@keyframes sandbox-panel-open { to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 
 @media (max-width: 720px) {
   .sandbox-label--chip strong { max-width: 132px; font-size: clamp(11px, 3.6vw, 15px); }
@@ -81,4 +96,5 @@
   /* Reduced-motion visitors flip to the flat card right after hydration;
      this covers the pre-hydration moment. */
   .sandbox-cavern-glow, .sandbox-cavern-streak, .sandbox-3d-hint { animation: none; }
+  .sandbox-panel { opacity: 1; transform: translate(-50%, -50%); animation: none; }
 }

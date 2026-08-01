@@ -22,11 +22,17 @@ export function SandboxOverlay({
   const chipRefs = useRef(new Map<string, HTMLDivElement>());
   const [hintDismissed, setHintDismissed] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [openPanelId, setOpenPanelId] = useState<string | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const openPanel = openPanelId ? locations.find((l) => l.id === openPanelId) : undefined;
 
   const worldLocations = locations.filter((l) => l.world3d);
-  // Ambient spots (the pond) get no label chip — they're scenery, not
-  // selectable landmarks. They stay in the keyboard nav for camera fly-to.
-  const chipLocations = worldLocations.filter((l) => l.interaction !== "ambient");
+  // Only named landmarks get a label chip. Ambient spots (the pond) are
+  // scenery, and the plaque announces itself by glowing — a chip telling you
+  // to click it would give the find away. Both stay in the keyboard nav.
+  const chipLocations = worldLocations.filter(
+    (l) => l.interaction !== "ambient" && l.interaction !== "open-panel",
+  );
 
   useEffect(() => {
     // First drag or zoom dismisses the hint. (The sky title clears itself off
@@ -47,6 +53,7 @@ export function SandboxOverlay({
         if (fadeRef.current) fadeRef.current.dataset.active = "true";
         window.setTimeout(() => router.push(href), 420);
       },
+      openPanel: (id) => setOpenPanelId(id),
     });
 
     return () => {
@@ -55,6 +62,20 @@ export function SandboxOverlay({
       unregister();
     };
   }, [bridge, router]);
+
+  // The plaque takes focus when it opens and closes on Escape, so it can be
+  // read and dismissed without a pointer. Focus lands on the plate itself,
+  // not the ×, so opening it with a mouse doesn't paint a focus ring on the
+  // close button.
+  useEffect(() => {
+    if (!openPanelId) return;
+    panelRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenPanelId(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [openPanelId]);
 
   // Keyboard: fly the orbit camera to face the landmark; focus lights it up
   // via the same path pointer hover uses.
@@ -98,6 +119,27 @@ export function SandboxOverlay({
         </div>
       ))}
 
+      {openPanel?.panel && (
+        <div
+          className="sandbox-panel"
+          role="dialog"
+          aria-label={openPanel.label}
+          key={openPanel.id}
+          ref={panelRef}
+          tabIndex={-1}
+        >
+          <button
+            type="button"
+            className="sandbox-panel-close"
+            aria-label="Close"
+            onClick={() => setOpenPanelId(null)}
+          >
+            <span aria-hidden="true">×</span>
+          </button>
+          <p className="sandbox-panel-body">{openPanel.panel}</p>
+        </div>
+      )}
+
       <nav className="sandbox-sr-only" aria-label="Sandbox locations">
         <ul>
           {worldLocations.map((location) => (
@@ -106,7 +148,11 @@ export function SandboxOverlay({
                 type="button"
                 onFocus={() => bridge.onFocusHover?.(location.id)}
                 onBlur={() => bridge.onFocusHover?.(null)}
-                onClick={() => jumpTo(location)}
+                onClick={() =>
+                  location.interaction === "open-panel"
+                    ? setOpenPanelId(location.id)
+                    : jumpTo(location)
+                }
               >
                 {location.label} — {location.description}
               </button>

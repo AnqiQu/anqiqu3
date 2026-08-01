@@ -91,11 +91,12 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   const bridge = buildBridge(bri.x, bri.z, bri.rotationY);
 
   const skyTitle = buildSkyTitle();
+  const island = buildIsland();
 
   const modules: WorldModule[] = [
     buildSky(),
     skyTitle,
-    buildIsland(),
+    island,
     observatory,
     buildEnergy(),
     archive,
@@ -119,6 +120,7 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     ["archive", archive.group],
     ["garden", greenhouse.group],
     ["unfinished-bridge", bridge.group],
+    ["bench-plaque", island.plaque],
   ]);
   let archiveOpen = false;
   ui.toggleArchive = () => {

@@ -92,6 +92,10 @@ export function createInteractions(
     });
   }
   const raycastTargets = [...hotspots.map((h) => h.proxy), ...occluders];
+  // Spots whose click opens their copy rather than navigating.
+  const panelIds = new Set(
+    locations.filter((l) => l.interaction === "open-panel").map((l) => l.id),
+  );
 
   const setPointer = (event: PointerEvent) => {
     client.set(event.clientX, event.clientY);
@@ -112,7 +116,8 @@ export function createInteractions(
     const elapsed = performance.now() - downAt.time;
     downAt = null;
     if (moved > 8 || elapsed > 500) return; // orbit drag, not a click
-    if (api.hoveredId === "archive") ui.toggleArchive?.();
+    if (api.hoveredId && panelIds.has(api.hoveredId)) ui.openPanel(api.hoveredId);
+    else if (api.hoveredId === "archive") ui.toggleArchive?.();
     else if (waterClick && lastCamera) {
       // A plain click on the pond water makes ripples.
       const width = document.documentElement.clientWidth;
@@ -157,7 +162,11 @@ export function createInteractions(
         ui.setHover(effective);
       }
       canvas.style.cursor =
-        effective === "archive" ? "pointer" : dragging ? "grabbing" : "grab";
+        effective === "archive" || (effective && panelIds.has(effective))
+          ? "pointer"
+          : dragging
+            ? "grabbing"
+            : "grab";
 
       // Project label anchors to screen space.
       for (const h of hotspots) {

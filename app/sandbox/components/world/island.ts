@@ -40,7 +40,11 @@ const LANTERN_SPOTS: Array<[number, number]> = [
 // facing back down the path across the meadow toward the pond.
 const BENCH = { x: -11.2, z: 13.71, rotationY: 1.92 };
 
-export function buildIsland(): WorldModule {
+// The bench plaque is handed back separately: engine.ts registers it as a
+// hover/click target of its own, independent of the island it rides on.
+export type Island = WorldModule & { plaque: THREE.Group };
+
+export function buildIsland(): Island {
   const group = new THREE.Group();
   const geometries: THREE.BufferGeometry[] = [];
   const materials: THREE.Material[] = [];
@@ -338,6 +342,23 @@ export function buildIsland(): WorldModule {
     rail.rotation.x = -0.14;
     bench.add(rail);
   }
+
+  // Memorial plaque: gold plate on the front of the backrest, facing whoever
+  // walks up to the bench. Its own group so the hover glow and the raycast can
+  // target just this, and so it reads as a separate thing to click.
+  const plaque = new THREE.Group();
+  const plaqueGeo = new THREE.BoxGeometry(0.6, 0.22, 0.03);
+  const plaqueInsetGeo = new THREE.BoxGeometry(0.48, 0.13, 0.014);
+  geometries.push(plaqueGeo, plaqueInsetGeo);
+  const plate = new THREE.Mesh(plaqueGeo, mat(P.gold, { flat: true, emissive: 0x2a2210 }));
+  plate.position.set(0, 0.995, -0.245);
+  plate.rotation.x = -0.14;
+  const engraving = new THREE.Mesh(plaqueInsetGeo, mat(P.brass, { flat: true }));
+  engraving.position.set(0, 0.995, -0.231);
+  engraving.rotation.x = -0.14;
+  plaque.add(plate, engraving);
+  bench.add(plaque);
+
   group.add(bench);
 
   // ===== Blob shadows (trees + lanterns + bench) =====
@@ -370,6 +391,7 @@ export function buildIsland(): WorldModule {
 
   return {
     group,
+    plaque,
     update(t) {
       // Lantern glow pulse, offset per lantern so they don't blink in sync.
       lanternGlows.forEach((glow, i) => {

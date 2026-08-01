@@ -39,7 +39,10 @@ export const P = {
   glassTeal: 0x9fd8d2,
   brass: 0xc9a24b,
   brassBright: 0xe3c06b,
+  gold: 0xecc25e,
   doorGreen: 0x4e8f4c,
+  // The burrow's mouth: near-black, so a closed door still reads as depth.
+  caveDark: 0x0f0e0c,
 
   water: 0x6fc7c2,
   waterDeep: 0x3e8f96,
