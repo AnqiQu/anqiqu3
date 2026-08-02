@@ -54,11 +54,20 @@ export const P = {
 
   koi: 0xf08a3c,
   koiWhite: 0xfff4e4,
-  dogGolden: 0xd9a45b,
-  dogCream: 0xf2e2c4,
   dogBlack: 0x3b3b3f,
   dogWhite: 0xf5f1e8,
-  bird: 0x3b4a52,
+  // The three pomeranians. Each pairs a coat with a paler tone for the chest
+  // ruff, snout, and tail plume — the way a pom's undercoat actually reads.
+  pomCream: 0xf3d6a4,
+  pomCreamPale: 0xfdf0d8,
+  pomBrown: 0x9d6a44,
+  pomBrownPale: 0xd8b189,
+  pomOrange: 0xf8a962,
+  pomOrangePale: 0xffd9ab,
+  // Birds, so the flock isn't three identical silhouettes.
+  birdSlate: 0x4a5c6b,
+  birdCoral: 0xe8865a,
+  birdCream: 0xfdf1dc,
 
   blimpCream: 0xfffcf6,
   blimpTeal: 0x7fc9c0,
