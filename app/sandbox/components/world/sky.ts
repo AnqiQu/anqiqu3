@@ -3,6 +3,58 @@ import { P } from "./palette";
 import type { WorldModule } from "./types";
 import { rng } from "./util";
 
+// Where the sun hangs. Kept low: the orbit rig never pitches far enough above
+// the horizon to show a high sun, so anything steeper would be permanently off
+// screen. engine.ts aims a warm rim light down this same vector.
+export const SUN_POSITION = new THREE.Vector3(-95, 29, -262);
+
+// The sun's glare, painted once into a canvas: a radial falloff plus a fan of
+// soft rays. Stacked translucent discs left visible concentric edges, and a
+// gradient is the one thing flat geometry can't fake.
+function sunGlareTexture(): THREE.CanvasTexture {
+  const size = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const c = size / 2;
+  ctx.translate(c, c);
+
+  // Rays first: long thin wedges, brightest at the root. 'lighter' keeps the
+  // overlaps at the center from darkening each other.
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2;
+    const reach = c * (i % 2 ? 0.62 : 0.92);
+    const spread = i % 2 ? 0.05 : 0.032;
+    const fade = ctx.createLinearGradient(0, 0, Math.cos(angle) * reach, Math.sin(angle) * reach);
+    fade.addColorStop(0, "rgba(255, 233, 172, 0.36)");
+    fade.addColorStop(0.35, "rgba(255, 229, 160, 0.09)");
+    fade.addColorStop(1, "rgba(255, 229, 160, 0)");
+    ctx.fillStyle = fade;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, reach, angle - spread, angle + spread);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Core falloff over the top.
+  const bloom = ctx.createRadialGradient(0, 0, 0, 0, 0, c);
+  bloom.addColorStop(0, "rgba(255, 250, 228, 0.85)");
+  bloom.addColorStop(0.12, "rgba(255, 240, 190, 0.42)");
+  bloom.addColorStop(0.34, "rgba(255, 228, 158, 0.13)");
+  bloom.addColorStop(1, "rgba(255, 226, 152, 0)");
+  ctx.fillStyle = bloom;
+  ctx.beginPath();
+  ctx.arc(0, 0, c, 0, Math.PI * 2);
+  ctx.fill();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 // Sky dome, sun, and two cloud layers: drifting puff clusters overhead and a
 // cloud sea below the island so it reads as floating.
 export function buildSky(): WorldModule {
@@ -10,11 +62,17 @@ export function buildSky(): WorldModule {
   const geometries: THREE.BufferGeometry[] = [];
   const materials: THREE.Material[] = [];
 
-  // Dome: vertex-colored gradient, zenith → horizon. Fog must not apply or the
-  // whole dome would flatten to the fog color.
-  const domeGeo = new THREE.SphereGeometry(300, 24, 12);
+  // Dome: vertex-colored gradient, zenith → horizon, plus a warm bloom around
+  // the sun. Fog must not apply or the whole dome would flatten to the fog
+  // color. Tessellation is high enough for the bloom to read as a soft wash.
+  const domeGeo = new THREE.SphereGeometry(300, 48, 24);
   const top = new THREE.Color(P.skyTop);
   const horizon = new THREE.Color(P.skyHorizon);
+  // Pale warm wash for the sky right around the sun — a more saturated glow
+  // spread this wide would read as sunset haze instead of a blue sunny sky.
+  const sunHaze = new THREE.Color(P.sunGlow);
+  const sunDir = SUN_POSITION.clone().normalize();
+  const vertexDir = new THREE.Vector3();
   const domeColors: number[] = [];
   const pos = domeGeo.attributes.position;
   const scratch = new THREE.Color();
@@ -22,7 +80,13 @@ export function buildSky(): WorldModule {
     // y ranges -300..300; blend on height so below-horizon stays bright too
     // (the camera looks down past the island at a cloud sea).
     const h = THREE.MathUtils.clamp(pos.getY(i) / 300, -1, 1);
-    scratch.copy(horizon).lerp(top, THREE.MathUtils.smoothstep(h, -0.05, 0.6));
+    // Reach the zenith blue early: the camera sits low on the dome, so a slow
+    // ramp would leave the whole visible sky washed out at the horizon tint.
+    scratch.copy(horizon).lerp(top, THREE.MathUtils.smoothstep(h, -0.05, 0.42));
+    // Sun haze: warm wash falling off within ~35° of the sun.
+    const facing = vertexDir.fromBufferAttribute(pos, i).normalize().dot(sunDir);
+    const haze = THREE.MathUtils.smoothstep(facing, 0.82, 1) ** 2;
+    if (haze > 0) scratch.lerp(sunHaze, haze * 0.6);
     domeColors.push(scratch.r, scratch.g, scratch.b);
   }
   domeGeo.setAttribute("color", new THREE.Float32BufferAttribute(domeColors, 3));
@@ -31,32 +95,46 @@ export function buildSky(): WorldModule {
   geometries.push(domeGeo);
   materials.push(domeMat);
 
-  // Sun high in the back-left sky (visible in the opening vista) with a soft
-  // halo. Lighting direction is a painterly cheat and does not match — see
-  // engine.ts.
-  const sunPos = new THREE.Vector3(-120, 150, -200);
-  const sunGeo = new THREE.CircleGeometry(9, 24);
-  const haloGeo = new THREE.CircleGeometry(16, 24);
-  const sunMat = new THREE.MeshBasicMaterial({ color: P.sun, fog: false });
-  const haloMat = new THREE.MeshBasicMaterial({ color: P.sun, fog: false, transparent: true, opacity: 0.35, depthWrite: false });
-  const sun = new THREE.Mesh(sunGeo, sunMat);
-  const halo = new THREE.Mesh(haloGeo, haloMat);
-  sun.position.copy(sunPos);
-  halo.position.copy(sunPos).add(new THREE.Vector3(0, 0, -1));
+  // Sun disc in the back-left sky, sitting in its painted glare. The key
+  // light's direction is a painterly cheat and does not match this — see
+  // engine.ts — but a rim light does.
   // Face the midpoint of the camera rail; close enough for a static billboard.
-  sun.lookAt(0, 15, 60);
-  halo.lookAt(0, 15, 60);
-  group.add(halo, sun);
-  geometries.push(sunGeo, haloGeo);
-  materials.push(sunMat, haloMat);
+  const faceCamera = new THREE.Vector3(0, 15, 60);
+  const outward = SUN_POSITION.clone().normalize();
+
+  const glareTex = sunGlareTexture();
+  const glareGeo = new THREE.PlaneGeometry(124, 124);
+  const glareMat = new THREE.MeshBasicMaterial({
+    map: glareTex,
+    fog: false,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const glare = new THREE.Mesh(glareGeo, glareMat);
+  // Just behind the disc so the transparent sort keeps them in order.
+  glare.position.copy(SUN_POSITION).addScaledVector(outward, 2);
+  glare.lookAt(faceCamera);
+  group.add(glare);
+  geometries.push(glareGeo);
+  materials.push(glareMat);
+
+  const sunGeo = new THREE.CircleGeometry(10, 28);
+  const sunMat = new THREE.MeshBasicMaterial({ color: P.sun, fog: false });
+  const sun = new THREE.Mesh(sunGeo, sunMat);
+  sun.position.copy(SUN_POSITION);
+  sun.lookAt(faceCamera);
+  group.add(sun);
+  geometries.push(sunGeo);
+  materials.push(sunMat);
 
   // Cloud puffs: one InstancedMesh, cluster offsets baked into the matrices.
-  // Lambert + a warm emissive floor keeps them cream and softly shaded rather
-  // than gray on the unlit side.
+  // Lambert + a neutral emissive floor keeps them white and softly shaded
+  // rather than gray on the unlit side.
   const puffGeo = new THREE.SphereGeometry(1, 10, 8);
   const puffMat = new THREE.MeshLambertMaterial({ color: P.cloud });
-  // High emissive floor: clouds should stay cream even on unlit faces.
-  puffMat.emissive.setHex(0x9d9587);
+  // High neutral emissive floor: clouds should stay white even on unlit faces.
+  puffMat.emissive.setHex(0xa8a6a2);
   geometries.push(puffGeo);
   materials.push(puffMat);
 
@@ -110,6 +188,7 @@ export function buildSky(): WorldModule {
     dispose() {
       for (const g of geometries) g.dispose();
       for (const m of materials) m.dispose();
+      glareTex.dispose();
       puffs.dispose();
     },
   };

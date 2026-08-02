@@ -12,9 +12,9 @@ import { buildEnergy } from "./landmarks/energy";
 import { buildGreenhouse } from "./landmarks/greenhouse";
 import { buildObservatory } from "./landmarks/observatory";
 import { buildPond } from "./landmarks/pond";
-import { buildReturnSign } from "./landmarks/return-sign";
 import { createOrbitRig, fovForAspect } from "./orbit-rig";
-import { buildSky } from "./sky";
+import { SUN_POSITION, buildSky } from "./sky";
+import { buildSkyTitle } from "./sky-title";
 import type { WorldModule } from "./types";
 
 export type WorldOptions = {
@@ -61,10 +61,15 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   // light comes from the front-top-right so camera-facing slopes stay bright.
   // Warm sand ground color keeps undersides (cliff, cloud bottoms) from going
   // muddy dark.
-  const hemi = new THREE.HemisphereLight(0xbfe8ff, 0xd9c39a, 1.0);
-  const sunLight = new THREE.DirectionalLight(0xfff2cc, 1.15);
+  const hemi = new THREE.HemisphereLight(0xbfe8ff, 0xd9c39a, 0.95);
+  const sunLight = new THREE.DirectionalLight(0xfff0c0, 1.5);
   sunLight.position.set(30, 60, 40);
-  scene.add(hemi, sunLight);
+  // Rim light down the visible sun's own vector: it can't be the key (it would
+  // backlight the vista) but it puts a warm sunlit edge on the far side of
+  // everything, which is what actually sells the sunshine.
+  const sunRim = new THREE.DirectionalLight(0xffd79c, 0.55);
+  sunRim.position.copy(SUN_POSITION);
+  scene.add(hemi, sunLight, sunRim);
 
   // Landmark placement comes from config world3d (x/z only — modules sample
   // the terrain height field themselves).
@@ -78,29 +83,35 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   const arc = at("archive");
   const gar = at("garden");
   const bri = at("unfinished-bridge");
-  const sig = at("return-sign");
 
   const observatory = buildObservatory(obs.x, obs.z);
   const archive = buildArchive(arc.x, arc.z, arc.rotationY);
   const greenhouse = buildGreenhouse(gar.x, gar.z, gar.rotationY);
   const pond = buildPond();
   const bridge = buildBridge(bri.x, bri.z, bri.rotationY);
-  const returnSign = buildReturnSign(sig.x, sig.z, sig.rotationY);
+
+  const skyTitle = buildSkyTitle();
+  const island = buildIsland();
 
   const modules: WorldModule[] = [
     buildSky(),
-    buildIsland(),
+    skyTitle,
+    island,
     observatory,
     buildEnergy(),
     archive,
     greenhouse,
     pond,
     bridge,
-    returnSign,
     buildCreatures(),
     buildBlimps(),
   ];
   for (const m of modules) scene.add(m.group);
+
+  // The sky title is the opening card: the first drag or zoom clears it.
+  const dismissTitle = () => skyTitle.dismiss();
+  canvas.addEventListener("pointerdown", dismissTitle, { once: true, passive: true });
+  canvas.addEventListener("wheel", dismissTitle, { once: true, passive: true });
 
   // Hover highlight targets + archive door flourish. The pond is deliberately
   // absent: it's not selectable — clicking its water makes ripples instead.
@@ -109,7 +120,7 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     ["archive", archive.group],
     ["garden", greenhouse.group],
     ["unfinished-bridge", bridge.group],
-    ["return-sign", returnSign.group],
+    ["bench-plaque", island.plaque],
   ]);
   let archiveOpen = false;
   ui.toggleArchive = () => {
@@ -184,6 +195,8 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
       cancelAnimationFrame(rafId);
       rig.dispose();
       interactions.dispose();
+      canvas.removeEventListener("pointerdown", dismissTitle);
+      canvas.removeEventListener("wheel", dismissTitle);
       window.removeEventListener("resize", applySize);
       document.removeEventListener("visibilitychange", onVisibility);
       for (const m of modules) m.dispose();

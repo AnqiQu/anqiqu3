@@ -6,7 +6,9 @@ within limits), with raycast hover labels and fade-to-navigate.
 The original scroll-rail descent (danielqli-style) shipped first and was
 replaced by orbit controls at user request on 2026-07-30. The painted 2D
 scene was fully retired on 2026-07-31 (component, config art fields, and CSS
-deleted); its assets remain only for the private `/sandbox/asset-review` page.
+deleted), and its assets were deleted with it: the sprite sheets, scene
+plates, source art, the `/sandbox/asset-review` page, and the extract script
+are all gone. The world is geometry only — nothing under `public/` feeds it.
 
 ## Architecture
 

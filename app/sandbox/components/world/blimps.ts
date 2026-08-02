@@ -6,9 +6,9 @@ import type { WorldModule } from "./types";
 // panel strips along their backs, and little wooden gondolas.
 
 const BLIMPS: Array<{ pos: [number, number, number]; scale: number; phase: number }> = [
-  { pos: [-20, 28, -30], scale: 1, phase: 0 },
-  { pos: [18, 24, -40], scale: 0.7, phase: 2.3 },
-  { pos: [4, 32, -55], scale: 0.45, phase: 4.1 },
+  { pos: [-20, 28, -30], scale: 1.8, phase: 0 },
+  { pos: [18, 24, -40], scale: 1.3, phase: 2.3 },
+  { pos: [4, 32, -55], scale: 0.9, phase: 4.1 },
 ];
 
 export function buildBlimps(): WorldModule {
@@ -29,7 +29,9 @@ export function buildBlimps(): WorldModule {
     craft.position.set(...pos);
     craft.scale.setScalar(scale);
 
-    const envelope = new THREE.Mesh(envelopeGeo, mat(P.blimpCream));
+    // Emissive floor keeps the shaded underside white instead of dropping to
+    // gray against the saturated sky.
+    const envelope = new THREE.Mesh(envelopeGeo, mat(P.blimpCream, { emissive: 0x33322e }));
     envelope.scale.set(2.4, 1, 1);
     const band = new THREE.Mesh(bandGeo, mat(P.blimpTeal));
     band.scale.set(0.5, 1.02, 1.02);

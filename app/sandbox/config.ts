@@ -17,6 +17,8 @@ export type SandboxLocation = {
   // Destination for future content sub-routes; inert until those pages exist.
   href?: string;
   interaction: "navigate" | "open-panel" | "ambient" | "swap-state";
+  // Long-form copy an "open-panel" spot reveals when it is clicked.
+  panel?: string;
   world3d?: World3DConfig;
 };
 
@@ -53,19 +55,21 @@ export const sandboxLocations: SandboxLocation[] = [
     world3d: { position: [2, 0, 8], labelOffsetY: 1.8, hitRadius: 4.4 },
   },
   {
+    id: "bench-plaque",
+    label: "Bench plaque",
+    description: "Click to read",
+    interaction: "open-panel",
+    panel:
+      "In loving memory of my dear friend Daniel Li - who is not dead, just generous. He inspired this sandbox. Somewhere in here is an easter egg dedicated to his site. Go find it.",
+    // On the front of the bench's backrest, in the north-west tree grove.
+    world3d: { position: [-11.43, 0.9, 13.79], labelOffsetY: 0.9, hitRadius: 0.9 },
+  },
+  {
     id: "unfinished-bridge",
     label: "Unfinished Bridge",
     description: "Ideas in progress",
     href: "/sandbox/ideas",
     interaction: "navigate",
     world3d: { position: [16, 0.4, 10], rotationY: -0.35, labelOffsetY: 2.4, hitRadius: 3.8 },
-  },
-  {
-    id: "return-sign",
-    label: "Return to the server room",
-    description: "Main website",
-    href: "/",
-    interaction: "navigate",
-    world3d: { position: [-9, 0.3, 9], rotationY: 0.35, labelOffsetY: 2.2, hitRadius: 1.8 },
   },
 ];

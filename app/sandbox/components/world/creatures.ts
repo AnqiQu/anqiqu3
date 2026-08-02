@@ -4,8 +4,8 @@ import { POND_CENTER, ellipticalRadius, terrainHeight } from "./terrain";
 import type { WorldModule } from "./types";
 import { rng } from "./util";
 
-// The island's residents: two dogs roaming freely around the meadow, koi in
-// the pond, birds on high orbits, butterflies among the flowers.
+// The island's residents: a border collie and three pomeranians roaming the
+// meadow, koi in the pond, birds on high orbits, butterflies among the flowers.
 
 // Circles the dogs may not enter: water, buildings, and other solids. Steering
 // repels them near the edge, and a hard projection guarantees no penetration.
@@ -16,12 +16,16 @@ const DOG_OBSTACLES: Array<{ x: number; z: number; r: number }> = [
   { x: -16, z: -2, r: 3.6 }, // archive mound
   { x: -13, z: -15, r: 1.2 }, // large turbine
   { x: -17.5, z: -11, r: 1 }, // small turbine
-  { x: -9, z: 9, r: 1.2 }, // return sign
+  { x: -11.2, z: 13.7, r: 1.2 }, // bench under the grove
   { x: 15, z: 10, r: 1.8 }, // bridge foot
 ];
 const RIM_LIMIT = 0.88; // normalized elliptical radius the dogs stay within
 
-type DogColors = { coat: number; accent: number };
+// A pom is a ball of fluff on stubby legs, so it gets its own body rather than
+// a scaled collie: round barrel, big chest ruff, short muzzle, small pricked
+// ears, and a plume curled forward over the back. `scale` sizes the whole dog
+// (shadow included) off the root.
+type DogSpec = { coat: number; accent: number; breed: "collie" | "pom"; scale: number };
 
 type Dog = {
   root: THREE.Group;
@@ -40,8 +44,9 @@ const CYCLE = 16.5; // run 10s → idle 2.5s → sit 4s
 const DOG_SPEED = 2.4; // m/s while running
 const TURN_RATE = 3; // rad/s
 
-function buildDog({ coat, accent }: DogColors, geos: THREE.BufferGeometry[]): Dog {
+function buildDog({ coat, accent, breed, scale }: DogSpec, geos: THREE.BufferGeometry[]): Dog {
   const root = new THREE.Group();
+  root.scale.setScalar(scale);
   const body = new THREE.Group();
   root.add(body);
 
@@ -49,6 +54,85 @@ function buildDog({ coat, accent }: DogColors, geos: THREE.BufferGeometry[]): Do
     geos.push(g);
     return g;
   };
+
+  const pom = breed === "pom";
+
+  if (pom) {
+    // One oblong sphere is the whole dog — no separate head, no ruff, no
+    // barrel-plus-rump. Everything else hangs off that single round mass:
+    // face at the front, ears out the top, legs under, one puff of a tail.
+    const BODY = { r: 0.32, sy: 0.92, sz: 1.22, y: 0.42 };
+    const barrel = new THREE.Mesh(geo(new THREE.SphereGeometry(BODY.r, 14, 12)), mat(coat));
+    barrel.scale.set(1, BODY.sy, BODY.sz);
+    barrel.position.y = BODY.y;
+    // Muzzle: a stub straight out of the front of the ball, in the coat colour
+    // so it doesn't read as a beak.
+    const snout = new THREE.Mesh(geo(new THREE.ConeGeometry(0.07, 0.13, 8)), mat(coat));
+    snout.rotation.x = Math.PI / 2;
+    snout.position.set(0, 0.52, 0.37);
+    const nose = new THREE.Mesh(geo(new THREE.SphereGeometry(0.028, 6, 5)), mat(0x2b2118));
+    nose.position.set(0, 0.525, 0.425);
+    body.add(barrel, snout, nose);
+
+    // Eyes: two dark beads set into the front of the ball. Cheap, and they do
+    // more than any other detail to stop a ball of fluff reading as livestock.
+    const eyeGeo = geo(new THREE.SphereGeometry(0.03, 6, 5));
+    for (const side of [-1, 1]) {
+      const eye = new THREE.Mesh(eyeGeo, mat(0x2b2118));
+      eye.position.set(side * 0.085, 0.585, 0.3);
+      body.add(eye);
+    }
+
+    // Ears: bases buried in the fluff, tips clear of it.
+    const earGeo = geo(new THREE.ConeGeometry(0.075, 0.18, 6));
+    for (const side of [-1, 1]) {
+      const ear = new THREE.Mesh(earGeo, mat(coat));
+      ear.position.set(side * 0.115, 0.72, 0.14);
+      ear.rotation.z = side * -0.16; // pricked, barely splayed
+      body.add(ear);
+    }
+
+    // Tail: one pale puff half-sunk into the rump. It hangs off the pivot
+    // rather than sitting on it — a sphere spun about its own centre wouldn't
+    // move, so the wag would be invisible.
+    const tail = new THREE.Group();
+    tail.position.set(0, 0.42, -0.3);
+    const puff = new THREE.Mesh(geo(new THREE.SphereGeometry(0.15, 10, 8)), mat(accent));
+    puff.position.set(0, 0.16, -0.03);
+    tail.add(puff);
+    body.add(tail);
+
+    // Stubby legs: the fluff hangs to within a hand of the ground.
+    const legGeo = geo(new THREE.CylinderGeometry(0.058, 0.054, 0.2, 6));
+    const legs: THREE.Group[] = [];
+    for (const [lx, lz] of [
+      [-0.13, 0.19], [0.13, 0.19], [-0.13, -0.17], [0.13, -0.17],
+    ] as Array<[number, number]>) {
+      const hip = new THREE.Group();
+      hip.position.set(lx, 0.22, lz);
+      const leg = new THREE.Mesh(legGeo, mat(coat));
+      leg.position.y = -0.1;
+      hip.add(leg);
+      body.add(hip);
+      legs.push(hip);
+    }
+
+    const shadow = new THREE.Mesh(
+      geo(new THREE.CircleGeometry(0.4, 12).rotateX(-Math.PI / 2)),
+      new THREE.MeshBasicMaterial({ color: 0x1c3020, transparent: true, opacity: 0.14, depthWrite: false }),
+    );
+    shadow.renderOrder = 1;
+    root.add(shadow);
+
+    return {
+      root, legs, tail, body, shadow,
+      pos: new THREE.Vector2(),
+      heading: 0,
+      target: new THREE.Vector2(),
+      rand: () => 0,
+      offset: 0,
+    };
+  }
 
   const torso = new THREE.Mesh(geo(new THREE.CapsuleGeometry(0.26, 0.46, 4, 10)), mat(coat));
   torso.rotation.x = Math.PI / 2;
@@ -137,15 +221,21 @@ export function buildCreatures(): WorldModule {
   const geometries: THREE.BufferGeometry[] = [];
 
   // ===== Dogs =====
-  const golden = buildDog({ coat: P.dogGolden, accent: P.dogCream }, geometries);
-  const collie = buildDog({ coat: P.dogBlack, accent: P.dogWhite }, geometries);
-  golden.pos.set(10, 3);
-  golden.rand = rng(1201);
-  golden.offset = 0;
-  collie.pos.set(-2, 5);
-  collie.rand = rng(3407);
-  collie.offset = 7.5;
-  const dogs = [golden, collie];
+  // The collie sets the scale at 1; the poms are sized relative to each other —
+  // cream first, brown a touch bigger, orange the runt.
+  const pack: Array<{ spec: DogSpec; at: [number, number]; seed: number; offset: number }> = [
+    { spec: { coat: P.dogBlack, accent: P.dogWhite, breed: "collie", scale: 1 }, at: [-2, 5], seed: 3407, offset: 7.5 },
+    { spec: { coat: P.pomCream, accent: P.pomCreamPale, breed: "pom", scale: 0.72 }, at: [10, 3], seed: 1201, offset: 0 },
+    { spec: { coat: P.pomBrown, accent: P.pomBrownPale, breed: "pom", scale: 0.82 }, at: [-4, -8], seed: 5501, offset: 3.2 },
+    { spec: { coat: P.pomOrange, accent: P.pomOrangePale, breed: "pom", scale: 0.6 }, at: [13, -6], seed: 8123, offset: 11.8 },
+  ];
+  const dogs = pack.map(({ spec, at, seed, offset }) => {
+    const dog = buildDog(spec, geometries);
+    dog.pos.set(at[0], at[1]);
+    dog.rand = rng(seed);
+    dog.offset = offset;
+    return dog;
+  });
   for (const dog of dogs) {
     dog.heading = dog.rand() * Math.PI * 2;
     pickTarget(dog);
@@ -267,24 +357,37 @@ export function buildCreatures(): WorldModule {
   }
 
   // ===== Birds =====
+  // Each pivot carries one bird around a wide orbit. The bird travels along
+  // local −z, so the wings reach out along ±x (perpendicular to travel) and
+  // sweep their tips back toward +z, the way a gliding silhouette does.
   type Bird = { pivot: THREE.Group; wings: THREE.Mesh[]; speed: number; y: number; radius: number; phase: number };
   const birds: Bird[] = [];
-  const birdBodyGeo = new THREE.SphereGeometry(0.16, 8, 6);
-  const wingGeo = new THREE.PlaneGeometry(0.5, 0.2);
-  wingGeo.translate(0.25, 0, 0);
+  const birdBodyGeo = new THREE.SphereGeometry(0.11, 8, 6);
+  const wingGeo = new THREE.BufferGeometry();
+  wingGeo.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute([
+      0, 0, -0.08, // root, leading edge
+      0, 0, 0.13, // root, trailing edge
+      0.34, 0, 0.06, // swept tip
+    ], 3),
+  );
+  wingGeo.computeVertexNormals();
   geometries.push(birdBodyGeo, wingGeo);
+  const birdColors = [P.birdSlate, P.birdCoral, P.birdCream];
   for (let i = 0; i < 3; i++) {
     const pivot = new THREE.Group();
     const bird = new THREE.Group();
     const radius = 20 + i * 5;
     bird.position.x = radius;
-    const bodyMesh = new THREE.Mesh(birdBodyGeo, mat(P.bird));
-    bodyMesh.scale.set(0.7, 0.7, 1.6);
+    const color = birdColors[i];
+    const bodyMesh = new THREE.Mesh(birdBodyGeo, mat(color));
+    bodyMesh.scale.set(0.75, 0.75, 1.7);
     bird.add(bodyMesh);
     const wings: THREE.Mesh[] = [];
     for (const side of [-1, 1]) {
-      const wing = new THREE.Mesh(wingGeo, mat(P.bird, { side: THREE.DoubleSide }));
-      wing.scale.x = side;
+      const wing = new THREE.Mesh(wingGeo, mat(color, { side: THREE.DoubleSide }));
+      wing.scale.x = side; // mirrored, so the flap below negates with it
       bird.add(wing);
       wings.push(wing);
     }
@@ -329,8 +432,11 @@ export function buildCreatures(): WorldModule {
       for (const bird of birds) {
         bird.pivot.rotation.y = t * bird.speed + bird.phase;
         bird.pivot.position.y = bird.y + Math.sin(t * 0.5 + bird.phase) * 1.2;
+        // Flap about z so the horizontal wings beat up and down. The mirrored
+        // wing has scale.x −1, which flips its rotation too — multiplying it
+        // back in keeps both tips rising together.
         for (const wing of bird.wings) {
-          wing.rotation.y = wing.scale.x * Math.sin(t * 9 + bird.phase) * 0.7;
+          wing.rotation.z = wing.scale.x * Math.sin(t * 9 + bird.phase) * 0.7;
         }
       }
 

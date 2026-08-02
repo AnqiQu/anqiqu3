@@ -7,6 +7,7 @@ export type UiBridgeHandlers = {
   positionChip?: (id: string, x: number, y: number, inPhase: boolean) => void;
   setHover?: (id: string | null) => void;
   fadeAndNavigate?: (href: string) => void;
+  openPanel?: (id: string) => void;
 };
 
 export type UiBridge = {
@@ -16,6 +17,8 @@ export type UiBridge = {
   positionChip: (id: string, x: number, y: number, inPhase: boolean) => void;
   setHover: (id: string | null) => void;
   navigate: (href: string) => void;
+  // Reveals a location's long-form copy (the bench plaque's inscription).
+  openPanel: (id: string) => void;
   // Set by the engine so keyboard focus in the overlay can drive the same
   // highlight as pointer hover.
   onFocusHover?: (id: string | null) => void;
@@ -43,6 +46,9 @@ export function createUiBridge(): UiBridge {
     navigate(href) {
       if (handlers.fadeAndNavigate) handlers.fadeAndNavigate(href);
       else window.location.assign(href);
+    },
+    openPanel(id) {
+      handlers.openPanel?.(id);
     },
   };
 }

@@ -5,17 +5,24 @@ import { rng, valueNoise } from "./util";
 import {
   ISLAND_RX,
   ISLAND_RZ,
+  OBSERVATORY_CENTER,
   POND_CENTER,
   ellipticalRadius,
   terrainHeight,
   terrainNormal,
 } from "./terrain";
 
-// The stepping-stone path winds sign → pond → greenhouse → archive → hill so
-// every landmark reads as connected. Lanterns and flower clusters hang off it.
+// The stepping-stone path winds bench → pond → greenhouse → archive →
+// observatory steps so every landmark reads as connected. Lanterns and flower
+// clusters hang off it. The first two points are the spur up to the north-west
+// tree grove, ending facing the bench (see BENCH below); the last four climb
+// the hill's south-east flank to the foot of the observatory stair, keeping
+// clear of the solar array on the north-west side.
 const PATH_POINTS: Array<[number, number]> = [
+  [-10.1, 13.3], [-10.3, 11.3],
   [-9, 9.5], [-4.5, 13.5], [2, 14.4], [8, 10.5], [8.5, 4], [6, -1.5],
-  [-2, -3], [-9, -3.5], [-14, -2.5], [-13, -6.5], [-10, -10.5], [-7, -13.5],
+  [-2, -3], [-9, -3.5], [-14, -2.5], [-13.6, -5.4], [-9.6, -6], [-7.2, -6.6],
+  [-6.1, -8.1],
 ];
 
 // Note: keep the corridor around (5..7, 16..20) clear — the final camera
@@ -29,7 +36,15 @@ const LANTERN_SPOTS: Array<[number, number]> = [
   [-10.6, 8.2], [-3.5, 13.3], [4, 13.8], [8.8, 5], [3, -4.5], [-11, -4.8],
 ];
 
-export function buildIsland(): WorldModule {
+// Bench at the end of the grove spur: back to the trunk of TREE_SPOTS[2],
+// facing back down the path across the meadow toward the pond.
+const BENCH = { x: -11.2, z: 13.71, rotationY: 1.92 };
+
+// The bench plaque is handed back separately: engine.ts registers it as a
+// hover/click target of its own, independent of the island it rides on.
+export type Island = WorldModule & { plaque: THREE.Group };
+
+export function buildIsland(): Island {
   const group = new THREE.Group();
   const geometries: THREE.BufferGeometry[] = [];
   const materials: THREE.Material[] = [];
@@ -147,11 +162,10 @@ export function buildIsland(): WorldModule {
   geometries.push(vineGeo);
   instanced.push(vines);
 
-  // Distant floating islets give the sky depth.
+  // Distant floating islets give the sky depth. Bare rock, no grass cap: the
+  // caps read as flat green discs pasted on at this distance.
   const isletRockGeo = new THREE.DodecahedronGeometry(2.2, 0);
-  const isletCapGeo = new THREE.CircleGeometry(1.9, 14);
-  isletCapGeo.rotateX(-Math.PI / 2);
-  geometries.push(isletRockGeo, isletCapGeo);
+  geometries.push(isletRockGeo);
   for (const [x, y, z] of [
     [-40, -5, -14], [38, -9, 8], [-30, -13, 24],
   ] as Array<[number, number, number]>) {
@@ -159,9 +173,7 @@ export function buildIsland(): WorldModule {
     rock.position.set(x, y, z);
     rock.scale.set(1, 0.75, 1);
     rock.rotation.y = rand() * Math.PI;
-    const cap = new THREE.Mesh(isletCapGeo, mat(P.meadow, { flat: true }));
-    cap.position.set(x, y + 1.35, z);
-    group.add(rock, cap);
+    group.add(rock);
   }
 
   // ===== Trees =====
@@ -208,6 +220,11 @@ export function buildIsland(): WorldModule {
     [6, -4, 4, 34], [-16, -2, 3.5, 26], [-9, 9, 2.5, 20], [2, 8, 7, 26],
     [-6, -14, 5, 30], [16, 9, 2.5, 14], [-13, -15, 3, 10],
   ];
+  // Blossoms keep off the pond water and out of the observatory's stone
+  // footprint, where they would poke up through the plinth ring.
+  const flowerBlocked = (x: number, z: number) =>
+    Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 5.6 ||
+    Math.hypot(x - OBSERVATORY_CENTER.x, z - OBSERVATORY_CENTER.z) < 4.2;
   const flowerSpots: Array<[number, number]> = [];
   for (const [cx, cz, radius, count] of clusters) {
     for (let i = 0; i < count; i++) {
@@ -216,8 +233,7 @@ export function buildIsland(): WorldModule {
       const x = cx + Math.cos(angle) * dist;
       const z = cz + Math.sin(angle) * dist;
       if (ellipticalRadius(x, z) > 0.95) continue;
-      // Keep blossoms off the pond water.
-      if (Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 5.6) continue;
+      if (flowerBlocked(x, z)) continue;
       flowerSpots.push([x, z]);
     }
   }
@@ -225,7 +241,7 @@ export function buildIsland(): WorldModule {
     const x = (rand() * 2 - 1) * ISLAND_RX * 0.9;
     const z = (rand() * 2 - 1) * ISLAND_RZ * 0.9;
     if (ellipticalRadius(x, z) > 0.92) continue;
-    if (Math.hypot(x - POND_CENTER.x, z - POND_CENTER.z) < 5.6) continue;
+    if (flowerBlocked(x, z)) continue;
     flowerSpots.push([x, z]);
   }
 
@@ -256,7 +272,7 @@ export function buildIsland(): WorldModule {
     PATH_POINTS.map(([x, z]) => new THREE.Vector3(x, 0, z)),
   );
   const stoneGeo = new THREE.CylinderGeometry(0.42, 0.5, 0.09, 7);
-  const stoneCount = 46;
+  const stoneCount = 48; // tracks the curve length: ~1.4 units of spacing
   const stones = new THREE.InstancedMesh(stoneGeo, mat(P.stone, { flat: true }), stoneCount);
   const up = new THREE.Vector3(0, 1, 0);
   for (let i = 0; i < stoneCount; i++) {
@@ -295,7 +311,57 @@ export function buildIsland(): WorldModule {
     group.add(post, cap, glow);
   }
 
-  // ===== Blob shadows (trees + lanterns) =====
+  // ===== Bench =====
+  // Plank seat on dark legs, laid flush to the slope (same up→normal trick the
+  // stepping stones use) so it never hovers on the meadow's rolls.
+  const bench = new THREE.Group();
+  bench.position.set(BENCH.x, terrainHeight(BENCH.x, BENCH.z) - 0.04, BENCH.z);
+  bench.quaternion.setFromUnitVectors(up, terrainNormal(BENCH.x, BENCH.z));
+  bench.rotateY(BENCH.rotationY);
+  const benchLegGeo = new THREE.BoxGeometry(0.14, 0.46, 0.52);
+  const benchPostGeo = new THREE.BoxGeometry(0.12, 0.66, 0.12);
+  const benchSeatGeo = new THREE.BoxGeometry(1.85, 0.1, 0.56);
+  const benchRailGeo = new THREE.BoxGeometry(1.85, 0.16, 0.08);
+  geometries.push(benchLegGeo, benchPostGeo, benchSeatGeo, benchRailGeo);
+  const benchWood = mat(P.woodDark, { flat: true });
+  const benchPlank = mat(P.plank, { flat: true });
+  for (const side of [-1, 1]) {
+    const leg = new THREE.Mesh(benchLegGeo, benchWood);
+    leg.position.set(side * 0.74, 0.23, 0.02);
+    const post = new THREE.Mesh(benchPostGeo, benchWood);
+    post.position.set(side * 0.74, 0.8, -0.26);
+    post.rotation.x = -0.14; // backrest leans back
+    bench.add(leg, post);
+  }
+  const seat = new THREE.Mesh(benchSeatGeo, benchPlank);
+  seat.position.set(0, 0.51, 0.02);
+  bench.add(seat);
+  for (const [ry, rz] of [[0.78, -0.29], [1.0, -0.32]] as Array<[number, number]>) {
+    const rail = new THREE.Mesh(benchRailGeo, benchPlank);
+    rail.position.set(0, ry, rz);
+    rail.rotation.x = -0.14;
+    bench.add(rail);
+  }
+
+  // Memorial plaque: gold plate on the front of the backrest, facing whoever
+  // walks up to the bench. Its own group so the hover glow and the raycast can
+  // target just this, and so it reads as a separate thing to click.
+  const plaque = new THREE.Group();
+  const plaqueGeo = new THREE.BoxGeometry(0.6, 0.22, 0.03);
+  const plaqueInsetGeo = new THREE.BoxGeometry(0.48, 0.13, 0.014);
+  geometries.push(plaqueGeo, plaqueInsetGeo);
+  const plate = new THREE.Mesh(plaqueGeo, mat(P.gold, { flat: true, emissive: 0x2a2210 }));
+  plate.position.set(0, 0.995, -0.245);
+  plate.rotation.x = -0.14;
+  const engraving = new THREE.Mesh(plaqueInsetGeo, mat(P.brass, { flat: true }));
+  engraving.position.set(0, 0.995, -0.231);
+  engraving.rotation.x = -0.14;
+  plaque.add(plate, engraving);
+  bench.add(plaque);
+
+  group.add(bench);
+
+  // ===== Blob shadows (trees + lanterns + bench) =====
   const shadowGeo = new THREE.CircleGeometry(1, 14);
   shadowGeo.rotateX(-Math.PI / 2);
   const shadowMat = new THREE.MeshBasicMaterial({
@@ -307,6 +373,7 @@ export function buildIsland(): WorldModule {
   const shadowSpots: Array<[number, number, number]> = [
     ...TREE_SPOTS.map(([x, z]) => [x, z, 1.5] as [number, number, number]),
     ...LANTERN_SPOTS.map(([x, z]) => [x, z, 0.35] as [number, number, number]),
+    [BENCH.x, BENCH.z, 1.0],
   ];
   const shadows = new THREE.InstancedMesh(shadowGeo, shadowMat, shadowSpots.length);
   shadowSpots.forEach(([x, z, r], i) => {
@@ -324,6 +391,7 @@ export function buildIsland(): WorldModule {
 
   return {
     group,
+    plaque,
     update(t) {
       // Lantern glow pulse, offset per lantern so they don't blink in sync.
       lanternGlows.forEach((glow, i) => {

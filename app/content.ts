@@ -1,12 +1,3 @@
-export const navigation = [
-  { label: "Overview", href: "/#overview" },
-  { label: "Specs", href: "/#specs" },
-  { label: "Changelog", href: "/#changelog" },
-  { label: "Comparison", href: "/#comparison" },
-  { label: "Compliance", href: "/#compliance" },
-  { label: "Sandbox", href: "/sandbox" },
-] as const;
-
 export const companies = [
   { name: "Anthropic", logo: "/brand/company-logos/anthropic.svg" },
   { name: "OpenAI", logo: "/brand/company-logos/openai.svg" },
@@ -44,54 +35,93 @@ export const specifications = [
       },
     ],
   },
-  { label: "Preferred energy sources", value: "Soup, sushi, steak" },
-] as const;
-
-export const knownIssues = [
-  {
-    id: "BUG-001",
-    text: "Sometimes breaks when touching grass (especially pollened grass)",
-  },
-  { id: "BUG-002", text: "Occasional issues with timezone adjustment" },
-  {
-    id: "BUG-003",
-    text: "Highly variable battery life depending on use",
-  },
-  { id: "BUG-004", text: "May require a reboot during the day" },
-  { id: "BUG-005", text: "Heavily dependent on solar power" },
 ] as const;
 
 export const changelog = [
   {
+    version: "v23.0",
     year: "2025",
-    text: "Model fine-tuning begins at the University of Oxford.",
-    details:
-      "Rhodes Scholar. Interested in reinforcement learning, autonomous agents, strategic game theory, training efficiency, and AI alignment more broadly.",
+    headline: "Major release: fine-tuning begins at the University of Oxford.",
+    notes: [
+      {
+        label: "Added",
+        text: "Reinforcement learning, autonomous agents, strategic game theory, and AI alignment research. Rhodes Scholar build.",
+      },
+      { label: "Improved", text: "Training efficiency." },
+      { label: "Breaking changes", text: "Timezone." },
+      { label: "Known regressions", text: "Proximity to dogs." },
+    ],
   },
   {
+    version: "v19.0",
     year: "2021",
-    text: "Model pretraining begins at the University of Chicago.",
-    details: "Economics, Statistics, Computer Science",
+    headline: "Major release: pretraining begins at the University of Chicago.",
+    notes: [
+      { label: "Added", text: "Economics, Statistics, Computer Science." },
+      { label: "Changed", text: "Sleep schedule is now experimental." },
+      { label: "Deprecated", text: "Free time." },
+      {
+        label: "Fixed",
+        text: "Several personality bugs. Introduced new ones.",
+      },
+    ],
+  },
+  {
+    version: "v5.0",
+    year: "2007",
+    headline: "Major release: enrolled in primary school.",
+    notes: [
+      { label: "Added", text: "Literacy." },
+      { label: "Deprecated", text: "Naps (reverted in v22.0)." },
+    ],
+  },
+  {
+    version: "v1.0",
+    year: "2002",
+    headline: "Initial release. Shipped from South Africa.",
+    notes: [
+      {
+        label: "Added",
+        text: "Object permanence, bipedal locomotion (unstable).",
+      },
+      { label: "Known issues", text: "Cannot yet write emails." },
+    ],
   },
 ] as const;
 
 export const comparisons = [
-  { capability: "Can write emails", anqi: "Yes", chatgpt: "Yes" },
-  { capability: "Knows machine learning", anqi: "Yes", chatgpt: "Yes" },
+  { capability: "Can write emails", anqi: "Yes", chatgpt: "Yes", claude: "Yes" },
+  {
+    capability: "Knows machine learning",
+    anqi: "Yes",
+    chatgpt: "Yes",
+    claude: "Yes",
+  },
   {
     capability: "Multimodal support",
     anqi: "Text, image, voice, touch",
     chatgpt: "Text, image, voice",
+    claude: "Text, image, voice",
   },
-  { capability: "Hallucinations", anqi: "Yes", chatgpt: "Yes" },
-  {
-    capability: "Maintains social context",
-    anqi: "Yes",
-    chatgpt: "Sometimes",
-  },
-  { capability: "Has South Africa lore", anqi: "Yes", chatgpt: "No" },
-  { capability: "Available for coffee", anqi: "Yes", chatgpt: "No" },
+  { capability: "Hallucinations", anqi: "Yes", chatgpt: "Yes", claude: "Yes" },
 ] as const;
+
+export const benchmarks = {
+  suite: "AnqBench",
+  axes: [
+    { key: "soup", label: "SoupEval-2", full: "Soup evaluation" },
+    { key: "bugs", label: "Bug-STOMP", full: "Catching bugs" },
+    { key: "image", label: "ImageNet-R", full: "Image classification" },
+    { key: "verbal", label: "VerbalIQ", full: "Verbal reasoning" },
+    { key: "hydration", label: "H2O-Bench", full: "Hydration" },
+    { key: "empathy", label: "EmoBench", full: "Emotional support" },
+  ],
+  models: [
+    { name: "Anqi", tone: "anqi", scores: [100, 100, 100, 100, 100, 100] },
+    { name: "ChatGPT 5.6", tone: "chatgpt", scores: [38, 96, 97, 92, 11, 68] },
+    { name: "Claude Fable", tone: "claude", scores: [31, 97, 93, 92, 12, 69] },
+  ],
+} as const;
 
 export const compliance = [
   { standard: "SOC 2", status: "NOT CERTIFIED", value: "No" },
@@ -108,7 +138,7 @@ export const compliance = [
   {
     standard: "Incident response",
     status: "MANUAL",
-    value: "Long walk, Notes app, iced matcha",
+    value: "Long walk, iced matcha, cry.",
   },
   { standard: "Uptime", status: "VARIABLE", value: "Variable" },
 ] as const;

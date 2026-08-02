@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Audiowide, Exo_2 } from "next/font/google";
+import { Audiowide, Exo_2, Philosopher, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { CookieBanner } from "./components/cookie-banner";
 
 const audiowide = Audiowide({
   variable: "--font-audiowide",
@@ -11,6 +12,21 @@ const audiowide = Audiowide({
 
 const exo = Exo_2({
   variable: "--font-exo",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// The sandbox runs on its own pair: Philosopher for headings, Plus Jakarta
+// Sans for body copy.
+const philosopher = Philosopher({
+  variable: "--font-philosopher",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
   display: "swap",
 });
@@ -61,8 +77,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${audiowide.variable} ${exo.variable}`}>
+      <body
+        className={`${audiowide.variable} ${exo.variable} ${philosopher.variable} ${jakarta.variable}`}
+      >
         {children}
+        <CookieBanner />
       </body>
     </html>
   );
