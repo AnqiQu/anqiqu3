@@ -103,7 +103,7 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     greenhouse,
     pond,
     bridge,
-    buildCreatures(),
+    buildCreatures([island.perch, bridge.perch]),
     buildBlimps(),
   ];
   for (const m of modules) scene.add(m.group);
