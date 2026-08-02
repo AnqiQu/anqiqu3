@@ -60,8 +60,13 @@ export function buildObservatory(x: number, z: number): WorldModule {
   // Arched door + steps down the south face. Each slab is bedded into the
   // ground it stands on rather than stacked at fixed heights, so the flight
   // follows the pad and then the slope instead of floating off it.
-  add(new THREE.BoxGeometry(1.1, 1.6, 0.24), mat(P.woodDark, { flat: true }), 0, 0.8, 3.32);
-  add(new THREE.TorusGeometry(0.55, 0.1, 6, 12, Math.PI), mat(P.brass), 0, 1.6, 3.34);
+  //
+  // The door is a deep slab (depth 0.5) pushed out to z 3.41 so its front face
+  // (3.66) clears the drum's front vertex ridge, which bulges to ~3.6 at the
+  // base and tapers with height. A shallower/closer door let that ridge poke
+  // through the panel and read as a stone "notch" cut up into the door bottom.
+  add(new THREE.BoxGeometry(1.1, 1.6, 0.5), mat(P.woodDark, { flat: true }), 0, 0.8, 3.41);
+  add(new THREE.TorusGeometry(0.55, 0.1, 6, 12, Math.PI), mat(P.brass), 0, 1.6, 3.66);
   for (let i = 0; i < 4; i++) {
     const pz = 3.7 + i * 0.5;
     add(

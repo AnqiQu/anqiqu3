@@ -1,12 +1,14 @@
 import * as THREE from "three";
 import { P, mat } from "../palette";
 import { terrainHeight } from "../terrain";
-import type { WorldModule } from "../types";
+import type { Perch, WorldModule } from "../types";
+
+export type Bridge = WorldModule & { perch: Perch };
 
 // The Unfinished Bridge: launches off the island rim and stops mid-air —
 // planks thin out, the last ones sit askew, and one dangles from a rope.
 // Ideas in progress.
-export function buildBridge(x: number, z: number, rotationY: number): WorldModule {
+export function buildBridge(x: number, z: number, rotationY: number): Bridge {
   const group = new THREE.Group();
   const geometries: THREE.BufferGeometry[] = [];
 
@@ -48,6 +50,11 @@ export function buildBridge(x: number, z: number, rotationY: number): WorldModul
   geometries.push(plankGeo);
   const planks = new THREE.InstancedMesh(plankGeo, mat(P.plank, { flat: true }), 9);
   const dummy = new THREE.Object3D();
+  // Plank the cat naps on: far enough out to be over the drop, well short of
+  // the askew ones. Read off the loop rather than hard-coded, so retuning the
+  // plank spacing can't leave the cat hovering.
+  const PERCH_PLANK = 2;
+  const perchPoint = new THREE.Vector3();
   let px = -0.6;
   for (let i = 0; i < 9; i++) {
     px += 0.62 + Math.max(0, i - 4) * 0.16;
@@ -57,8 +64,11 @@ export function buildBridge(x: number, z: number, rotationY: number): WorldModul
     if (i === 8) dummy.rotation.set(-0.06, -0.5, -0.18);
     dummy.updateMatrix();
     planks.setMatrixAt(i, dummy.matrix);
+    if (i === PERCH_PLANK) perchPoint.set(px, dummy.position.y + 0.035, 0);
   }
   group.add(planks);
+  // Facing out along the deck: the model's forward is +z, the deck runs +x.
+  const perch: Perch = { position: group.localToWorld(perchPoint), yaw: rotationY + Math.PI / 2 };
 
   // Posts at the island end + mid-deck, each stretched down to the actual
   // ground beneath it so nothing floats.
@@ -102,6 +112,7 @@ export function buildBridge(x: number, z: number, rotationY: number): WorldModul
 
   return {
     group,
+    perch,
     update(t) {
       // The dangling plank sways gently.
       dangler.rotation.x = 0.4 + Math.sin(t * 0.9) * 0.12;

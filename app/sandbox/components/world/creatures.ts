@@ -1,15 +1,17 @@
 import * as THREE from "three";
 import { P, mat } from "./palette";
 import { POND_CENTER, ellipticalRadius, terrainHeight } from "./terrain";
-import type { WorldModule } from "./types";
+import type { Perch, WorldModule } from "./types";
 import { rng } from "./util";
 
 // The island's residents: a border collie and three pomeranians roaming the
-// meadow, koi in the pond, birds on high orbits, butterflies among the flowers.
+// meadow, a ginger cat asleep on the furniture, koi in the pond, birds on high
+// orbits, butterflies among the flowers.
 
-// Circles the dogs may not enter: water, buildings, and other solids. Steering
-// repels them near the edge, and a hard projection guarantees no penetration.
-const DOG_OBSTACLES: Array<{ x: number; z: number; r: number }> = [
+// Circles nothing on four legs may enter: water, buildings, other solids.
+// Steering repels them near the edge, and a hard projection guarantees no
+// penetration.
+const WALK_OBSTACLES: Array<{ x: number; z: number; r: number }> = [
   { x: 2, z: 8, r: 6.2 }, // pond + rocky rim
   { x: 6, z: -4, r: 3.6 }, // greenhouse deck
   { x: -6, z: -14, r: 4.6 }, // observatory
@@ -200,7 +202,158 @@ function buildDog({ coat, accent, breed, scale }: DogSpec, geos: THREE.BufferGeo
 }
 
 function insideObstacle(x: number, z: number, margin: number): boolean {
-  return DOG_OBSTACLES.some((o) => Math.hypot(x - o.x, z - o.z) < o.r + margin);
+  return WALK_OBSTACLES.some((o) => Math.hypot(x - o.x, z - o.z) < o.r + margin);
+}
+
+// ===== The cat =====
+// A ginger tabby that sleeps far more than it moves. It naps on a spot, gets
+// up, sits a while, walks slowly to another spot, sits, and goes back to sleep.
+// Spots include the bench seat and a bridge plank, whose heights are handed in
+// as perches by the modules that build them.
+type CatState = "sleep" | "rouse" | "walk" | "settle";
+
+// x/z on the island, y of the surface it rests on, and which way it faces
+// there. `lift` is how far that surface sits above the meadow — zero on the
+// grass, and what the cat climbs when it hops up onto furniture.
+type CatSpot = { x: number; z: number; y: number; lift: number; yaw: number };
+
+const CAT_SPEED = 0.55; // m/s — an unhurried walk
+const CAT_TURN = 1.6; // rad/s
+const SLEEP_TIME = 34;
+const ROUSE_TIME = 4;
+const SETTLE_TIME = 5;
+// How close to a perch the cat has to be before it starts rising onto it.
+const HOP_NEAR = 0.3;
+const HOP_FAR = 1.3;
+
+type Cat = {
+  root: THREE.Group;
+  body: THREE.Group; // drops and pitches through the poses
+  head: THREE.Group; // tucks when asleep
+  legs: THREE.Group[]; // FL, FR, BL, BR hip pivots
+  tailJoints: THREE.Group[]; // chain, curls around the body when asleep
+  shadow: THREE.Mesh;
+};
+
+// Every posed value the state machine eases between. Blending these rather
+// than snapping is what makes the cat look like it is settling rather than
+// switching costume.
+type CatPose = {
+  drop: number; // body lowered toward the ground
+  pitch: number; // chest raised (sitting) or level
+  frontLeg: number;
+  hindLeg: number;
+  curl: number; // per tail joint, so the whole tail wraps sideways
+  lift: number; // per tail joint, so the tail arcs instead of poking out straight
+  tuck: number; // nose down into the chest
+};
+
+// Rotating about x sends +z (the cat's front) down, so a nose-down tuck is
+// positive and a chest-up sitting pitch is negative.
+const CAT_POSES: Record<CatState, CatPose> = {
+  // Belly on the ground, front paws stretched out ahead, hind legs trailing,
+  // tail wrapped round, nose down into them.
+  sleep: { drop: 0.15, pitch: 0, frontLeg: -1.5, hindLeg: 1.5, curl: 0.55, lift: 0.04, tuck: 0.6 },
+  rouse: { drop: 0.05, pitch: -0.3, frontLeg: 0, hindLeg: -1.2, curl: 0.28, lift: 0.14, tuck: 0 },
+  walk: { drop: 0, pitch: 0, frontLeg: 0, hindLeg: 0, curl: 0.12, lift: 0.32, tuck: 0 },
+  settle: { drop: 0.05, pitch: -0.3, frontLeg: 0, hindLeg: -1.2, curl: 0.28, lift: 0.14, tuck: 0 },
+};
+
+function buildCat(geos: THREE.BufferGeometry[]): Cat {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+
+  const geo = <G extends THREE.BufferGeometry>(g: G): G => {
+    geos.push(g);
+    return g;
+  };
+
+  const ginger = mat(P.catGinger);
+  const stripe = mat(P.catStripe, { flat: true });
+
+  const torso = new THREE.Mesh(geo(new THREE.CapsuleGeometry(0.115, 0.26, 4, 8)), ginger);
+  torso.rotation.x = Math.PI / 2;
+  torso.position.y = 0.28;
+  body.add(torso);
+
+  // Tabby bands: rings standing slightly proud of the torso. A torus's axis is
+  // already z, which is the way the body runs, so they need no rotating.
+  const bandGeo = geo(new THREE.TorusGeometry(0.118, 0.016, 6, 12));
+  for (const bz of [-0.13, 0.0, 0.13]) {
+    const band = new THREE.Mesh(bandGeo, stripe);
+    band.position.set(0, 0.28, bz);
+    body.add(band);
+  }
+
+  // Head on its own pivot at the neck, so the whole face tucks as one.
+  const head = new THREE.Group();
+  head.position.set(0, 0.37, 0.2);
+  const skull = new THREE.Mesh(geo(new THREE.SphereGeometry(0.105, 12, 10)), ginger);
+  skull.position.z = 0.06;
+  const muzzle = new THREE.Mesh(geo(new THREE.SphereGeometry(0.055, 8, 7)), mat(P.catCream));
+  muzzle.scale.set(1.2, 0.85, 1);
+  muzzle.position.set(0, -0.025, 0.13);
+  const nose = new THREE.Mesh(geo(new THREE.SphereGeometry(0.019, 6, 5)), mat(P.blossomPink));
+  nose.position.set(0, -0.005, 0.165);
+  head.add(skull, muzzle, nose);
+  const eyeGeo = geo(new THREE.SphereGeometry(0.018, 6, 5));
+  const earGeo = geo(new THREE.ConeGeometry(0.05, 0.095, 5));
+  for (const side of [-1, 1]) {
+    const eye = new THREE.Mesh(eyeGeo, mat(0x2b2118));
+    eye.position.set(side * 0.045, 0.025, 0.145);
+    const ear = new THREE.Mesh(earGeo, ginger);
+    ear.position.set(side * 0.062, 0.11, 0.04);
+    ear.rotation.z = side * -0.22;
+    head.add(eye, ear);
+  }
+  body.add(head);
+
+  // Tail: a chain of pivots, each hung off the end of the last, so one curl
+  // value per joint accumulates into a tail that wraps right around the body.
+  const tailJoints: THREE.Group[] = [];
+  let parent: THREE.Group = body;
+  for (let i = 0; i < 3; i++) {
+    const joint = new THREE.Group();
+    joint.position.set(0, i === 0 ? 0.32 : 0, i === 0 ? -0.24 : -0.14);
+    const seg = new THREE.Mesh(
+      geo(new THREE.CapsuleGeometry(0.03 - i * 0.004, 0.1, 3, 6)),
+      i === 1 ? stripe : ginger,
+    );
+    seg.rotation.x = Math.PI / 2;
+    seg.position.z = -0.07;
+    joint.add(seg);
+    parent.add(joint);
+    parent = joint;
+    tailJoints.push(joint);
+  }
+
+  const legGeo = geo(new THREE.CylinderGeometry(0.034, 0.03, 0.22, 6));
+  const pawGeo = geo(new THREE.SphereGeometry(0.038, 6, 5));
+  const legs: THREE.Group[] = [];
+  for (const [lx, lz] of [
+    [-0.075, 0.14], [0.075, 0.14], [-0.075, -0.13], [0.075, -0.13],
+  ] as Array<[number, number]>) {
+    const hip = new THREE.Group();
+    hip.position.set(lx, 0.23, lz);
+    const leg = new THREE.Mesh(legGeo, ginger);
+    leg.position.y = -0.11;
+    const paw = new THREE.Mesh(pawGeo, mat(P.catCream));
+    paw.position.y = -0.21;
+    hip.add(leg, paw);
+    body.add(hip);
+    legs.push(hip);
+  }
+
+  const shadow = new THREE.Mesh(
+    geo(new THREE.CircleGeometry(0.3, 12).rotateX(-Math.PI / 2)),
+    new THREE.MeshBasicMaterial({ color: 0x1c3020, transparent: true, opacity: 0.13, depthWrite: false }),
+  );
+  shadow.position.y = 0.02;
+  shadow.renderOrder = 1;
+  root.add(shadow);
+
+  return { root, body, head, legs, tailJoints, shadow };
 }
 
 function pickTarget(dog: Dog): void {
@@ -216,7 +369,7 @@ function pickTarget(dog: Dog): void {
   dog.target.set(8, 2); // safe meadow fallback
 }
 
-export function buildCreatures(): WorldModule {
+export function buildCreatures(perches: Perch[]): WorldModule {
   const group = new THREE.Group();
   const geometries: THREE.BufferGeometry[] = [];
 
@@ -255,7 +408,7 @@ export function buildCreatures(): WorldModule {
       const seekLen = Math.hypot(steerX, steerZ) || 1;
       steerX /= seekLen;
       steerZ /= seekLen;
-      for (const o of DOG_OBSTACLES) {
+      for (const o of WALK_OBSTACLES) {
         const dx = dog.pos.x - o.x;
         const dz = dog.pos.y - o.z;
         const d = Math.hypot(dx, dz) || 1;
@@ -282,7 +435,7 @@ export function buildCreatures(): WorldModule {
       dog.pos.y += Math.cos(dog.heading) * DOG_SPEED * dt;
 
       // Hard guarantees: project out of any obstacle and back inside the rim.
-      for (const o of DOG_OBSTACLES) {
+      for (const o of WALK_OBSTACLES) {
         const dx = dog.pos.x - o.x;
         const dz = dog.pos.y - o.z;
         const d = Math.hypot(dx, dz) || 1;
@@ -322,6 +475,154 @@ export function buildCreatures(): WorldModule {
 
     // Tail: always wagging — faster when running.
     dog.tail.rotation.z = Math.sin(t * (running ? 9 : 5)) * 0.45;
+  };
+
+  // ===== Cat =====
+  // Nap spots. The perches come first so the cat starts the world asleep on
+  // the bench; the rest are patches of meadow it can be found on instead.
+  const catSpots: CatSpot[] = [
+    ...perches.map(({ position, yaw }) => ({
+      x: position.x,
+      z: position.z,
+      y: position.y,
+      lift: position.y - terrainHeight(position.x, position.z),
+      yaw,
+    })),
+    ...([
+      [-7.5, 10.5, 2.4], [9.4, -0.6, -1.1], [8.6, 5.5, 0.4], [-13.5, 6, 1.3],
+    ] as Array<[number, number, number]>).map(([x, z, yaw]) => ({
+      x, z, y: terrainHeight(x, z), lift: 0, yaw,
+    })),
+  ];
+
+  const cat = buildCat(geometries);
+  group.add(cat.root);
+  const catRand = rng(7717);
+  const catPos = new THREE.Vector2(catSpots[0].x, catSpots[0].z);
+  let catHeading = catSpots[0].yaw;
+  let catState: CatState = "sleep";
+  let catTimer = SLEEP_TIME;
+  let catSpotIndex = 0;
+  let catFrom = catSpots[0];
+  let catTo = catSpots[0];
+  const catPose: CatPose = { ...CAT_POSES.sleep };
+
+  // Anything guarding an endpoint of the current trip has to be ignored, or
+  // the cat would be pushed away from the very bench it is walking to.
+  const guardsSpot = (o: { x: number; z: number; r: number }, s: CatSpot) =>
+    Math.hypot(o.x - s.x, o.z - s.z) < o.r + 1.2;
+  // How much of a perch's height the cat has taken on, by how close it is —
+  // this is the hop up onto the seat, and the step back down off it.
+  const liftAt = (s: CatSpot) =>
+    s.lift *
+    (1 - THREE.MathUtils.smoothstep(Math.hypot(catPos.x - s.x, catPos.y - s.z), HOP_NEAR, HOP_FAR));
+
+  const updateCat = (t: number, dt: number) => {
+    if (catState === "walk") {
+      let steerX = catTo.x - catPos.x;
+      let steerZ = catTo.z - catPos.y;
+      const seekLen = Math.hypot(steerX, steerZ) || 1;
+      steerX /= seekLen;
+      steerZ /= seekLen;
+      for (const o of WALK_OBSTACLES) {
+        if (guardsSpot(o, catFrom) || guardsSpot(o, catTo)) continue;
+        const dx = catPos.x - o.x;
+        const dz = catPos.y - o.z;
+        const d = Math.hypot(dx, dz) || 1;
+        if (d < o.r + 1.5) {
+          const w = ((o.r + 1.5 - d) / 1.5) * 2.5;
+          steerX += (dx / d) * w;
+          steerZ += (dz / d) * w;
+        }
+      }
+      const desired = Math.atan2(steerX, steerZ);
+      let delta = desired - catHeading;
+      delta = Math.atan2(Math.sin(delta), Math.cos(delta));
+      catHeading += THREE.MathUtils.clamp(delta, -CAT_TURN * dt, CAT_TURN * dt);
+      catPos.x += Math.sin(catHeading) * CAT_SPEED * dt;
+      catPos.y += Math.cos(catHeading) * CAT_SPEED * dt;
+      for (const o of WALK_OBSTACLES) {
+        if (guardsSpot(o, catFrom) || guardsSpot(o, catTo)) continue;
+        const dx = catPos.x - o.x;
+        const dz = catPos.y - o.z;
+        const d = Math.hypot(dx, dz) || 1;
+        if (d < o.r) {
+          catPos.x = o.x + (dx / d) * o.r;
+          catPos.y = o.z + (dz / d) * o.r;
+        }
+      }
+      // Same rim clamp the dogs get. It matters more here: walking to or from
+      // the bridge suppresses the bridge-foot obstacle, which is the one thing
+      // otherwise keeping the cat back from that edge.
+      const re = ellipticalRadius(catPos.x, catPos.y);
+      if (re > RIM_LIMIT) {
+        catPos.x *= RIM_LIMIT / re;
+        catPos.y *= RIM_LIMIT / re;
+      }
+
+      // Arrived, or the watchdog expired — a walk that can't converge (steered
+      // in circles by an obstacle) settles where it stands rather than never
+      // sleeping again.
+      catTimer -= dt;
+      if (seekLen < 0.18 || catTimer <= 0) {
+        catState = "settle";
+        catTimer = SETTLE_TIME;
+      }
+    } else {
+      // Resting: turn to face whichever way the spot faces.
+      let delta = catTo.yaw - catHeading;
+      delta = Math.atan2(Math.sin(delta), Math.cos(delta));
+      catHeading += THREE.MathUtils.clamp(delta, -CAT_TURN * dt, CAT_TURN * dt);
+
+      catTimer -= dt;
+      if (catTimer <= 0) {
+        if (catState === "sleep") {
+          catState = "rouse";
+          catTimer = ROUSE_TIME;
+        } else if (catState === "rouse") {
+          catFrom = catTo;
+          catSpotIndex = (catSpotIndex + 1 + Math.floor(catRand() * (catSpots.length - 1))) % catSpots.length;
+          catTo = catSpots[catSpotIndex];
+          catState = "walk";
+          catTimer = 120; // watchdog
+        } else {
+          catState = "sleep";
+          catTimer = SLEEP_TIME * (0.7 + catRand() * 0.6);
+        }
+      }
+    }
+
+    // Ease every posed value toward the current state's, so the cat settles
+    // into a pose instead of snapping into it.
+    const want = CAT_POSES[catState];
+    const k = Math.min(1, dt * 2.4);
+    catPose.drop += (want.drop - catPose.drop) * k;
+    catPose.pitch += (want.pitch - catPose.pitch) * k;
+    catPose.frontLeg += (want.frontLeg - catPose.frontLeg) * k;
+    catPose.hindLeg += (want.hindLeg - catPose.hindLeg) * k;
+    catPose.curl += (want.curl - catPose.curl) * k;
+    catPose.lift += (want.lift - catPose.lift) * k;
+    catPose.tuck += (want.tuck - catPose.tuck) * k;
+
+    const ground = terrainHeight(catPos.x, catPos.y);
+    cat.root.position.set(catPos.x, ground + Math.max(liftAt(catFrom), liftAt(catTo)), catPos.y);
+    cat.root.rotation.y = catHeading;
+
+    const breath = catState === "sleep" ? Math.sin(t * 1.1) * 0.006 : 0;
+    cat.body.position.y = -catPose.drop + breath;
+    cat.body.rotation.x = catPose.pitch;
+    cat.head.rotation.x = catPose.tuck;
+
+    const stride = catState === "walk" ? Math.sin(t * 4.4) * 0.35 : 0;
+    cat.legs[0].rotation.x = catPose.frontLeg + stride;
+    cat.legs[1].rotation.x = catPose.frontLeg - stride;
+    cat.legs[2].rotation.x = catPose.hindLeg - stride;
+    cat.legs[3].rotation.x = catPose.hindLeg + stride;
+
+    const sway = catState === "walk" ? Math.sin(t * 2.2) * 0.12 : Math.sin(t * 0.8) * 0.05;
+    cat.tailJoints.forEach((joint, i) => {
+      joint.rotation.set(catPose.lift, catPose.curl + (i === 0 ? sway : sway * 0.5), 0);
+    });
   };
 
   // ===== Koi =====
@@ -423,6 +724,7 @@ export function buildCreatures(): WorldModule {
     group,
     update(t, dt) {
       for (const dog of dogs) updateDog(dog, t, dt);
+      updateCat(t, dt);
 
       for (const koi of kois) {
         koi.pivot.rotation.y += koi.speed * dt;
@@ -454,6 +756,7 @@ export function buildCreatures(): WorldModule {
     dispose() {
       for (const g of geometries) g.dispose();
       for (const dog of dogs) (dog.shadow.material as THREE.Material).dispose();
+      (cat.shadow.material as THREE.Material).dispose();
     },
   };
 }

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { P, mat } from "./palette";
-import type { WorldModule } from "./types";
+import type { Perch, WorldModule } from "./types";
 import { rng, valueNoise } from "./util";
 import {
   ISLAND_RX,
@@ -42,7 +42,7 @@ const BENCH = { x: -11.2, z: 13.71, rotationY: 1.92 };
 
 // The bench plaque is handed back separately: engine.ts registers it as a
 // hover/click target of its own, independent of the island it rides on.
-export type Island = WorldModule & { plaque: THREE.Group };
+export type Island = WorldModule & { plaque: THREE.Group; perch: Perch };
 
 export function buildIsland(): Island {
   const group = new THREE.Group();
@@ -361,6 +361,14 @@ export function buildIsland(): Island {
 
   group.add(bench);
 
+  // Cat's spot: the far end of the seat, facing out the way anyone sitting
+  // here would. Taken off the bench's own transform, which is tilted into the
+  // slope, so the cat lies flush with the plank instead of at meadow level.
+  const benchPerch: Perch = {
+    position: bench.localToWorld(new THREE.Vector3(0.52, 0.56, 0.02)),
+    yaw: new THREE.Euler().setFromQuaternion(bench.quaternion, "YXZ").y,
+  };
+
   // ===== Blob shadows (trees + lanterns + bench) =====
   const shadowGeo = new THREE.CircleGeometry(1, 14);
   shadowGeo.rotateX(-Math.PI / 2);
@@ -392,6 +400,7 @@ export function buildIsland(): Island {
   return {
     group,
     plaque,
+    perch: benchPerch,
     update(t) {
       // Lantern glow pulse, offset per lantern so they don't blink in sync.
       lanternGlows.forEach((glow, i) => {
