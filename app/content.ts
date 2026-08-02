@@ -138,7 +138,7 @@ export const compliance = [
   {
     standard: "Incident response",
     status: "MANUAL",
-    value: "Long walk, Notes app, iced matcha",
+    value: "Long walk, iced matcha, cry.",
   },
   { standard: "Uptime", status: "VARIABLE", value: "Variable" },
 ] as const;
