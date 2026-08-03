@@ -85,7 +85,7 @@ export function SandboxOverlay({
 
   return (
     <div className="sandbox-3d-overlay">
-      {!hintDismissed && <div className="sandbox-3d-hint">drag to explore · pinch or scroll to zoom</div>}
+      {!hintDismissed && <div className="sandbox-3d-hint">drag · scroll · pinch · WASD · Q/E · ,/. to explore — you&apos;ll figure it out</div>}
 
       <Link
         href="/"

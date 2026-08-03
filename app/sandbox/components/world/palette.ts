@@ -66,8 +66,8 @@ export const P = {
   pomOrangePale: 0xffd9ab,
   // The ginger tabby: coat, the darker bands ringing it, and the pale
   // muzzle/chest/paws.
-  catGinger: 0xe0913f,
-  catStripe: 0xb96a2a,
+  catGinger: 0xf0a85c,
+  catStripe: 0xc9803a,
   catCream: 0xf8e8ce,
   // Birds, so the flock isn't three identical silhouettes.
   birdSlate: 0x4a5c6b,

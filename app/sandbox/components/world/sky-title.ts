@@ -65,8 +65,8 @@ const WORD = "SANDBOX";
 const GAP = 0.28; // between letter boxes, in letter units
 const DEPTH = 0.4; // extrusion, in letter units
 // Width in world units and where the word hangs. Tuned against the opening
-// camera (see orbit-rig HOME): it fills the middle half of the frame and clears
-// the observatory dome below it. The rig can't pitch much above the horizon, so
+// camera (see fly-rig HOME): it fills the middle half of the frame and clears
+// the observatory dome below it. The opening shot looks slightly down, so
 // hanging it any higher would put it off screen. z sits ahead of the nearest
 // blimp (whose envelope reaches z ≈ -28) so the word passes in front of them —
 // they are opaque and would otherwise punch through it. Width is scaled to the

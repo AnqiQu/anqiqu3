@@ -12,7 +12,7 @@ import { buildEnergy } from "./landmarks/energy";
 import { buildGreenhouse } from "./landmarks/greenhouse";
 import { buildObservatory } from "./landmarks/observatory";
 import { buildPond } from "./landmarks/pond";
-import { createOrbitRig, fovForAspect } from "./orbit-rig";
+import { createFlyRig, fovForAspect } from "./fly-rig";
 import { SUN_POSITION, buildSky } from "./sky";
 import { buildSkyTitle } from "./sky-title";
 import type { WorldModule } from "./types";
@@ -55,7 +55,7 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   scene.fog = new THREE.Fog(P.fog, 90, 220);
 
   const camera = new THREE.PerspectiveCamera(fovForAspect(size.w / size.h), size.w / size.h, 0.5, 600);
-  const rig = createOrbitRig(camera, canvas);
+  const rig = createFlyRig(camera, canvas);
 
   // Painterly cheat: the visible sun sits back-left for the vista, but the key
   // light comes from the front-top-right so camera-facing slopes stay bright.
@@ -127,7 +127,7 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     archiveOpen = !archiveOpen;
     (archive as unknown as { setOpen: (open: boolean) => void }).setOpen(archiveOpen);
   };
-  // Keyboard nav: fly the orbit camera to face a landmark.
+  // Keyboard nav: ease the fly camera to a vantage of a landmark.
   ui.flyToLocation = (id) => {
     const w = locations.find((l) => l.id === id)?.world3d;
     if (w) rig.flyTo(w.position, id === "observatory" ? 40 : 32);

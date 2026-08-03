@@ -2,7 +2,7 @@
    data-mode="loading": server-rendered state — near-black "underground"
    screen with light streaks while the world chunk loads (no other scene
    ever flashes first).
-   data-mode="3d": canvas takes over (drag orbits, pinch/wheel zooms — the
+   data-mode="3d": canvas takes over (drag looks, scroll/pinch flies — the
    page itself never scrolls).
    data-mode="flat": static text card for ?flat / reduced-motion / no-WebGL. */
 .sandbox-experience { position: relative; height: 100svh; overflow: hidden; background: #7bcdf8; }
