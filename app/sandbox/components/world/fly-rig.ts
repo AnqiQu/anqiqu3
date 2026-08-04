@@ -2,8 +2,8 @@ import * as THREE from "three";
 import { ellipticalRadius, terrainHeight } from "./terrain";
 
 // Free-fly exploration. Drag looks around, wheel / pinch flies forward and back
-// along the view direction, WASD cruise/strafe over the world on the horizontal
-// plane, Q/E drop/climb, and , / . turn the view left/right (hold Shift to go
+// along the view direction, the arrow keys cruise/strafe over the world on the
+// horizontal plane, Q/E drop/climb, and WASD turn/tilt the view (hold Shift to go
 // faster) — the camera roams freely like an aircraft instead of orbiting a fixed
 // point. The reachable space is a sphere centred on the island: you can fly
 // anywhere inside it and simply slide along the shell at its edge, so the island
@@ -35,7 +35,7 @@ const PINCH_IMPULSE = 0.16; // velocity kick per pixel of pinch spread
 const DAMP_TAU = 0.2; // velocity decay constant; higher = more glide/soar
 const LOOK_EASE = 14; // how fast the view catches up to the drag
 const MAX_SPEED = 145; // clamp so a key held or a fast scroll can't run away
-const YAW_KEY_SPEED = 1.3; // radians/s of turn from the , / . keys
+const LOOK_KEY_SPEED = 1.3; // radians/s of turn/tilt from the arrow keys
 
 // Roam sphere: fly anywhere inside it, but never past its shell.
 const SPHERE_RADIUS = 172; // distance from CENTER, in every direction
@@ -148,16 +148,19 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
     vel.addScaledVector(forward, -e.deltaY * WHEEL_IMPULSE); // scroll up flies forward
   };
 
-  // --- Keyboard: WASD move, Q/E down/up, , / . turn, Shift boosts ----------
+  // --- Keyboard: arrows move, Q/E down/up, WASD turn/tilt, Shift boosts ----
   const isTypingTarget = () => {
     const el = document.activeElement as HTMLElement | null;
     return !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
   };
-  const MOVE_KEYS = new Set(["w", "a", "s", "d", "q", "e", ",", "."]);
+  const HELD_KEYS = new Set([
+    "w", "a", "s", "d", "q", "e",
+    "arrowleft", "arrowright", "arrowup", "arrowdown",
+  ]);
   const onKeyDown = (e: KeyboardEvent) => {
     if (isTypingTarget()) return;
     const k = e.key.toLowerCase();
-    if (MOVE_KEYS.has(k)) {
+    if (HELD_KEYS.has(k)) {
       keys.add(k);
       cancelFlight();
       e.preventDefault();
@@ -234,7 +237,7 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
         return;
       }
 
-      // Keyboard thrust. WASD cruise on the horizontal plane (fly forward/
+      // Keyboard thrust. Arrow keys cruise on the horizontal plane (fly forward/
       // strafe over the world without diving), Q/E change altitude — so each
       // key does a distinct, plane-like thing instead of everything nosing
       // toward the ground. `forward`/`right` still track the look direction;
@@ -243,10 +246,10 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
       right.crossVectors(forward, worldUp).normalize();
       flatForward.set(-Math.sin(yaw), 0, -Math.cos(yaw)); // heading, pitch removed
       wish.set(0, 0, 0);
-      if (keys.has("w")) wish.add(flatForward);
-      if (keys.has("s")) wish.sub(flatForward);
-      if (keys.has("d")) wish.add(right);
-      if (keys.has("a")) wish.sub(right);
+      if (keys.has("arrowup")) wish.add(flatForward);
+      if (keys.has("arrowdown")) wish.sub(flatForward);
+      if (keys.has("arrowright")) wish.add(right);
+      if (keys.has("arrowleft")) wish.sub(right);
       if (keys.has("e")) wish.add(worldUp);
       if (keys.has("q")) wish.sub(worldUp);
       if (wish.lengthSq() > 0) {
@@ -254,11 +257,13 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
         vel.add(wish);
       }
 
-      // , / . turn the view left / right (keyboard yaw). Feeds the same target
-      // the drag does, so it eases in and out the same smooth way.
-      const turn = YAW_KEY_SPEED * (keys.has("shift") ? BOOST : 1) * dt;
-      if (keys.has(",")) yawTarget += turn;
-      if (keys.has(".")) yawTarget -= turn;
+      // WASD turn (A/D) and tilt (W/S) the view. They feed the same target the
+      // drag does, so they ease in and out the same smooth way.
+      const turn = LOOK_KEY_SPEED * (keys.has("shift") ? BOOST : 1) * dt;
+      if (keys.has("a")) yawTarget += turn;
+      if (keys.has("d")) yawTarget -= turn;
+      if (keys.has("w")) pitchTarget = THREE.MathUtils.clamp(pitchTarget + turn, -PITCH_LIMIT, PITCH_LIMIT);
+      if (keys.has("s")) pitchTarget = THREE.MathUtils.clamp(pitchTarget - turn, -PITCH_LIMIT, PITCH_LIMIT);
 
       // Ease the view toward the drag target, then commit the orientation.
       const lk = Math.min(1, dt * LOOK_EASE);
