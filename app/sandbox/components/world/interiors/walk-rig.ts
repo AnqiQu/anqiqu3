@@ -1,16 +1,18 @@
 import * as THREE from "three";
 import type { Collider, RoomBounds } from "./types";
 
-// First-person walking for the interiors. Drag looks (same grab-the-world
-// convention as the island's fly rig), WASD and the arrow keys walk on the
-// floor plane, Shift hurries, and a two-finger pinch walks forward/back on
-// touch. There is no flying and no falling: the eye stays at a fixed height
-// above the floor, and position is clamped inside the room's bounds and
-// pushed out of furniture, so walls are genuinely solid.
+// First-person walking for the interiors, controlled like the island outside:
+// WASD walk on the floor plane, the arrow keys turn/tilt the view, drag looks
+// (same grab-the-world convention as the fly rig), Shift hurries, and a
+// two-finger pinch walks forward/back on touch. There is no flying and no
+// falling: the eye stays at a fixed height above the floor, and position is
+// clamped inside the room's bounds and pushed out of furniture, so walls are
+// genuinely solid.
 
 const LOOK_SPEED = 0.0026;
 const PITCH_LIMIT = 1.35;
 const LOOK_EASE = 14;
+const LOOK_KEY_SPEED = 1.3; // radians/s of turn/tilt from the arrow keys
 const WALK_ACCEL = 42; // units/s²
 const BOOST = 1.9;
 const MAX_SPEED = 4.6;
@@ -177,14 +179,22 @@ export function createWalkRig(
       right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
 
       wish.set(0, 0, 0);
-      if (keys.has("w") || keys.has("arrowup")) wish.add(forward);
-      if (keys.has("s") || keys.has("arrowdown")) wish.sub(forward);
-      if (keys.has("d") || keys.has("arrowright")) wish.add(right);
-      if (keys.has("a") || keys.has("arrowleft")) wish.sub(right);
+      if (keys.has("w")) wish.add(forward);
+      if (keys.has("s")) wish.sub(forward);
+      if (keys.has("d")) wish.add(right);
+      if (keys.has("a")) wish.sub(right);
       if (wish.lengthSq() > 0) {
         wish.normalize().multiplyScalar(WALK_ACCEL * (keys.has("shift") ? BOOST : 1) * dt);
         vel.add(wish);
       }
+
+      // Arrow keys turn (left/right) and tilt (up/down) the view, feeding the
+      // same target the drag does — matching the island's fly rig exactly.
+      const turn = LOOK_KEY_SPEED * (keys.has("shift") ? BOOST : 1) * dt;
+      if (keys.has("arrowleft")) yawTarget += turn;
+      if (keys.has("arrowright")) yawTarget -= turn;
+      if (keys.has("arrowup")) pitchTarget = THREE.MathUtils.clamp(pitchTarget + turn, -PITCH_LIMIT, PITCH_LIMIT);
+      if (keys.has("arrowdown")) pitchTarget = THREE.MathUtils.clamp(pitchTarget - turn, -PITCH_LIMIT, PITCH_LIMIT);
 
       const lk = Math.min(1, dt * LOOK_EASE);
       yaw += (yawTarget - yaw) * lk;
