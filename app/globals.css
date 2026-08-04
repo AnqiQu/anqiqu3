@@ -179,6 +179,12 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 }
 .hero-subtitle { margin: 0; color: var(--muted-strong); font-size: clamp(1.05rem, 1.8vw, 1.35rem); }
 .hero-actions { display: flex; justify-content: center; gap: 12px; margin-top: 38px; }
+.hero-hype { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.hero-hype-term { position: absolute; max-width: 42%; white-space: nowrap; }
+.hero-hype-word { display: inline-flex; align-items: center; gap: 8px; color: var(--green); font-size: clamp(9.5px, 0.82vw, 12.5px); font-weight: 650; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.46; animation: hype-cycle 5.6s ease-in-out infinite; }
+.hero-hype-term-right .hero-hype-word { flex-direction: row-reverse; }
+.hero-hype-word::before { width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: var(--bright-green); box-shadow: 0 0 8px rgb(128 237 153 / 0.7); content: ""; }
+@keyframes hype-cycle { 0% { opacity: 0; transform: translateY(8px); } 16% { opacity: 0.52; transform: translateY(0); } 58% { opacity: 0.52; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-6px); } }
 .compliance-card-header > span {
   padding: 5px 8px;
   border: 1px solid var(--border-bright);
@@ -312,13 +318,12 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .timeline::before { position: absolute; top: 12px; bottom: 12px; left: 10px; width: 1px; background: linear-gradient(var(--bright-green), rgb(87 204 153 / 0.08)); content: ""; }
 .timeline-entry { position: relative; min-height: 190px; padding: 38px 0; border-bottom: 1px solid var(--border); }
 .timeline-node { position: absolute; top: 48px; left: -36px; width: 9px; height: 9px; border: 2px solid var(--bright-green); border-radius: 50%; background: var(--black); box-shadow: 0 0 18px rgb(87 204 153 / 0.5); }
-.timeline-content { display: grid; gap: 16px; }
+.timeline-content { display: grid; gap: 6px; }
 .timeline-primary { display: flex; align-items: baseline; gap: 20px; }
-.timeline-primary .release-version { flex: 0 0 auto; min-width: 84px; font-family: var(--font-exo), sans-serif; font-size: clamp(1.2rem, 1.9vw, 1.7rem); font-weight: 650; letter-spacing: -0.02em; line-height: 1; }
-.release-body { display: flex; flex-direction: column; gap: 4px; }
+.timeline-primary .release-version { flex: 0 0 auto; min-width: 62px; font-family: var(--font-exo), sans-serif; font-size: clamp(1rem, 1.35vw, 1.28rem); font-weight: 650; letter-spacing: -0.02em; line-height: 1.28; }
 .release-year { color: var(--green); font-size: 12px; font-weight: 650; letter-spacing: 0.1em; }
 .release-headline { margin: 0; color: var(--white); font-size: clamp(1rem, 1.35vw, 1.28rem); line-height: 1.28; }
-.release-notes { display: flex; flex-direction: column; gap: 9px; max-width: 940px; margin: 8px 0 0 104px; padding: 0; list-style: none; }
+.release-notes { display: flex; flex-direction: column; gap: 9px; max-width: 940px; margin: 8px 0 0 82px; padding: 0; list-style: none; }
 .release-notes li { display: flex; align-items: baseline; gap: 14px; }
 .release-tag { flex: 0 0 auto; min-width: 132px; padding: 4px 9px; border: 1px solid; border-radius: 6px; font-size: 9.5px; font-weight: 650; letter-spacing: 0.09em; line-height: 1.1; text-align: center; text-transform: uppercase; }
 .release-tag-positive { color: var(--bright-green); border-color: rgb(128 237 153 / 0.4); background: rgb(128 237 153 / 0.08); }
@@ -474,6 +479,7 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
   .hero, .hero-inner { min-height: 760px; }
   .hero-inner { justify-content: center; padding-top: 120px; padding-bottom: 70px; }
   .hero h1 { margin-top: 20px; font-size: clamp(2.65rem, 13vw, 4.2rem); }
+  .hero-hype { display: none; }
   .hero-actions { align-items: stretch; flex-direction: column; }
   .hero-actions .button { width: 100%; }
   .company-logo-item { width: 148px; min-height: 72px; }

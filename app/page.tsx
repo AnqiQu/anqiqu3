@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Benchmarks } from "./components/benchmarks";
+import { HeroHype } from "./components/hero-hype";
 import { HeroTechnical } from "./components/hero-technical";
 import { Footer, Header, SectionHeader } from "./components/site-shell";
 import {
@@ -33,6 +34,7 @@ export default function Home() {
       <main>
         <section className="hero" id="overview">
           <HeroTechnical />
+          <HeroHype />
           <div className="container hero-inner">
             <div className="hero-copy">
               <h1>
@@ -139,12 +141,10 @@ export default function Home() {
                 <article className="timeline-entry" key={entry.version}>
                   <span className="timeline-node" aria-hidden="true" />
                   <div className="timeline-content">
+                    <time className="release-year">{entry.year}</time>
                     <div className="timeline-primary">
                       <span className="release-version">{entry.version}</span>
-                      <div className="release-body">
-                        <time className="release-year">{entry.year}</time>
-                        <p className="release-headline">{entry.headline}</p>
-                      </div>
+                      <p className="release-headline">{entry.headline}</p>
                     </div>
                     <ul className="release-notes">
                       {entry.notes.map((note) => (
@@ -247,21 +247,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section final-section reveal">
-          <div className="container">
-            <div className="final-cta">
-              <div>
-                <h2>Book a demo</h2>
-              </div>
-              <div className="final-cta-copy">
-                <Link href="/contact" className="button">
-                  View contact options <span aria-hidden="true">↗</span>
-                </Link>
-                <span>Typical response latency: variable.</span>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
       <Footer />
     </div>

@@ -47,9 +47,7 @@ export const changelog = [
         label: "Added",
         text: "Reinforcement learning, autonomous agents, strategic game theory, and AI alignment research. Rhodes Scholar build.",
       },
-      { label: "Improved", text: "Training efficiency." },
       { label: "Breaking changes", text: "Timezone." },
-      { label: "Known regressions", text: "Proximity to dogs." },
     ],
   },
   {
@@ -58,12 +56,7 @@ export const changelog = [
     headline: "Major release: pretraining begins at the University of Chicago.",
     notes: [
       { label: "Added", text: "Economics, Statistics, Computer Science." },
-      { label: "Changed", text: "Sleep schedule is now experimental." },
       { label: "Deprecated", text: "Free time." },
-      {
-        label: "Fixed",
-        text: "Several personality bugs. Introduced new ones.",
-      },
     ],
   },
   {
