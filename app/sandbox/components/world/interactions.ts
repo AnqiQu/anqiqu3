@@ -2,20 +2,23 @@ import * as THREE from "three";
 import type { SandboxLocation } from "../../config";
 import type { UiBridge } from "../ui-bridge";
 
-// Raycast hover + label projection for the orbiting camera. Hotspots are
-// invisible-material spheres (they still raycast; the renderer skips them).
-// Terrain meshes tagged as occluders join the same raycast so landmarks
-// hidden behind the island can't be hovered through it.
+// Raycast hover + clicks for the island camera. Hotspots are invisible-material
+// spheres (they still raycast; the renderer skips them). Terrain meshes tagged
+// as occluders join the same raycast so landmarks hidden behind the island
+// can't be hovered through it. Hover announces itself with a glow and a scale
+// breath — no label chips — and a click on an enterable landmark steps inside.
 
 type Hotspot = {
   location: SandboxLocation;
   proxy: THREE.Mesh;
-  anchor: THREE.Vector3;
 };
 
 export type Interactions = {
   hoveredId: string | null;
   update: (camera: THREE.PerspectiveCamera) => void;
+  // While an interior is open, the island must not hover, click, or fight the
+  // interior for the cursor.
+  setEnabled: (enabled: boolean) => void;
   dispose: () => void;
 };
 
@@ -32,15 +35,18 @@ export function createInteractions(
   occluders: THREE.Object3D[],
   ui: UiBridge,
   waterClick?: WaterClick,
+  // Fires whenever the hovered landmark changes (also from keyboard focus);
+  // the engine uses it for per-landmark flourishes like the burrow door.
+  onHoverChange?: (id: string | null) => void,
 ): Interactions {
   const raycaster = new THREE.Raycaster();
   // Raw client coords; converted to NDC per frame (event-time layout can be
   // stale, e.g. hidden tabs report zero-size rects).
   const client = new THREE.Vector2();
   const pointer = new THREE.Vector2();
-  const projected = new THREE.Vector3();
   let pointerInside = false;
   let dragging = false;
+  let enabled = true;
   let downAt: { x: number; y: number; time: number } | null = null;
   let lastCamera: THREE.PerspectiveCamera | null = null;
 
@@ -81,21 +87,18 @@ export function createInteractions(
     // Ambient spots (the pond) are scenery, not selectable landmarks.
     if (!w || location.interaction === "ambient") continue;
     const proxy = new THREE.Mesh(proxyGeo, proxyMat);
-    proxy.position.set(w.position[0], w.position[1] + w.labelOffsetY * 0.4, w.position[2]);
+    proxy.position.set(w.position[0], w.position[1] + w.hitOffsetY, w.position[2]);
     proxy.scale.setScalar(w.hitRadius);
     proxy.userData.locationId = location.id;
     scene.add(proxy);
-    hotspots.push({
-      location,
-      proxy,
-      anchor: new THREE.Vector3(w.position[0], w.position[1] + w.labelOffsetY, w.position[2]),
-    });
+    hotspots.push({ location, proxy });
   }
   const raycastTargets = [...hotspots.map((h) => h.proxy), ...occluders];
-  // Spots whose click opens their copy rather than navigating.
+  // Spots whose click opens their copy rather than stepping inside.
   const panelIds = new Set(
     locations.filter((l) => l.interaction === "open-panel").map((l) => l.id),
   );
+  const enterIds = new Set(locations.filter((l) => l.interaction === "enter").map((l) => l.id));
 
   const setPointer = (event: PointerEvent) => {
     client.set(event.clientX, event.clientY);
@@ -105,19 +108,20 @@ export function createInteractions(
     pointerInside = false;
   };
   const onDown = (event: PointerEvent) => {
+    if (!enabled) return;
     setPointer(event);
     dragging = true;
     downAt = { x: event.clientX, y: event.clientY, time: performance.now() };
   };
   const onUp = (event: PointerEvent) => {
     dragging = false;
-    if (!downAt) return;
+    if (!enabled || !downAt) return;
     const moved = Math.hypot(event.clientX - downAt.x, event.clientY - downAt.y);
     const elapsed = performance.now() - downAt.time;
     downAt = null;
-    if (moved > 8 || elapsed > 500) return; // orbit drag, not a click
-    if (api.hoveredId && panelIds.has(api.hoveredId)) ui.openPanel(api.hoveredId);
-    else if (api.hoveredId === "archive") ui.toggleArchive?.();
+    if (moved > 8 || elapsed > 500) return; // camera drag, not a click
+    if (api.hoveredId && enterIds.has(api.hoveredId)) ui.enterInterior?.(api.hoveredId);
+    else if (api.hoveredId && panelIds.has(api.hoveredId)) ui.openPanel(api.hoveredId);
     else if (waterClick && lastCamera) {
       // A plain click on the pond water makes ripples.
       const width = document.documentElement.clientWidth;
@@ -142,9 +146,17 @@ export function createInteractions(
     focusId = id;
   };
 
+  const setHovered = (id: string | null) => {
+    if (id === api.hoveredId) return;
+    api.hoveredId = id;
+    ui.setHover(id);
+    onHoverChange?.(id);
+  };
+
   const api: Interactions = {
     hoveredId: null,
     update(camera) {
+      if (!enabled) return;
       lastCamera = camera;
       let hovered: string | null = null;
       const width = document.documentElement.clientWidth;
@@ -156,28 +168,14 @@ export function createInteractions(
         const hit = raycaster.intersectObjects(raycastTargets, false)[0];
         hovered = (hit?.object.userData.locationId as string) ?? null; // occluder hit → null
       }
-      const effective = hovered ?? focusId;
-      if (effective !== api.hoveredId) {
-        api.hoveredId = effective;
-        ui.setHover(effective);
-      }
+      setHovered(hovered ?? focusId);
+      const effective = api.hoveredId;
       canvas.style.cursor =
-        effective === "archive" || (effective && panelIds.has(effective))
+        effective && (enterIds.has(effective) || panelIds.has(effective))
           ? "pointer"
           : dragging
             ? "grabbing"
             : "grab";
-
-      // Project label anchors to screen space.
-      for (const h of hotspots) {
-        projected.copy(h.anchor).project(camera);
-        ui.positionChip(
-          h.location.id,
-          ((projected.x + 1) / 2) * width,
-          ((1 - projected.y) / 2) * height,
-          projected.z <= 1, // hide when behind the camera
-        );
-      }
 
       // Gentle scale breathing on the hovered landmark.
       for (const [id, group] of landmarkGroups) {
@@ -194,6 +192,15 @@ export function createInteractions(
         if (level === settled) continue;
         glowLevels.set(id, level);
         for (const { material, base } of list) material.emissive.copy(base).lerp(GLOW, level);
+      }
+    },
+    setEnabled(next) {
+      enabled = next;
+      if (!enabled) {
+        dragging = false;
+        downAt = null;
+        pointerInside = false;
+        setHovered(null);
       }
     },
     dispose() {

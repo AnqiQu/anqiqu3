@@ -52,6 +52,10 @@
 .sandbox-3d-overlay { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-family: var(--font-jakarta), sans-serif; }
 .sandbox-3d-hint { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border: 1px solid rgb(39 74 51 / 0.28); border-radius: 999px; background: rgb(255 247 223 / 0.82); color: #274a33; font-size: 13px; letter-spacing: 0.06em; backdrop-filter: blur(6px); animation: sandbox-hint-bob 2.2s ease-in-out infinite; }
 @keyframes sandbox-hint-bob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+/* Interior controls hint: shows on entering a room, then quietly gets out of
+   the way once the visitor has had time to read it. */
+.sandbox-3d-hint--interior { animation: sandbox-hint-bob 2.2s ease-in-out infinite, sandbox-hint-away 14s ease forwards; }
+@keyframes sandbox-hint-away { 0%, 86% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 /* Back button. At rest it belongs to the sky — a white disc with a thick light
    blue arrow — and on hover it snaps into the server room's own idiom: pointy
    cornered black square, bright green outline, and the words spelled out. */
@@ -69,13 +73,6 @@
 .sandbox-3d-fade { position: fixed; inset: 0; z-index: 30; background: #fff7df; opacity: 0; pointer-events: none; transition: opacity 400ms ease; }
 .sandbox-3d-fade[data-active="true"] { opacity: 1; pointer-events: auto; }
 
-/* ===== Label chips: anchored at the overlay origin, placed via inline
-   transform from the 3D projection; visible only while hovered/focused. ===== */
-.sandbox-label--chip { position: absolute; top: 0; left: 0; display: grid; min-width: max-content; gap: 2px; margin: -10px 0 0; padding: 9px 13px 10px; border: 1px solid rgb(255 235 182 / 0.5); border-radius: 12px; background: rgb(28 38 31 / 0.88); box-shadow: 0 10px 24px rgb(27 57 72 / 0.22); color: #fff8e8; opacity: 0; pointer-events: none; transform: translate(-50%, -100%); transition: opacity 180ms ease; }
-.sandbox-label--chip strong { font-family: var(--font-philosopher), sans-serif; font-size: clamp(13px, 1.2vw, 18px); line-height: 1.18; }
-.sandbox-label--chip small { color: #f3e6c8; font-size: clamp(8px, 0.75vw, 11px); }
-.sandbox-label--chip[data-inphase="true"][data-hovered="true"] { opacity: 1; }
-
 /* ===== Panel: the plaque itself, enlarged. A square pale gold plate with an
    engraved-looking inscription and an × in the corner. ===== */
 .sandbox-panel { position: absolute; top: 50%; left: 50%; z-index: 20; display: grid; place-content: center; width: min(370px, calc(100vw - 44px)); aspect-ratio: 1; padding: 40px 34px; border: 2px solid #b0904a; background: linear-gradient(158deg, #f7e8b8 6%, #ecd79c 52%, #e3ca8b); box-shadow: 0 22px 50px rgb(46 34 8 / 0.42), inset 0 0 0 1px rgb(255 255 255 / 0.45); color: #4b3a15; text-align: center; pointer-events: auto; transform: translate(-50%, -50%) scale(0.9); opacity: 0; animation: sandbox-panel-open 300ms cubic-bezier(0.33, 1, 0.68, 1) forwards; }
@@ -86,11 +83,6 @@
 .sandbox-panel:focus { outline: none; }
 .sandbox-panel:focus-visible { outline: 2px solid #7a6224; outline-offset: 4px; }
 @keyframes sandbox-panel-open { to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-
-@media (max-width: 720px) {
-  .sandbox-label--chip strong { max-width: 132px; font-size: clamp(11px, 3.6vw, 15px); }
-  .sandbox-label--chip small { font-size: clamp(7px, 2.4vw, 10px); }
-}
 
 @media (prefers-reduced-motion: reduce) {
   /* Reduced-motion visitors flip to the flat card right after hydration;

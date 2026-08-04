@@ -13,6 +13,7 @@ import { buildGreenhouse } from "./landmarks/greenhouse";
 import { buildObservatory } from "./landmarks/observatory";
 import { buildPond } from "./landmarks/pond";
 import { createFlyRig, fovForAspect } from "./fly-rig";
+import { createInterior, isInteriorId, type InteriorHandle } from "./interiors";
 import { SUN_POSITION, buildSky } from "./sky";
 import { buildSkyTitle } from "./sky-title";
 import type { WorldModule } from "./types";
@@ -113,8 +114,8 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   canvas.addEventListener("pointerdown", dismissTitle, { once: true, passive: true });
   canvas.addEventListener("wheel", dismissTitle, { once: true, passive: true });
 
-  // Hover highlight targets + archive door flourish. The pond is deliberately
-  // absent: it's not selectable — clicking its water makes ripples instead.
+  // Hover highlight targets. The pond is deliberately absent: it's not
+  // selectable — clicking its water makes ripples instead.
   const landmarkGroups = new Map<string, THREE.Group>([
     ["observatory", observatory.group],
     ["archive", archive.group],
@@ -122,11 +123,6 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     ["unfinished-bridge", bridge.group],
     ["bench-plaque", island.plaque],
   ]);
-  let archiveOpen = false;
-  ui.toggleArchive = () => {
-    archiveOpen = !archiveOpen;
-    (archive as unknown as { setOpen: (open: boolean) => void }).setOpen(archiveOpen);
-  };
   // Keyboard nav: ease the fly camera to a vantage of a landmark.
   ui.flyToLocation = (id) => {
     const w = locations.find((l) => l.id === id)?.world3d;
@@ -142,10 +138,47 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     waterMesh: THREE.Mesh;
     spawnRipple: (p: THREE.Vector3) => void;
   };
-  const interactions = createInteractions(scene, canvas, locations, landmarkGroups, occluders, ui, {
-    mesh: pondApi.waterMesh,
-    onHit: (point) => pondApi.spawnRipple(point),
-  });
+  const archiveApi = archive as unknown as { setOpen: (open: boolean) => void };
+  const interactions = createInteractions(
+    scene, canvas, locations, landmarkGroups, occluders, ui,
+    {
+      mesh: pondApi.waterMesh,
+      onHit: (point) => pondApi.spawnRipple(point),
+    },
+    // Hovering the burrow cracks its round door open — a wink that it's a
+    // place you can step into.
+    (id) => archiveApi.setOpen(id === "archive"),
+  );
+
+  // Interiors: clicking an enterable landmark swaps the renderer to its room
+  // scene behind a fade; clicking the room's door (or Escape) swaps back. The
+  // island keeps its exact camera pose for the return.
+  let interior: InteriorHandle | null = null;
+  let transitioning = false;
+  const exitInterior = () => {
+    if (!interior || transitioning) return;
+    transitioning = true;
+    ui.fadeSwap(() => {
+      interior?.dispose();
+      interior = null;
+      rig.setEnabled(true);
+      interactions.setEnabled(true);
+      ui.setInterior(null);
+      transitioning = false;
+    });
+  };
+  ui.enterInterior = (id) => {
+    if (interior || transitioning || !isInteriorId(id)) return;
+    transitioning = true;
+    ui.fadeSwap(() => {
+      rig.setEnabled(false);
+      interactions.setEnabled(false);
+      interior = createInterior(id, canvas, camera.aspect, exitInterior);
+      ui.setInterior(id);
+      transitioning = false;
+    });
+  };
+  ui.exitInterior = exitInterior;
 
   const applySize = () => {
     size = viewportSize();
@@ -153,6 +186,7 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     camera.aspect = size.w / size.h;
     camera.fov = fovForAspect(camera.aspect);
     camera.updateProjectionMatrix();
+    interior?.resize(camera.aspect);
   };
   window.addEventListener("resize", applySize);
 
@@ -170,10 +204,17 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     timer.update();
     const dt = Math.min(timer.getDelta(), 0.1);
     const t = timer.getElapsed();
-    rig.update(dt);
-    for (const m of modules) m.update?.(t, dt);
-    interactions.update(camera);
-    renderer.render(scene, camera);
+    if (interior) {
+      // The island pauses while a room is open; its scene (and camera pose)
+      // wait untouched for the walk back out.
+      interior.update(t, dt);
+      renderer.render(interior.scene, interior.camera);
+    } else {
+      rig.update(dt);
+      for (const m of modules) m.update?.(t, dt);
+      interactions.update(camera);
+      renderer.render(scene, camera);
+    }
     if (firstFrame) {
       firstFrame = false;
       onFirstFrame?.();
@@ -193,6 +234,8 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
   return {
     dispose() {
       cancelAnimationFrame(rafId);
+      interior?.dispose();
+      interior = null;
       rig.dispose();
       interactions.dispose();
       canvas.removeEventListener("pointerdown", dismissTitle);

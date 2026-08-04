@@ -80,6 +80,21 @@ export const P = {
   panelLine: 0x7ea6c9,
   turbineWhite: 0xffffff,
   lanternGlow: 0xffd98a,
+
+  // Interior dressing (the walk-in rooms behind each landmark).
+  plaster: 0xf1e4c8,
+  floorWood: 0x8a5a36,
+  floorWoodDark: 0x6e4527,
+  rugRed: 0xa8503c,
+  bookRed: 0x9c4736,
+  bookBlue: 0x3e6079,
+  bookGreen: 0x5d7a3f,
+  parchment: 0xead9ae,
+  potionGreen: 0x7ef29a,
+  potionPurple: 0xc07ef2,
+  potionBlue: 0x7ec9f2,
+  emberOrange: 0xff9a4a,
+  soil: 0x5c4128,
 } as const;
 
 type MatOpts = {

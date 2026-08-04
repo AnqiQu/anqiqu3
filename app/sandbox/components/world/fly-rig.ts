@@ -50,6 +50,9 @@ export type FlyRig = {
   flyTo: (worldPos: [number, number, number], distance?: number) => void;
   // Solid meshes the camera may not fly through (set once modules exist).
   setColliders: (objects: THREE.Object3D[]) => void;
+  // While an interior is open its walk rig owns the input; disabling here
+  // keeps island flight from soaking up drags, scrolls, and key holds.
+  setEnabled: (enabled: boolean) => void;
   dispose: () => void;
 };
 
@@ -89,6 +92,7 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
   const pointers = new Map<number, { x: number; y: number }>();
   let pinchDist = 0;
   let flight: FlightTarget | null = null;
+  let enabled = true;
 
   // Scratch, reused every frame.
   const forward = new THREE.Vector3();
@@ -117,6 +121,7 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
 
   // --- Pointer: one finger / mouse = look, two fingers = pinch to fly -------
   const onPointerDown = (e: PointerEvent) => {
+    if (!enabled) return;
     cancelFlight();
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.size === 2) pinchDist = twoPointerDistance();
@@ -144,6 +149,7 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
   };
 
   const onWheel = (e: WheelEvent) => {
+    if (!enabled) return;
     cancelFlight();
     vel.addScaledVector(forward, -e.deltaY * WHEEL_IMPULSE); // scroll up flies forward
   };
@@ -158,7 +164,7 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
     "arrowleft", "arrowright", "arrowup", "arrowdown",
   ]);
   const onKeyDown = (e: KeyboardEvent) => {
-    if (isTypingTarget()) return;
+    if (!enabled || isTypingTarget()) return;
     const k = e.key.toLowerCase();
     if (HELD_KEYS.has(k)) {
       keys.add(k);
@@ -299,6 +305,15 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
     },
     setColliders(objects) {
       colliders = objects;
+    },
+    setEnabled(next) {
+      enabled = next;
+      if (!enabled) {
+        keys.clear();
+        pointers.clear();
+        vel.set(0, 0, 0);
+        cancelFlight();
+      }
     },
     dispose() {
       canvas.removeEventListener("pointerdown", onPointerDown);

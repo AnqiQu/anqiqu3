@@ -4,8 +4,8 @@
 export type World3DConfig = {
   position: [number, number, number];
   rotationY?: number;
-  // Height above `position` where the HTML label chip anchors.
-  labelOffsetY: number;
+  // Height above `position` where the invisible raycast proxy sphere centers.
+  hitOffsetY: number;
   // Radius of the invisible raycast proxy sphere.
   hitRadius: number;
 };
@@ -14,9 +14,9 @@ export type SandboxLocation = {
   id: string;
   label: string;
   description: string;
-  // Destination for future content sub-routes; inert until those pages exist.
-  href?: string;
-  interaction: "navigate" | "open-panel" | "ambient" | "swap-state";
+  // "enter" spots open their walk-around interior when clicked; "open-panel"
+  // spots reveal their long-form copy; "ambient" spots are scenery.
+  interaction: "enter" | "open-panel" | "ambient";
   // Long-form copy an "open-panel" spot reveals when it is clicked.
   panel?: string;
   world3d?: World3DConfig;
@@ -27,32 +27,29 @@ export const sandboxLocations: SandboxLocation[] = [
     id: "observatory",
     label: "Observatory",
     description: "Papers & research",
-    href: "/sandbox/research",
-    interaction: "navigate",
-    world3d: { position: [-6, 8, -14], labelOffsetY: 5.5, hitRadius: 4.5 },
+    interaction: "enter",
+    world3d: { position: [-6, 8, -14], hitOffsetY: 2.2, hitRadius: 4.5 },
   },
   {
     id: "archive",
     label: "Archive",
     description: "Old ideas & memories",
-    href: "/sandbox/archive",
-    interaction: "swap-state",
-    world3d: { position: [-16, 2.2, -2], rotationY: -0.55, labelOffsetY: 3.2, hitRadius: 2.6 },
+    interaction: "enter",
+    world3d: { position: [-16, 2.2, -2], rotationY: -0.55, hitOffsetY: 1.28, hitRadius: 2.6 },
   },
   {
     id: "garden",
     label: "Garden of Preferences",
     description: "Things I like",
-    href: "/sandbox/preferences",
-    interaction: "navigate",
-    world3d: { position: [6, 0, -4], rotationY: -0.25, labelOffsetY: 3.6, hitRadius: 3.4 },
+    interaction: "enter",
+    world3d: { position: [6, 0, -4], rotationY: -0.25, hitOffsetY: 1.44, hitRadius: 3.4 },
   },
   {
     id: "pond",
     label: "Pond",
     description: "No productivity detected",
     interaction: "ambient",
-    world3d: { position: [2, 0, 8], labelOffsetY: 1.8, hitRadius: 4.4 },
+    world3d: { position: [2, 0, 8], hitOffsetY: 0.72, hitRadius: 4.4 },
   },
   {
     id: "bench-plaque",
@@ -62,14 +59,13 @@ export const sandboxLocations: SandboxLocation[] = [
     panel:
       "In loving memory of my dear friend Daniel Li - who is not dead, just generous. He inspired this sandbox. Somewhere in here is an easter egg dedicated to his site. Go find it.",
     // On the front of the bench's backrest, in the north-west tree grove.
-    world3d: { position: [-11.43, 0.9, 13.79], labelOffsetY: 0.9, hitRadius: 0.9 },
+    world3d: { position: [-11.43, 0.9, 13.79], hitOffsetY: 0.36, hitRadius: 0.9 },
   },
   {
     id: "unfinished-bridge",
     label: "Unfinished Bridge",
     description: "Ideas in progress",
-    href: "/sandbox/ideas",
-    interaction: "navigate",
-    world3d: { position: [16, 0.4, 10], rotationY: -0.35, labelOffsetY: 2.4, hitRadius: 3.8 },
+    interaction: "enter",
+    world3d: { position: [16, 0.4, 10], rotationY: -0.35, hitOffsetY: 0.96, hitRadius: 3.8 },
   },
 ];
