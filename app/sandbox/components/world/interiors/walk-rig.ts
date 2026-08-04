@@ -20,6 +20,8 @@ const DAMP_TAU = 0.12; // quick stop — feet, not a glider
 const PINCH_IMPULSE = 0.02;
 const WHEEL_IMPULSE = 0.006;
 const PLAYER_RADIUS = 0.38;
+const STEP_UP_MAX = 0.6; // climb steps up to this tall; anything taller is a wall
+const FALL_SPEED = 8; // units/s the eye settles down when it's above the floor
 
 export type WalkRig = {
   update: (dt: number) => void;
@@ -33,6 +35,7 @@ export function createWalkRig(
     bounds: RoomBounds;
     colliders: Collider[];
     floorY: number;
+    floorHeightAt?: (x: number, z: number) => number;
     spawn: { x: number; z: number; yaw: number };
     eyeHeight?: number;
   },
@@ -42,7 +45,10 @@ export function createWalkRig(
   let pitch = 0;
   let yawTarget = yaw;
   let pitchTarget = 0;
-  camera.position.set(opts.spawn.x, opts.floorY + eye, opts.spawn.z);
+  // Height of the ground under the feet — flat, or sampled from the room's
+  // height field (stairs, a raised deck) when it has one.
+  let footY = opts.floorHeightAt ? opts.floorHeightAt(opts.spawn.x, opts.spawn.z) : opts.floorY;
+  camera.position.set(opts.spawn.x, footY + eye, opts.spawn.z);
   camera.rotation.set(pitch, yaw, 0, "YXZ");
 
   const vel = new THREE.Vector3(); // horizontal only (y stays 0)
@@ -171,6 +177,10 @@ export function createWalkRig(
   return {
     update(dt) {
       if (dt <= 0) return;
+      // Where the feet were before this frame's move — reverted to if the step
+      // ahead turns out to be a wall (a stair riser too tall to climb).
+      const startX = camera.position.x;
+      const startZ = camera.position.z;
 
       camera.getWorldDirection(forward);
       forward.y = 0;
@@ -209,7 +219,25 @@ export function createWalkRig(
       vel.multiplyScalar(Math.exp(-dt / DAMP_TAU));
 
       resolve(camera.position);
-      camera.position.y = opts.floorY + eye;
+
+      if (opts.floorHeightAt) {
+        // Follow the floor field: small rises are steps (snap up), a big rise is
+        // a wall (block the move), and being above the floor settles down at a
+        // fixed fall speed so stepping off the deck reads as a drop, not a warp.
+        const targetFoot = opts.floorHeightAt(camera.position.x, camera.position.z);
+        if (targetFoot - footY > STEP_UP_MAX) {
+          camera.position.x = startX;
+          camera.position.z = startZ;
+          vel.set(0, 0, 0);
+        } else if (targetFoot >= footY) {
+          footY = targetFoot;
+        } else {
+          footY = Math.max(targetFoot, footY - FALL_SPEED * dt);
+        }
+        camera.position.y = footY + eye;
+      } else {
+        camera.position.y = opts.floorY + eye;
+      }
     },
     dispose() {
       canvas.removeEventListener("pointerdown", onPointerDown);

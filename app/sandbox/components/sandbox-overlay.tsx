@@ -88,7 +88,7 @@ export function SandboxOverlay({
 
       {interiorId && (
         <div className="sandbox-3d-hint sandbox-3d-hint--interior" key={interiorId}>
-          walk with WASD · arrows or drag to look · click the door to leave
+          walk with WASD · arrows or drag to look · click the way out to leave
         </div>
       )}
 

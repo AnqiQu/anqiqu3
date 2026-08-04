@@ -21,9 +21,15 @@ export type Interior = {
   bounds: RoomBounds;
   colliders: Collider[];
   floorY: number;
+  // Optional standing-height field: when present the walk rig follows it (with
+  // step-up / fall behaviour) instead of a flat floor, so a room can have a
+  // climbable spiral stair up to a raised deck. Returns the floor height under
+  // (x, z). When omitted the floor is flat at `floorY`.
+  floorHeightAt?: (x: number, z: number) => number;
   spawn: { x: number; z: number; yaw: number };
-  // Raycast targets for the exit door, and the private materials that glow
-  // while it is hovered (private so the shared palette cache stays untouched).
+  // Raycast targets for the way out — a door, an open doorway, or the land you
+  // step back onto — plus the private materials that glow while it is hovered
+  // (private so the shared palette cache stays untouched). May be empty glow.
   doorMeshes: THREE.Object3D[];
   doorGlow: THREE.MeshLambertMaterial[];
   // Scene dressing the controller applies.

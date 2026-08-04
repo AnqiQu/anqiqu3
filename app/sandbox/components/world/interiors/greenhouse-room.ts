@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { P, mat } from "../palette";
 import { rng } from "../util";
 import { addPottedPlant, makeAdd } from "./kit";
+import { addCloudClusters, addHill, addTree, cloudMaterial } from "./scenery";
 import type { Collider, Interior } from "./types";
 
 // Inside the greenhouse: what the glass promises from outside. Raised wooden
@@ -103,22 +104,26 @@ export function buildGreenhouseRoom(): Interior {
     group.add(roof);
   }
 
-  // Exit: a glass-paned wooden door in the +z wall. Private materials for the
-  // hover glow.
-  const doorMat = new THREE.MeshLambertMaterial({ color: P.wood, flatShading: true });
-  const paneMat = new THREE.MeshLambertMaterial({
-    color: P.glassTeal, transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false,
-  });
-  materials.push(doorMat, paneMat);
-  const doorFrame = add(new THREE.BoxGeometry(1.3, 2.3, 0.1), doorMat, 0, 1.15, D / 2);
-  const doorPane = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 1.6), paneMat);
-  geometries.push(doorPane.geometry);
-  doorPane.position.set(0, 1.35, D / 2 - 0.06);
-  doorPane.rotation.y = Math.PI;
-  doorPane.renderOrder = 5;
-  group.add(doorPane);
-  add(new THREE.SphereGeometry(0.05, 8, 6), mat(P.brass), -0.5, 1.1, D / 2 - 0.09);
-  add(new THREE.BoxGeometry(1.5, 0.14, 0.14), mat(P.woodDark, { flat: true }), 0, 2.36, D / 2);
+  // Exit: an open doorway in the front (+z) wall — no door, just a framed gap in
+  // the glass onto the meadow. The brass jambs and lintel glow while it's
+  // hovered; an invisible plane across the gap is the click target.
+  const jambMat = new THREE.MeshLambertMaterial({ color: P.brass });
+  materials.push(jambMat);
+  const jambGeo = new THREE.BoxGeometry(0.12, WALL_H, 0.12);
+  geometries.push(jambGeo);
+  for (const x of [-0.85, 0.85]) {
+    const jamb = new THREE.Mesh(jambGeo, jambMat);
+    jamb.position.set(x, WALL_H / 2, D / 2);
+    group.add(jamb);
+  }
+  add(new THREE.BoxGeometry(1.94, 0.12, 0.14), jambMat, 0, WALL_H - 0.06, D / 2); // lintel
+  add(new THREE.BoxGeometry(1.72, 0.06, 0.5), mat(P.plank, { flat: true }), 0, 0.02, D / 2 - 0.12); // threshold
+  const exitMat = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
+  materials.push(exitMat);
+  const exitPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.7, WALL_H - 0.1), exitMat);
+  geometries.push(exitPlane.geometry);
+  exitPlane.position.set(0, (WALL_H - 0.1) / 2, D / 2 - 0.05);
+  group.add(exitPlane);
 
   // Raised beds: two columns, three rows, each with neat ranks of flowers.
   // Stems and blossoms are instanced across all beds.
@@ -244,28 +249,33 @@ export function buildGreenhouseRoom(): Interior {
     baskets.push(basket);
   });
 
-  // The world outside the glass: meadow stretching away, a few cloud banks.
-  add(new THREE.CircleGeometry(70, 32).rotateX(-Math.PI / 2), mat(P.meadow), 0, -0.18, 0);
-  const cloudGeo = new THREE.SphereGeometry(1, 9, 7);
-  geometries.push(cloudGeo);
-  const cloudMat = new THREE.MeshLambertMaterial({ color: P.cloud });
-  cloudMat.emissive.setHex(0xa8a6a2);
-  materials.push(cloudMat);
-  const cloudSpots: Array<[number, number, number, number]> = [
-    [-26, 7, -20, 3.4], [24, 9, -26, 4], [30, 6, 14, 3], [-22, 8, 22, 3.6], [4, 11, -38, 4.6],
+  // The world outside the glass: the island landscape, matching the meadow you
+  // stand on out there — rolling green ground, low hills, scattered trees, and
+  // cloud banks in the sky, so the view through the panes reads as the island.
+  add(new THREE.CircleGeometry(80, 36).rotateX(-Math.PI / 2), mat(P.meadow), 0, -0.18, 0);
+  // Low hills for relief; the far one wears a hint of the observatory dome.
+  addHill(group, geometries, -34, -0.18, -20, 14, 6, P.meadowDark);
+  addHill(group, geometries, 40, -0.18, 12, 12, 5, P.meadowDark);
+  addHill(group, geometries, 22, -0.18, -34, 16, 8, P.meadowDark);
+  add(new THREE.SphereGeometry(2.2, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat(P.glassTeal, { transparent: true, opacity: 0.5 }), 22, 7.2, -34);
+  add(new THREE.CylinderGeometry(2.4, 2.6, 1.4, 14), mat(P.stonePale, { flat: true }), 22, 6.2, -34);
+
+  const cloudMat = cloudMaterial(materials);
+  addCloudClusters(group, geometries, cloudMat, [
+    [-26, 9, -20, 3.4], [24, 11, -26, 4], [30, 8, 14, 3], [-22, 10, 22, 3.6], [6, 13, -40, 4.6], [-40, 12, 8, 4],
+  ]);
+
+  // Trees ringing the greenhouse, beyond the glass. Deterministic scatter.
+  const treeSpots: Array<[number, number, number]> = [
+    [-7, -3, 1.2], [8, 2, 1.1], [-6.5, 5, 1], [7.5, -5, 1.3], [-3, -9, 1.1], [4, 9, 1.2],
+    [-12, 1, 1.4], [13, -2, 1.3], [-10, -8, 1.2], [11, 7, 1.1], [0, -14, 1.5], [-16, 9, 1.3], [17, 4, 1.4],
   ];
-  for (const [cx, cy, cz, s] of cloudSpots) {
-    for (let i = 0; i < 3; i++) {
-      const puff = new THREE.Mesh(cloudGeo, cloudMat);
-      puff.position.set(cx + (i - 1) * s * 1.1, cy + (i % 2) * s * 0.25, cz + (i % 2 ? -1 : 1) * s * 0.2);
-      puff.scale.set(s * 1.3, s * 0.6, s);
-      group.add(puff);
-    }
-  }
+  treeSpots.forEach(([tx, tz, ts], i) => addTree(group, geometries, tx, -0.1, tz, ts, 100 + i));
+
   // A handful of shrubs just outside the glass so the near ground isn't bare.
   const shrubGeo = new THREE.IcosahedronGeometry(0.55, 0);
   geometries.push(shrubGeo);
-  for (const [sx, sz, s] of [[-5.4, -2, 1], [5.6, 1.5, 1.2], [-5, 4.5, 0.8], [5.2, -4.4, 0.9], [-2, -7.4, 1.1], [2.6, 7.6, 1]]) {
+  for (const [sx, sz, s] of [[-5.4, -2, 1], [5.6, 1.5, 1.2], [-5, 4.5, 0.8], [5.2, -4.4, 0.9], [-4.2, -6, 1.1], [4.6, 6.4, 1]]) {
     const shrub = new THREE.Mesh(shrubGeo, mat(P.canopy, { flat: true }));
     shrub.position.set(sx, 0.25 * s, sz);
     shrub.scale.setScalar(s);
@@ -291,10 +301,10 @@ export function buildGreenhouseRoom(): Interior {
     ],
     floorY: 0,
     spawn: { x: 0, z: 3.9, yaw: 0 },
-    doorMeshes: [doorFrame, doorPane],
-    doorGlow: [doorMat, paneMat],
+    doorMeshes: [exitPlane],
+    doorGlow: [jambMat],
     background: P.skyHorizon,
-    fog: { color: P.fog, near: 40, far: 90 },
+    fog: { color: P.fog, near: 55, far: 120 },
     update(t) {
       for (const basket of baskets) {
         const phase = basket.userData.phase as number;
