@@ -60,8 +60,8 @@ export function buildBridgeView(): Interior {
     group.add(bush);
   }
 
-  // Trees across the meadow, and a hill in the distance wearing the observatory
-  // dome — the landmarks you left, seen from out here.
+  // Trees across the meadow and a low hill in the distance — the green land you
+  // came from, seen from out here.
   const treeSpots: Array<[number, number, number]> = [
     [-4, LAND_Z + 4, 1.2], [5, LAND_Z + 3.5, 1.1], [-8, LAND_Z + 7, 1.3], [9, LAND_Z + 6, 1.2],
     [-2, LAND_Z + 11, 1.4], [7, LAND_Z + 13, 1.3], [-12, LAND_Z + 10, 1.3], [13, LAND_Z + 9, 1.4],
@@ -69,8 +69,6 @@ export function buildBridgeView(): Interior {
   ];
   treeSpots.forEach(([tx, tz, ts], i) => addTree(group, geometries, tx, LAND_Y - 0.05, tz, ts, 200 + i));
   addHill(group, geometries, -16, LAND_Y - 0.2, LAND_Z + 30, 13, 7, P.meadowDark);
-  add(new THREE.CylinderGeometry(2.4, 2.7, 1.5, 14), mat(P.stonePale, { flat: true }), -16, LAND_Y + 6.3, LAND_Z + 30);
-  add(new THREE.SphereGeometry(2.2, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat(P.glassTeal, { transparent: true, opacity: 0.5 }), -16, LAND_Y + 7.0, LAND_Z + 30);
 
   // The gateway — the open way back. Wood posts and a lintel framing the rim,
   // with a private-material glow while it's hovered; an invisible plane across

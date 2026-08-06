@@ -52,10 +52,6 @@
 .sandbox-3d-overlay { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-family: var(--font-jakarta), sans-serif; }
 .sandbox-3d-hint { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border: 1px solid rgb(39 74 51 / 0.28); border-radius: 999px; background: rgb(255 247 223 / 0.82); color: #274a33; font-size: 13px; letter-spacing: 0.06em; backdrop-filter: blur(6px); animation: sandbox-hint-bob 2.2s ease-in-out infinite; }
 @keyframes sandbox-hint-bob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
-/* Interior controls hint: shows on entering a room, then quietly gets out of
-   the way once the visitor has had time to read it. */
-.sandbox-3d-hint--interior { animation: sandbox-hint-bob 2.2s ease-in-out infinite, sandbox-hint-away 14s ease forwards; }
-@keyframes sandbox-hint-away { 0%, 86% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 /* Back button. At rest it belongs to the sky — a white disc with a thick light
    blue arrow — and on hover it snaps into the server room's own idiom: pointy
    cornered black square, bright green outline, and the words spelled out. */
@@ -63,12 +59,16 @@
    the authored value, so from 999px the corners sit visually circular for most
    of the transition and then snap square at the very end. 24px is exactly half
    the height — still a circle — and animates evenly the whole way. */
-.sandbox-3d-return { position: absolute; top: 18px; left: 18px; display: inline-flex; align-items: center; height: 48px; overflow: hidden; pointer-events: auto; border: 3px solid #7cc7f7; border-radius: 24px; background: #fff; color: #2f9bea; text-decoration: none; box-shadow: 0 8px 22px rgb(23 61 92 / 0.22); transition: border-radius 300ms cubic-bezier(0.33, 1, 0.68, 1), border-color 240ms ease, background 240ms ease, color 240ms ease, box-shadow 240ms ease; }
+.sandbox-3d-return { position: absolute; top: 18px; left: 18px; display: inline-flex; align-items: center; height: 48px; overflow: hidden; pointer-events: auto; padding: 0; font-family: inherit; cursor: pointer; border: 3px solid #7cc7f7; border-radius: 24px; background: #fff; color: #2f9bea; text-decoration: none; box-shadow: 0 8px 22px rgb(23 61 92 / 0.22); transition: border-radius 300ms cubic-bezier(0.33, 1, 0.68, 1), border-color 240ms ease, background 240ms ease, color 240ms ease, box-shadow 240ms ease; }
 .sandbox-3d-return-icon { display: grid; flex: 0 0 auto; place-items: center; width: 42px; height: 100%; }
 .sandbox-3d-return-label { max-width: 0; overflow: hidden; opacity: 0; font-size: 13px; font-weight: 650; letter-spacing: 0.06em; white-space: nowrap; transition: max-width 300ms cubic-bezier(0.33, 1, 0.68, 1), padding-right 300ms cubic-bezier(0.33, 1, 0.68, 1), opacity 220ms ease; }
 .sandbox-3d-return:hover, .sandbox-3d-return:focus-visible { border-radius: 0; border-color: var(--bright-green); background: var(--black); color: var(--bright-green); box-shadow: 0 8px 26px rgb(6 20 12 / 0.45); }
 .sandbox-3d-return:hover .sandbox-3d-return-label, .sandbox-3d-return:focus-visible .sandbox-3d-return-label { max-width: 220px; padding-right: 16px; opacity: 1; }
 .sandbox-3d-return:focus-visible { outline: 2px solid var(--bright-green); outline-offset: 3px; }
+/* Inside a room the control returns to the island, so it stays in the sandbox's
+   blue skin on hover instead of transitioning to the server-room button. */
+.sandbox-3d-return--interior:hover, .sandbox-3d-return--interior:focus-visible { border-radius: 24px; border-color: #2f9bea; background: #eaf6ff; color: #1f7fd0; box-shadow: 0 8px 26px rgb(23 61 92 / 0.3); }
+.sandbox-3d-return--interior:focus-visible { outline-color: #2f9bea; }
 
 .sandbox-3d-fade { position: fixed; inset: 0; z-index: 30; background: #fff7df; opacity: 0; pointer-events: none; transition: opacity 400ms ease; }
 .sandbox-3d-fade[data-active="true"] { opacity: 1; pointer-events: auto; }

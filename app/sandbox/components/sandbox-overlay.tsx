@@ -86,28 +86,40 @@ export function SandboxOverlay({
     <div className="sandbox-3d-overlay">
       {!hintDismissed && !interiorId && <div className="sandbox-3d-hint">drag · scroll · pinch · WASD · Q/E · arrows to explore — you&apos;ll figure it out</div>}
 
-      {interiorId && (
-        <div className="sandbox-3d-hint sandbox-3d-hint--interior" key={interiorId}>
-          walk with WASD · arrows or drag to look · click the way out to leave
-        </div>
+      {interiorId ? (
+        // Inside a room, the same corner control steps back out to the island
+        // — not to the server room — and stays a bare arrow (no label) in the
+        // sandbox styling rather than flipping to the server-room button.
+        <button
+          type="button"
+          className="sandbox-3d-return sandbox-3d-return--interior"
+          aria-label="Back to the island"
+          onClick={() => bridge.exitInterior?.()}
+        >
+          <span className="sandbox-3d-return-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </span>
+        </button>
+      ) : (
+        <Link
+          href="/"
+          className="sandbox-3d-return"
+          aria-label="Back to the server room"
+          onClick={(event) => {
+            event.preventDefault();
+            bridge.navigate("/");
+          }}
+        >
+          <span className="sandbox-3d-return-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </span>
+          <span className="sandbox-3d-return-label">Back to server room</span>
+        </Link>
       )}
-
-      <Link
-        href="/"
-        className="sandbox-3d-return"
-        aria-label="Back to the server room"
-        onClick={(event) => {
-          event.preventDefault();
-          bridge.navigate("/");
-        }}
-      >
-        <span className="sandbox-3d-return-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 5l-7 7 7 7" />
-          </svg>
-        </span>
-        <span className="sandbox-3d-return-label">Back to server room</span>
-      </Link>
 
       {openPanel?.panel && (
         <div

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { fovForAspect } from "../fly-rig";
+import { buildArchiveHall } from "./archive-hall";
 import { buildBridgeView } from "./bridge-view";
-import { buildCaveHome } from "./cave-home";
 import { buildGreenhouseRoom } from "./greenhouse-room";
 import { buildObservatoryLab } from "./observatory-lab";
 import { createWalkRig } from "./walk-rig";
@@ -13,7 +13,7 @@ import type { Interior } from "./types";
 
 const BUILDERS: Record<string, () => Interior> = {
   observatory: buildObservatoryLab,
-  archive: buildCaveHome,
+  archive: buildArchiveHall,
   garden: buildGreenhouseRoom,
   "unfinished-bridge": buildBridgeView,
 };

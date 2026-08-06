@@ -51,6 +51,11 @@ export function buildArchive(x: number, z: number, rotationY: number): WorldModu
   );
   bank.scale.set(SCALE.x, SCALE.y, SCALE.z);
   bank.userData.occluder = true;
+  // Make the whole mound the click target, not just where the hotspot sphere
+  // pokes through the doorway: an occluder normally raycasts to "nothing"
+  // (blocking hovers), but tagging it with the location id means a click
+  // anywhere on the bank steps inside — and it still hides landmarks behind it.
+  bank.userData.locationId = "archive";
 
   // Doorway, flush in that flat face. Black first so the burrow reads as unlit
   // depth, then the warm ring that only shows once the door swings open.

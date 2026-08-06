@@ -7,27 +7,34 @@ import type { Collider, Interior } from "./types";
 
 // Inside the observatory: Faust's study under the glass dome. A stone drum ringed
 // with the lab — a cluttered work table of glowing vials, shelves and stacks of
-// old books, a cauldron simmering green — and at its heart a central pier you
-// climb by a spiral stair to a viewing deck, where a great brass telescope points
-// up through the clear dome at the drifting clouds.
+// old books, a cauldron simmering green — and off to one side a small wrought-iron
+// spiral stair climbing to a gallery, where a great brass telescope rises from the
+// landing up and out through the glass dome at the drifting clouds.
 
 const R = 4.6; // room radius
 const WALL_H = 3.1;
-const R_DECK = 1.3; // central pier / viewing-deck radius
-const R_STAIR = 2.5; // outer edge of the spiral stair annulus
-const DECK_H = 1.9; // viewing-deck height above the floor
-const STAIR_START = Math.PI / 2; // the stair's foot faces +z (toward the door/spawn)
 
-// Floor height under (x, z): the flat outer ring where the lab sits, a one-turn
-// spiral ramp climbing the annulus around the pier, and the flat deck on top.
-// A single-valued field (one turn only) so the walk rig can follow it.
+// A small wrought-iron spiral stair set against the −x wall, winding up to a
+// modest side gallery. Kept off to one side so the room floor stays open.
+const STAIR_CX = -2.85;
+const STAIR_CZ = 2.0;
+const R_LAND = 0.62; // top landing radius
+const R_STAIR = 1.02; // outer edge of the tread annulus
+const PLAT_H = 1.65; // gallery height above the floor
+const STAIR_START = 0; // the foot faces +x, toward the open room
+
+// Floor height under (x, z): flat everywhere the lab sits, rising only within the
+// little stair — a one-turn spiral ramp around the newel and a flat landing on
+// top. A single-valued field (one turn) so the walk rig can follow it.
 function observatoryFloor(x: number, z: number): number {
-  const r = Math.hypot(x, z);
-  if (r <= R_DECK) return DECK_H;
+  const dx = x - STAIR_CX;
+  const dz = z - STAIR_CZ;
+  const r = Math.hypot(dx, dz);
+  if (r <= R_LAND) return PLAT_H;
   if (r <= R_STAIR) {
-    let a = Math.atan2(z, x) - STAIR_START;
+    let a = Math.atan2(dz, dx) - STAIR_START;
     a = ((a % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-    return (a / (Math.PI * 2)) * DECK_H;
+    return (a / (Math.PI * 2)) * PLAT_H;
   }
   return 0;
 }
@@ -64,6 +71,37 @@ export function buildObservatoryLab(): Interior {
   add(new THREE.TorusGeometry(R - 0.03, 0.07, 6, 28).rotateX(Math.PI / 2), mat(P.brass), 0, WALL_H, 0);
   add(new THREE.TorusGeometry(R - 0.03, 0.06, 6, 28).rotateX(Math.PI / 2), mat(P.woodDark), 0, 0.06, 0);
 
+  // A fun celestial rug in the middle of the floor: a golden sunburst on a
+  // night-blue field, ringed with teal and little gold stars. Thin discs stacked
+  // a hair apart with rising renderOrder so they layer cleanly over the boards.
+  const navy = 0x274a6b;
+  const navyLight = 0x35608a;
+  add(new THREE.CircleGeometry(1.7, 48).rotateX(-Math.PI / 2), mat(navy, { flat: true }), 0, 0.012, 0).renderOrder = 1;
+  add(new THREE.RingGeometry(1.54, 1.7, 48).rotateX(-Math.PI / 2), mat(P.gold, { flat: true }), 0, 0.015, 0).renderOrder = 2;
+  add(new THREE.RingGeometry(1.2, 1.36, 48).rotateX(-Math.PI / 2), mat(P.blimpTeal, { flat: true }), 0, 0.015, 0).renderOrder = 2;
+  add(new THREE.CircleGeometry(1.04, 48).rotateX(-Math.PI / 2), mat(navyLight, { flat: true }), 0, 0.018, 0).renderOrder = 2;
+  add(new THREE.RingGeometry(1.0, 1.04, 48).rotateX(-Math.PI / 2), mat(P.gold, { flat: true }), 0, 0.022, 0).renderOrder = 3;
+  const rayGeo = new THREE.BoxGeometry(0.07, 0.006, 0.55);
+  geometries.push(rayGeo);
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const ray = new THREE.Mesh(rayGeo, mat(P.blossomYellow, { flat: true }));
+    ray.position.set(Math.sin(a) * 0.52, 0.024, Math.cos(a) * 0.52);
+    ray.rotation.y = a;
+    ray.renderOrder = 3;
+    group.add(ray);
+  }
+  add(new THREE.CircleGeometry(0.34, 28).rotateX(-Math.PI / 2), mat(P.gold, { flat: true }), 0, 0.027, 0).renderOrder = 3;
+  const starGeo = new THREE.CircleGeometry(0.05, 12).rotateX(-Math.PI / 2);
+  geometries.push(starGeo);
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 + Math.PI / 8;
+    const star = new THREE.Mesh(starGeo, mat(P.blossomYellow, { flat: true }));
+    star.position.set(Math.sin(a) * 1.28, 0.021, Math.cos(a) * 1.28);
+    star.renderOrder = 3;
+    group.add(star);
+  }
+
   // Clouds drifting above the dome, seen through the glass. Kept above the
   // apex (y > 7.7) so they never poke into the room.
   const cloudMat = cloudMaterial(materials);
@@ -90,90 +128,83 @@ export function buildObservatoryLab(): Interior {
   });
   add(new THREE.SphereGeometry(0.055, 8, 6), mat(P.brass), -0.42, 1.05, R - 0.26);
 
-  // ===== Central pier, spiral stair, and viewing deck =====
-  // Stone pier carrying the deck.
-  add(new THREE.CylinderGeometry(R_DECK, R_DECK + 0.14, DECK_H, 20), mat(P.stonePale, { flat: true }), 0, DECK_H / 2, 0);
-  // Deck top surface + brass rim.
-  add(new THREE.CircleGeometry(R_DECK + 0.06, 24).rotateX(-Math.PI / 2), mat(P.stone, { flat: true }), 0, DECK_H + 0.011, 0);
-  add(new THREE.TorusGeometry(R_DECK + 0.05, 0.05, 6, 24).rotateX(Math.PI / 2), mat(P.brass), 0, DECK_H + 0.02, 0);
-
-  // Spiral treads winding up the annulus, plus a helical handrail on the outer
-  // edge. Tread heights track the floor field so the feet stay on the treads.
-  const N_STEPS = 14;
-  const rMid = (R_DECK + R_STAIR) / 2;
-  const treadGeo = new THREE.BoxGeometry(R_STAIR - R_DECK + 0.1, 0.12, (Math.PI * 2 * rMid) / N_STEPS + 0.18);
-  const riserGeo = new THREE.BoxGeometry(R_STAIR - R_DECK + 0.1, DECK_H / N_STEPS + 0.06, 0.08);
-  geometries.push(treadGeo, riserGeo);
+  // ===== A small wrought-iron spiral stair up to the telescope gallery =====
+  const N_STEPS = 12;
+  const rMid = (R_LAND + R_STAIR) / 2;
+  add(new THREE.CylinderGeometry(0.06, 0.06, PLAT_H, 10), mat(P.brass), STAIR_CX, PLAT_H / 2, STAIR_CZ); // newel, up to the landing
+  const treadGeo = new THREE.BoxGeometry(R_STAIR - R_LAND + 0.06, 0.05, (Math.PI * 2 * rMid) / N_STEPS + 0.02);
+  const balGeo = new THREE.CylinderGeometry(0.016, 0.016, 0.6, 6);
+  geometries.push(treadGeo, balGeo);
   const railPts: THREE.Vector3[] = [];
-  const postGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.95, 6);
-  geometries.push(postGeo);
   for (let i = 0; i < N_STEPS; i++) {
     const frac = (i + 0.5) / N_STEPS;
     const a = STAIR_START + frac * Math.PI * 2;
-    const h = frac * DECK_H;
-    const cx = Math.cos(a) * rMid;
-    const cz = Math.sin(a) * rMid;
-    const tread = new THREE.Mesh(treadGeo, mat(P.stonePale, { flat: true }));
+    const h = frac * PLAT_H;
+    const cx = STAIR_CX + Math.cos(a) * rMid;
+    const cz = STAIR_CZ + Math.sin(a) * rMid;
+    const tread = new THREE.Mesh(treadGeo, mat(P.woodDark, { flat: true }));
     tread.position.set(cx, h, cz);
     tread.rotation.y = -a;
     group.add(tread);
-    const riser = new THREE.Mesh(riserGeo, mat(P.wood, { flat: true }));
-    riser.position.set(cx, h - (DECK_H / N_STEPS) / 2, cz);
-    riser.rotation.y = -a;
-    group.add(riser);
-    // Outer handrail post + rail sample point.
-    const post = new THREE.Mesh(postGeo, mat(P.brass));
-    post.position.set(Math.cos(a) * (R_STAIR - 0.06), h + 0.47, Math.sin(a) * (R_STAIR - 0.06));
-    group.add(post);
-    railPts.push(new THREE.Vector3(Math.cos(a) * (R_STAIR - 0.06), h + 0.92, Math.sin(a) * (R_STAIR - 0.06)));
+    const ox = STAIR_CX + Math.cos(a) * (R_STAIR - 0.02);
+    const oz = STAIR_CZ + Math.sin(a) * (R_STAIR - 0.02);
+    const bal = new THREE.Mesh(balGeo, mat(P.brass));
+    bal.position.set(ox, h + 0.29, oz);
+    group.add(bal);
+    railPts.push(new THREE.Vector3(ox, h + 0.58, oz));
   }
   const railCurve = new THREE.CatmullRomCurve3(railPts);
-  const railGeo = new THREE.TubeGeometry(railCurve, 48, 0.035, 5);
+  const railGeo = new THREE.TubeGeometry(railCurve, 64, 0.02, 5);
   geometries.push(railGeo);
   group.add(new THREE.Mesh(railGeo, mat(P.brass)));
 
-  // Deck railing: short posts + a ring rail around the perimeter, with a gap on
-  // the stair-top side so the way on and off reads clearly.
-  const deckPostGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.55, 6);
-  geometries.push(deckPostGeo);
-  for (let i = 0; i < 10; i++) {
-    const a = (i / 10) * Math.PI * 2;
-    // Leave the arc around the stair top (just clockwise of STAIR_START) open.
-    if (Math.abs(((a - (STAIR_START - 0.5)) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)) < 0.9) continue;
-    const rp = new THREE.Mesh(deckPostGeo, mat(P.brass));
-    rp.position.set(Math.cos(a) * (R_DECK - 0.02), DECK_H + 0.28, Math.sin(a) * (R_DECK - 0.02));
-    group.add(rp);
+  // Small landing platform at the top, with a wiry guard ring.
+  add(new THREE.CylinderGeometry(R_LAND + 0.1, R_LAND + 0.1, 0.06, 18), mat(P.woodDark, { flat: true }), STAIR_CX, PLAT_H, STAIR_CZ);
+  const gpGeo = new THREE.CylinderGeometry(0.016, 0.016, 0.6, 6);
+  geometries.push(gpGeo);
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2;
+    const gp = new THREE.Mesh(gpGeo, mat(P.brass));
+    gp.position.set(STAIR_CX + Math.cos(a) * (R_LAND + 0.04), PLAT_H + 0.3, STAIR_CZ + Math.sin(a) * (R_LAND + 0.04));
+    group.add(gp);
   }
+  add(new THREE.TorusGeometry(R_LAND + 0.04, 0.02, 6, 22).rotateX(Math.PI / 2), mat(P.brass), STAIR_CX, PLAT_H + 0.58, STAIR_CZ);
 
-  // The great telescope on the deck, aimed up through the dome.
-  const scopeGroup = new THREE.Group();
-  scopeGroup.position.set(0, DECK_H, 0);
-  const mountGeo = new THREE.CylinderGeometry(0.2, 0.28, 0.5, 12);
-  const forkGeo = new THREE.BoxGeometry(0.12, 0.7, 0.12);
-  const bigTubeGeo = new THREE.CylinderGeometry(0.17, 0.23, 2.5, 14);
-  const eyeGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.35, 10);
-  const lensGeo = new THREE.SphereGeometry(0.2, 12, 8);
-  geometries.push(mountGeo, forkGeo, bigTubeGeo, eyeGeo, lensGeo);
+  // The telescope stands on the gallery at the top of the stair — its long brass
+  // tube rising from the landing up and out through the glass dome at the sky.
+  const scope = new THREE.Group();
+  scope.position.set(STAIR_CX, PLAT_H + 0.05, STAIR_CZ);
+  scope.rotation.z = 0.16; // lean the tube outward, over the −x edge of the gallery
+  const mountGeo = new THREE.CylinderGeometry(0.16, 0.2, 0.3, 12);
+  const forkGeo = new THREE.BoxGeometry(0.07, 0.55, 0.07);
+  const scopeTubeGeo = new THREE.CylinderGeometry(0.17, 0.2, 4.8, 16);
+  const finderGeo = new THREE.CylinderGeometry(0.045, 0.05, 0.7, 10);
+  const eyeGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.34, 10);
+  const objGeo = new THREE.SphereGeometry(0.19, 14, 10);
+  geometries.push(mountGeo, forkGeo, scopeTubeGeo, finderGeo, eyeGeo, objGeo);
   const mount = new THREE.Mesh(mountGeo, mat(P.woodDark, { flat: true }));
-  mount.position.y = 0.25;
-  scopeGroup.add(mount);
+  mount.position.y = 0.15;
+  scope.add(mount);
   for (const sx of [-1, 1]) {
     const fork = new THREE.Mesh(forkGeo, mat(P.brass));
-    fork.position.set(sx * 0.26, 0.8, 0);
-    scopeGroup.add(fork);
+    fork.position.set(sx * 0.17, 0.48, 0);
+    scope.add(fork);
   }
-  const bigTube = new THREE.Mesh(bigTubeGeo, mat(P.brass));
-  bigTube.position.set(0, 1.35, -0.1);
-  bigTube.rotation.x = 0.42; // lean toward the dome
-  scopeGroup.add(bigTube);
-  const lens = new THREE.Mesh(lensGeo, mat(P.glassTeal, { transparent: true, opacity: 0.7 }));
-  lens.position.set(0, 2.42, 0.42);
-  scopeGroup.add(lens);
+  const tube = new THREE.Mesh(scopeTubeGeo, mat(P.brass));
+  tube.position.set(0, 2.6, 0);
+  scope.add(tube);
+  // Objective at the high end (out through the dome); eyepiece + finder down low.
+  const objective = new THREE.Mesh(objGeo, mat(P.glassTeal, { transparent: true, opacity: 0.6 }));
+  objective.position.set(0, 4.9, 0);
+  scope.add(objective);
   const eyepiece = new THREE.Mesh(eyeGeo, mat(P.brassBright));
-  eyepiece.position.set(0, 0.42, -0.62);
-  eyepiece.rotation.x = 0.42;
-  scopeGroup.add(eyepiece);
-  group.add(scopeGroup);
+  eyepiece.position.set(0, 0.5, 0.26);
+  eyepiece.rotation.x = 1.0;
+  scope.add(eyepiece);
+  const finder = new THREE.Mesh(finderGeo, mat(P.brassBright));
+  finder.position.set(0.15, 1.15, 0.1);
+  scope.add(finder);
+  group.add(scope);
 
   // ===== The lab, ringing the wall at ground level =====
   const glassMat = new THREE.MeshLambertMaterial({
@@ -311,7 +342,7 @@ export function buildObservatoryLab(): Interior {
   group.add(brewLight);
 
   // Book piles and loose papers on the floor of the outer ring.
-  addBookStack(group, geometries, -3.4, 0, 1.7, 5, 13);
+  addBookStack(group, geometries, -3.6, 0, -1.9, 5, 13);
   addBookStack(group, geometries, 3.3, 0, -1.5, 3, 14);
   addBookStack(group, geometries, 2.9, 0, 2.9, 4, 15);
   const paperGeo = new THREE.PlaneGeometry(0.24, 0.32).rotateX(-Math.PI / 2);

@@ -5,16 +5,18 @@ import { addPottedPlant, makeAdd } from "./kit";
 import { addCloudClusters, addHill, addTree, cloudMaterial } from "./scenery";
 import type { Collider, Interior } from "./types";
 
-// Inside the greenhouse: what the glass promises from outside. Raised wooden
-// beds in neat rows of flowers, a centre aisle of warm planks, tall potted
-// plants where the roof is highest, hanging baskets swaying from the ridge,
-// and daylight everywhere — the walls are glass, so the meadow and sky show
-// through all around.
+// Inside the greenhouse: what the glass promises from outside. A wide-fronted
+// glasshouse entered through an opening in the long (+z) wall — the same face
+// the door sits on outside — with the ridge running left-to-right across that
+// front. Two small raised beds hold neat rows of flowers running the width of
+// the house, one behind the other, low enough and short enough to walk around.
+// The walls are glass, so the island meadow and sky show through all around.
 
-const W = 7; // room width (x)
-const D = 10; // room depth (z); the door is at +z
+const W = 8.6; // room width (x): the wide front the door sits on
+const D = 5.4; // room depth (z)
 const WALL_H = 2.7;
-const RIDGE_H = 4.1;
+const RIDGE_H = 3.9;
+const DOOR_HALF = 0.9; // half-width of the doorway gap in the front wall
 
 export function buildGreenhouseRoom(): Interior {
   const group = new THREE.Group();
@@ -23,53 +25,56 @@ export function buildGreenhouseRoom(): Interior {
   const materials: THREE.Material[] = [];
   const add = makeAdd(group, geometries);
 
-  // Deck and centre aisle.
+  // Deck.
   add(new THREE.BoxGeometry(W + 0.6, 0.16, D + 0.6), mat(P.plank, { flat: true }), 0, -0.08, 0);
-  const aisle = add(new THREE.BoxGeometry(1.5, 0.03, D + 0.2), mat(P.path, { flat: true }), 0, 0.005, 0);
-  aisle.renderOrder = 1;
 
-  // Brass frame: corner + mid posts, eave beams, ridge, and rafter pairs.
+  // Brass frame. The wall mullions are spaced so the doorway gap in the front
+  // stays clear — corner posts plus one mullion each side of the door, giving
+  // two glass panels on each side and nothing down the middle — with eave beams,
+  // a ridge along x (parallel to the front), and rafter pairs down to each eave.
+  const MULLION_X = 2.6; // the mullion each side of the door
   const postGeo = new THREE.BoxGeometry(0.1, WALL_H, 0.1);
   geometries.push(postGeo);
-  for (const sx of [-1, 1]) {
-    for (const pz of [-D / 2, -D / 4, 0, D / 4, D / 2]) {
+  const postXs = [-W / 2, -MULLION_X, MULLION_X, W / 2];
+  for (const sz of [-1, 1]) {
+    for (const px of postXs) {
       const post = new THREE.Mesh(postGeo, mat(P.brass));
-      post.position.set((sx * W) / 2, WALL_H / 2, pz);
+      post.position.set(px, WALL_H / 2, (sz * D) / 2);
       group.add(post);
     }
-    add(new THREE.BoxGeometry(0.1, 0.1, D), mat(P.brass), (sx * W) / 2, WALL_H, 0);
+    add(new THREE.BoxGeometry(W, 0.1, 0.1), mat(P.brass), 0, WALL_H, (sz * D) / 2); // eave beam
   }
-  add(new THREE.BoxGeometry(0.12, 0.12, D), mat(P.brass), 0, RIDGE_H, 0);
-  const rafterLen = Math.hypot(W / 2, RIDGE_H - WALL_H);
-  const rafterGeo = new THREE.BoxGeometry(rafterLen, 0.08, 0.08);
+  for (const sx of [-1, 1]) {
+    add(new THREE.BoxGeometry(0.1, 0.1, D), mat(P.brass), (sx * W) / 2, WALL_H, 0); // side top beam
+  }
+  add(new THREE.BoxGeometry(W, 0.12, 0.12), mat(P.brass), 0, RIDGE_H, 0); // ridge along x
+
+  const rafterLen = Math.hypot(D / 2, RIDGE_H - WALL_H);
+  const rafterGeo = new THREE.BoxGeometry(0.08, 0.08, rafterLen);
   geometries.push(rafterGeo);
-  const rafterPitch = Math.atan2(RIDGE_H - WALL_H, W / 2);
-  for (const pz of [-D / 2, -D / 4, 0, D / 4, D / 2]) {
-    for (const sx of [-1, 1]) {
+  const rafterPitch = Math.atan2(RIDGE_H - WALL_H, D / 2);
+  const rafterXs = [-W / 2, -MULLION_X, -1.3, 1.3, MULLION_X, W / 2]; // none over the door's centre
+  for (const px of rafterXs) {
+    for (const sz of [-1, 1]) {
       const rafter = new THREE.Mesh(rafterGeo, mat(P.brass));
-      rafter.position.set((sx * W) / 4, (WALL_H + RIDGE_H) / 2, pz);
-      rafter.rotation.z = -sx * rafterPitch;
+      rafter.position.set(px, (WALL_H + RIDGE_H) / 2, (sz * D) / 4);
+      rafter.rotation.x = sz * rafterPitch;
       group.add(rafter);
     }
   }
 
-  // Glass: side and end walls plus the two roof planes, all double-sided so
-  // they read from within. The world outside is scene dressing further down.
+  // Glass: the two side (±x) walls, the back (−z) wall, two front (+z) panes
+  // flanking the door gap, the ±x gable triangles, and the two roof planes —
+  // all double-sided so they read from within.
   const glassMat = () =>
     mat(P.glassTeal, { transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide });
   const sideGeo = new THREE.PlaneGeometry(D, WALL_H);
   const backGeo = new THREE.PlaneGeometry(W, WALL_H);
-  const frontGeo = new THREE.PlaneGeometry(W / 2 - 0.75, WALL_H);
-  const gableGeo = new THREE.BufferGeometry();
-  gableGeo.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(
-      [-W / 2, WALL_H, 0, W / 2, WALL_H, 0, 0, RIDGE_H, 0],
-      3,
-    ),
-  );
-  gableGeo.computeVertexNormals();
-  geometries.push(sideGeo, backGeo, frontGeo, gableGeo);
+  // Two equal panes each side of the door: [DOOR_HALF, MULLION_X] and
+  // [MULLION_X, W/2] are both this wide.
+  const frontPaneW = MULLION_X - DOOR_HALF;
+  const frontGeo = new THREE.PlaneGeometry(frontPaneW, WALL_H);
+  geometries.push(sideGeo, backGeo, frontGeo);
   for (const sx of [-1, 1]) {
     const wall = new THREE.Mesh(sideGeo, glassMat());
     wall.position.set((sx * W) / 2, WALL_H / 2, 0);
@@ -81,97 +86,100 @@ export function buildGreenhouseRoom(): Interior {
   back.position.set(0, WALL_H / 2, -D / 2);
   back.renderOrder = 4;
   group.add(back);
-  for (const sx of [-1, 1]) {
-    const pane = new THREE.Mesh(frontGeo, glassMat());
-    pane.position.set(sx * (W / 4 + 0.38), WALL_H / 2, D / 2);
-    pane.rotation.y = Math.PI;
-    pane.renderOrder = 4;
-    group.add(pane);
+  for (const px of [DOOR_HALF + frontPaneW / 2, MULLION_X + frontPaneW / 2]) {
+    for (const sx of [-1, 1]) {
+      const pane = new THREE.Mesh(frontGeo, glassMat());
+      pane.position.set(sx * px, WALL_H / 2, D / 2);
+      pane.renderOrder = 4;
+      group.add(pane);
+    }
   }
-  for (const sz of [-1, 1]) {
+  const gableGeo = new THREE.BufferGeometry();
+  gableGeo.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute([0, WALL_H, -D / 2, 0, WALL_H, D / 2, 0, RIDGE_H, 0], 3),
+  );
+  gableGeo.computeVertexNormals();
+  geometries.push(gableGeo);
+  for (const sx of [-1, 1]) {
     const gable = new THREE.Mesh(gableGeo, glassMat());
-    gable.position.z = (sz * D) / 2;
+    gable.position.x = (sx * W) / 2;
     gable.renderOrder = 4;
     group.add(gable);
   }
-  const roofGeo = new THREE.BoxGeometry(rafterLen, 0.04, D);
+  const roofGeo = new THREE.BoxGeometry(W, 0.04, rafterLen);
   geometries.push(roofGeo);
-  for (const sx of [-1, 1]) {
+  for (const sz of [-1, 1]) {
     const roof = new THREE.Mesh(roofGeo, glassMat());
-    roof.position.set((sx * W) / 4, (WALL_H + RIDGE_H) / 2, 0);
-    roof.rotation.z = -sx * rafterPitch;
+    roof.position.set(0, (WALL_H + RIDGE_H) / 2, (sz * D) / 4);
+    roof.rotation.x = sz * rafterPitch;
     roof.renderOrder = 4;
     group.add(roof);
   }
 
   // Exit: an open doorway in the front (+z) wall — no door, just a framed gap in
-  // the glass onto the meadow. The brass jambs and lintel glow while it's
+  // the glass onto the meadow. Brass jambs + lintel + threshold, glowing while
   // hovered; an invisible plane across the gap is the click target.
   const jambMat = new THREE.MeshLambertMaterial({ color: P.brass });
   materials.push(jambMat);
   const jambGeo = new THREE.BoxGeometry(0.12, WALL_H, 0.12);
   geometries.push(jambGeo);
-  for (const x of [-0.85, 0.85]) {
+  for (const x of [-DOOR_HALF, DOOR_HALF]) {
     const jamb = new THREE.Mesh(jambGeo, jambMat);
     jamb.position.set(x, WALL_H / 2, D / 2);
     group.add(jamb);
   }
-  add(new THREE.BoxGeometry(1.94, 0.12, 0.14), jambMat, 0, WALL_H - 0.06, D / 2); // lintel
-  add(new THREE.BoxGeometry(1.72, 0.06, 0.5), mat(P.plank, { flat: true }), 0, 0.02, D / 2 - 0.12); // threshold
+  add(new THREE.BoxGeometry(DOOR_HALF * 2 + 0.24, 0.12, 0.14), jambMat, 0, WALL_H - 0.06, D / 2); // lintel
+  add(new THREE.BoxGeometry(DOOR_HALF * 2 - 0.02, 0.06, 0.5), mat(P.plank, { flat: true }), 0, 0.02, D / 2 - 0.12); // threshold
   const exitMat = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
   materials.push(exitMat);
-  const exitPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.7, WALL_H - 0.1), exitMat);
+  const exitPlane = new THREE.Mesh(new THREE.PlaneGeometry(DOOR_HALF * 2, WALL_H - 0.1), exitMat);
   geometries.push(exitPlane.geometry);
   exitPlane.position.set(0, (WALL_H - 0.1) / 2, D / 2 - 0.05);
   group.add(exitPlane);
 
-  // Raised beds: two columns, three rows, each with neat ranks of flowers.
-  // Stems and blossoms are instanced across all beds.
-  const bedW = 2.2;
-  const bedD = 1.8;
-  const bedH = 0.55;
-  const bedXs = [-1.95, 1.95];
-  const bedZs = [-3.3, -0.6, 2.1];
+  // Two small raised beds — rows of flowers running down the short axis of the
+  // house (along z), one either side of the centre aisle, short enough to walk
+  // around the ends. Stems and blossoms are instanced across both beds.
+  const bedLen = 3.2; // along z (the short axis)
+  const bedWidth = 1.2; // along x
+  const bedH = 0.5;
+  const bedXs = [-1.6, 1.6];
+  const RANKS = 5;
   const colliders: Collider[] = [];
-  const wallGeoX = new THREE.BoxGeometry(bedW, bedH, 0.09);
-  const wallGeoZ = new THREE.BoxGeometry(0.09, bedH, bedD);
-  const soilGeo = new THREE.BoxGeometry(bedW - 0.14, 0.08, bedD - 0.14);
-  geometries.push(wallGeoX, wallGeoZ, soilGeo);
+  const longWallGeo = new THREE.BoxGeometry(0.09, bedH, bedLen); // long walls run along z
+  const endWallGeo = new THREE.BoxGeometry(bedWidth, bedH, 0.09); // end caps run along x
+  const soilGeo = new THREE.BoxGeometry(bedWidth - 0.14, 0.08, bedLen - 0.14);
+  geometries.push(longWallGeo, endWallGeo, soilGeo);
   const flowerSpots: Array<{ x: number; z: number; c: number }> = [];
-  const rowColors = [P.blossomPink, P.blossomYellow, P.blossomOrange, P.blossomPink, P.potionBlue, P.blossomYellow];
-  let bedIndex = 0;
-  for (const bx of bedXs) {
-    for (const bz of bedZs) {
-      for (const sz of [-1, 1]) {
-        const wallX = new THREE.Mesh(wallGeoX, mat(P.wood, { flat: true }));
-        wallX.position.set(bx, bedH / 2, bz + (sz * bedD) / 2);
-        group.add(wallX);
-        const wallZ = new THREE.Mesh(wallGeoZ, mat(P.wood, { flat: true }));
-        wallZ.position.set(bx + (sz * bedW) / 2, bedH / 2, bz);
-        group.add(wallZ);
-      }
-      const soilTop = new THREE.Mesh(soilGeo, mat(P.soil, { flat: true }));
-      soilTop.position.set(bx, bedH - 0.05, bz);
-      group.add(soilTop);
-      // Neat rows: 3 ranks along z, 5 flowers per rank, one color per rank.
-      for (let row = 0; row < 3; row++) {
-        const color = rowColors[(bedIndex + row) % rowColors.length];
-        for (let col = 0; col < 5; col++) {
-          flowerSpots.push({
-            x: bx - bedW / 2 + 0.35 + col * ((bedW - 0.7) / 4),
-            z: bz - bedD / 2 + 0.4 + row * ((bedD - 0.8) / 2),
-            c: color,
-          });
-        }
-      }
-      colliders.push({
-        kind: "rect",
-        minX: bx - bedW / 2, maxX: bx + bedW / 2,
-        minZ: bz - bedD / 2, maxZ: bz + bedD / 2,
-      });
-      bedIndex++;
+  const rowColors = [P.blossomPink, P.blossomYellow, P.blossomOrange, P.potionBlue];
+  bedXs.forEach((bx, bi) => {
+    for (const sx of [-1, 1]) {
+      const longWall = new THREE.Mesh(longWallGeo, mat(P.wood, { flat: true }));
+      longWall.position.set(bx + (sx * bedWidth) / 2, bedH / 2, 0);
+      group.add(longWall);
     }
-  }
+    for (const sz of [-1, 1]) {
+      const endWall = new THREE.Mesh(endWallGeo, mat(P.wood, { flat: true }));
+      endWall.position.set(bx, bedH / 2, (sz * bedLen) / 2);
+      group.add(endWall);
+    }
+    const soilTop = new THREE.Mesh(soilGeo, mat(P.soil, { flat: true }));
+    soilTop.position.set(bx, bedH - 0.05, 0);
+    group.add(soilTop);
+    // Neat rows down the depth: RANKS ranks along z, two blooms across, one colour per rank.
+    for (let rank = 0; rank < RANKS; rank++) {
+      const c = rowColors[(bi + rank) % rowColors.length];
+      for (const sx of [-1, 1]) {
+        flowerSpots.push({
+          x: bx + sx * 0.28,
+          z: -bedLen / 2 + 0.45 + rank * ((bedLen - 0.9) / (RANKS - 1)),
+          c,
+        });
+      }
+    }
+    colliders.push({ kind: "rect", minX: bx - bedWidth / 2, maxX: bx + bedWidth / 2, minZ: -bedLen / 2, maxZ: bedLen / 2 });
+  });
   const stemGeo = new THREE.CylinderGeometry(0.014, 0.02, 0.34, 5);
   const bloomGeo = new THREE.SphereGeometry(0.075, 7, 6);
   geometries.push(stemGeo, bloomGeo);
@@ -196,7 +204,7 @@ export function buildGreenhouseRoom(): Interior {
   group.add(stems, blooms);
   instanced.push(stems, blooms);
 
-  // Potting bench along the back wall: pots, a watering can, seed trays.
+  // Potting bench along the back wall: pots, a watering can, a seed tray.
   add(new THREE.BoxGeometry(3.4, 0.09, 0.8), mat(P.wood, { flat: true }), 0, 0.85, -D / 2 + 0.55);
   const benchLegGeo = new THREE.BoxGeometry(0.09, 0.82, 0.09);
   geometries.push(benchLegGeo);
@@ -213,28 +221,27 @@ export function buildGreenhouseRoom(): Interior {
     group.add(pot);
   }
   add(new THREE.BoxGeometry(0.6, 0.07, 0.4), mat(P.woodDark, { flat: true }), 0.35, 0.94, -D / 2 + 0.5);
-  // Watering can: body, spout, arched handle.
   add(new THREE.CylinderGeometry(0.14, 0.16, 0.26, 10), mat(P.glassTeal, { flat: true }), 1.15, 1.03, -D / 2 + 0.5);
   const spout = add(new THREE.CylinderGeometry(0.02, 0.035, 0.3, 6), mat(P.glassTeal), 1.33, 1.08, -D / 2 + 0.5);
   spout.rotation.z = -0.9;
   add(new THREE.TorusGeometry(0.1, 0.018, 5, 10, Math.PI), mat(P.glassTeal), 1.15, 1.16, -D / 2 + 0.5);
 
-  // Tall potted plants under the ridge, and small ones by the door.
-  addPottedPlant(group, geometries, -0.95, 0, -4.15, 1.7);
-  addPottedPlant(group, geometries, 0.95, 0, -4.2, 1.45);
-  addPottedPlant(group, geometries, -1.05, 0, 4.35, 1.1);
-  addPottedPlant(group, geometries, 1.05, 0, 4.35, 1.1);
+  // Tall potted plants in the back corners; smaller ones flanking the doorway.
+  addPottedPlant(group, geometries, -W / 2 + 0.9, 0, -D / 2 + 0.9, 1.6);
+  addPottedPlant(group, geometries, W / 2 - 0.9, 0, -D / 2 + 0.9, 1.45);
+  addPottedPlant(group, geometries, -DOOR_HALF - 0.6, 0, D / 2 - 0.45, 1.0);
+  addPottedPlant(group, geometries, DOOR_HALF + 0.6, 0, D / 2 - 0.45, 1.0);
 
-  // Hanging baskets from the ridge, swaying gently.
+  // Hanging baskets from the ridge (which runs along x), swaying gently.
   const baskets: THREE.Group[] = [];
   const ropeGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.75, 5);
   const basketGeo = new THREE.CylinderGeometry(0.2, 0.13, 0.18, 8);
   const puffGeo = new THREE.IcosahedronGeometry(0.16, 0);
   const dropGeo = new THREE.SphereGeometry(0.05, 6, 5);
   geometries.push(ropeGeo, basketGeo, puffGeo, dropGeo);
-  [-3.2, -1.1, 1.1, 3.2].forEach((bz, i) => {
+  [-3, -1, 1, 3].forEach((bx, i) => {
     const basket = new THREE.Group();
-    basket.position.set(0, RIDGE_H - 0.06, bz);
+    basket.position.set(bx, RIDGE_H - 0.06, 0);
     const rope = new THREE.Mesh(ropeGeo, mat(P.wood));
     rope.position.y = -0.38;
     const bowl = new THREE.Mesh(basketGeo, mat(P.woodDark, { flat: true }));
@@ -253,12 +260,9 @@ export function buildGreenhouseRoom(): Interior {
   // stand on out there — rolling green ground, low hills, scattered trees, and
   // cloud banks in the sky, so the view through the panes reads as the island.
   add(new THREE.CircleGeometry(80, 36).rotateX(-Math.PI / 2), mat(P.meadow), 0, -0.18, 0);
-  // Low hills for relief; the far one wears a hint of the observatory dome.
   addHill(group, geometries, -34, -0.18, -20, 14, 6, P.meadowDark);
   addHill(group, geometries, 40, -0.18, 12, 12, 5, P.meadowDark);
   addHill(group, geometries, 22, -0.18, -34, 16, 8, P.meadowDark);
-  add(new THREE.SphereGeometry(2.2, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat(P.glassTeal, { transparent: true, opacity: 0.5 }), 22, 7.2, -34);
-  add(new THREE.CylinderGeometry(2.4, 2.6, 1.4, 14), mat(P.stonePale, { flat: true }), 22, 6.2, -34);
 
   const cloudMat = cloudMaterial(materials);
   addCloudClusters(group, geometries, cloudMat, [
@@ -275,7 +279,7 @@ export function buildGreenhouseRoom(): Interior {
   // A handful of shrubs just outside the glass so the near ground isn't bare.
   const shrubGeo = new THREE.IcosahedronGeometry(0.55, 0);
   geometries.push(shrubGeo);
-  for (const [sx, sz, s] of [[-5.4, -2, 1], [5.6, 1.5, 1.2], [-5, 4.5, 0.8], [5.2, -4.4, 0.9], [-4.2, -6, 1.1], [4.6, 6.4, 1]]) {
+  for (const [sx, sz, s] of [[-6.4, -2, 1], [6.6, 1.5, 1.2], [-6, 4.5, 0.8], [6.2, -4.4, 0.9], [-5.2, -6, 1.1], [5.6, 6.4, 1]]) {
     const shrub = new THREE.Mesh(shrubGeo, mat(P.canopy, { flat: true }));
     shrub.position.set(sx, 0.25 * s, sz);
     shrub.scale.setScalar(s);
@@ -294,13 +298,13 @@ export function buildGreenhouseRoom(): Interior {
     colliders: [
       ...colliders,
       { kind: "rect", minX: -1.75, maxX: 1.75, minZ: -D / 2, maxZ: -D / 2 + 0.95 }, // bench
-      { kind: "circle", x: -0.95, z: -4.15, r: 0.4 },
-      { kind: "circle", x: 0.95, z: -4.2, r: 0.4 },
-      { kind: "circle", x: -1.05, z: 4.35, r: 0.3 },
-      { kind: "circle", x: 1.05, z: 4.35, r: 0.3 },
+      { kind: "circle", x: -W / 2 + 0.9, z: -D / 2 + 0.9, r: 0.4 },
+      { kind: "circle", x: W / 2 - 0.9, z: -D / 2 + 0.9, r: 0.4 },
+      { kind: "circle", x: -DOOR_HALF - 0.6, z: D / 2 - 0.45, r: 0.3 },
+      { kind: "circle", x: DOOR_HALF + 0.6, z: D / 2 - 0.45, r: 0.3 },
     ],
     floorY: 0,
-    spawn: { x: 0, z: 3.9, yaw: 0 },
+    spawn: { x: 0, z: D / 2 - 0.6, yaw: 0 },
     doorMeshes: [exitPlane],
     doorGlow: [jambMat],
     background: P.skyHorizon,
