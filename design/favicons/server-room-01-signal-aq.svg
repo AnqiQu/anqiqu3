@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
+  <title id="title">Server Room signal AQ favicon</title>
+  <desc id="desc">A white A and signal-green Q on a black rounded square.</desc>
+  <rect x="4" y="4" width="56" height="56" rx="13" fill="#000000"/>
+  <path fill="#FFFFFF" fill-rule="evenodd" d="M8 47 20 17h8l12 30h-8l-2-6H18l-2 6H8Zm12-13h8l-4-11-4 11Z"/>
+  <path fill="#80ED99" fill-rule="evenodd" d="M39 18h17v23H44l-5-5V18Zm6 6v11h7V24h-7Z"/>
+  <path d="m50 38 7 7-5 5-7-7 5-5Z" fill="#80ED99"/>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
+  <title id="title">Sandbox hex habitat favicon</title>
+  <desc id="desc">A sun, green canopy, and floating island inside a blue hexagon.</desc>
+  <path d="M18 5h28l14 27-14 27H18L4 32 18 5Z" fill="#1A96F2"/>
+  <circle cx="43" cy="18" r="7" fill="#FFFDF0"/>
+  <circle cx="24" cy="33" r="9" fill="#52A842"/>
+  <circle cx="34" cy="31" r="11" fill="#86D462"/>
+  <path d="M14 38h36L32 56 14 38Z" fill="#7D5F43"/>
+  <path d="M28 31h8v12h-8V31Z" fill="#FFFFFF"/>
+</svg>

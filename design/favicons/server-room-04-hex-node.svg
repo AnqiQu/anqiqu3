@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
+  <title id="title">Server Room hex node favicon</title>
+  <desc id="desc">A compact AQ monogram inside a black technical hexagon.</desc>
+  <path d="M18 5h28l14 27-14 27H18L4 32 18 5Z" fill="#000000"/>
+  <path fill="#FFFFFF" fill-rule="evenodd" d="M10 44 23 17h7l12 27h-8l-2-6H20l-3 6h-7Zm13-12h7l-3.5-9-3.5 9Z"/>
+  <path fill="#80ED99" fill-rule="evenodd" d="M38 18h15v21h-9l-6-6V18Zm6 6v9h4v-9h-4Z"/>
+  <path d="m48 36 7 7-5 5-7-7 5-5Z" fill="#80ED99"/>
+</svg>

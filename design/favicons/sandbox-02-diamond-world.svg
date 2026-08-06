@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
+  <title id="title">Sandbox diamond world favicon</title>
+  <desc id="desc">A sunlit floating island inside a blue diamond.</desc>
+  <path d="M32 3 61 32 32 61 3 32 32 3Z" fill="#1A96F2"/>
+  <circle cx="42" cy="20" r="7" fill="#FFFDF0"/>
+  <path d="M10 34 20 27h24l10 7-10 8H20l-10-8Z" fill="#86D462"/>
+  <path d="M20 42h24L32 56 20 42Z" fill="#7D5F43"/>
+  <path d="m32 29 4 5-4 5-4-5 4-5Z" fill="#FFFFFF"/>
+</svg>

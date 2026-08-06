@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
+  <title id="title">Server Room console gate favicon</title>
+  <desc id="desc">An AQ monogram framed by signal-green server rails on black.</desc>
+  <rect x="4" y="4" width="56" height="56" rx="10" fill="#000000"/>
+  <path d="M10 14h7v36h-7V14Zm37 0h7v36h-7V14Z" fill="#80ED99"/>
+  <path fill="#FFFFFF" fill-rule="evenodd" d="M17 45 27 19h7l10 26h-7l-2-6H25l-2 6h-6Zm10-12h6l-3-9-3 9Z"/>
+  <path fill="#80ED99" fill-rule="evenodd" d="M34 25h12v15h-8l-4-4V25Zm5 5v5h3v-5h-3Z"/>
+  <path d="m42 38 5 5-4 4-5-5 4-4Z" fill="#80ED99"/>
+</svg>
