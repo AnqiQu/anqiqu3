@@ -73,7 +73,7 @@ export function SandboxExperience() {
     <div className="sandbox-experience" data-mode={mode}>
       {mode !== "flat" && (
         <>
-          <h1 className="sandbox-sr-only">Anqi Intelligence Sandbox</h1>
+          <h1 className="sandbox-sr-only">Anqi Qu Sandbox</h1>
           <p className="sandbox-sr-only">
             A floating solarpunk island above the clouds — drag to explore once it loads.
           </p>
@@ -83,7 +83,7 @@ export function SandboxExperience() {
       {mode === "3d" && <SandboxOverlay bridge={bridge} locations={sandboxLocations} />}
       {mode === "flat" && (
         <main className="sandbox-flat">
-          <p className="sandbox-flat-kicker">Anqi Intelligence</p>
+          <p className="sandbox-flat-kicker">Anqi Qu</p>
           <h1 className="sandbox-flat-title">Sandbox</h1>
           <p className="sandbox-flat-note">
             A floating solarpunk island above the clouds — research, memories, and unfinished

@@ -33,10 +33,10 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://anqiqu.com"),
-  title: "Anqi Intelligence",
+  title: "Anqi Qu",
   description:
     "Anqi Qu: a multimodal human model for research, conversation, and real-world interaction.",
-  applicationName: "Anqi Intelligence",
+  applicationName: "Anqi Qu",
   alternates: { canonical: "/" },
   icons: {
     icon: "/favicon.svg",
@@ -45,21 +45,21 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://anqiqu.com",
-    siteName: "Anqi Intelligence",
-    title: "Anqi Intelligence",
+    siteName: "Anqi Qu",
+    title: "Anqi Qu",
     description: "Our most advanced multimodal human model yet.",
     images: [
       {
         url: "/og.png",
         width: 1729,
         height: 910,
-        alt: "Anqi Intelligence — our most advanced multimodal human model yet.",
+        alt: "Anqi Qu — our most advanced multimodal human model yet.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Anqi Intelligence",
+    title: "Anqi Qu",
     description: "Our most advanced multimodal human model yet.",
     images: ["/og.png"],
   },

@@ -4,7 +4,7 @@ import { Footer, Header } from "../components/site-shell";
 import { contactLinks } from "../content";
 
 export const metadata: Metadata = {
-  title: "Book a Demo | Anqi Intelligence",
+  title: "Book a Demo | Anqi Qu",
   description:
     "Contact Anqi Qu for coffee, collaborations, research, startup conversations, or sufficiently specific questions.",
 };

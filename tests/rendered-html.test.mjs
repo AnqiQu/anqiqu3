@@ -26,14 +26,14 @@ async function render(pathname = "/") {
   );
 }
 
-test("server-renders the Anqi Intelligence landing page", async () => {
+test("server-renders the Anqi Qu landing page", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
   const normalizedHtml = html.replaceAll("<!-- -->", "");
-  assert.match(html, /<title>Anqi Intelligence<\/title>/i);
+  assert.match(html, /<title>Anqi Qu<\/title>/i);
   assert.doesNotMatch(html, /INTRODUCING ANQI INTELLIGENCE/);
   assert.match(html, /Anqi Qu/);
   assert.match(html, /Our most advanced multimodal human model yet\./);
@@ -62,7 +62,7 @@ test("server-renders contact options with supplied URLs", async () => {
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(html, /<title>Book a Demo \| Anqi Intelligence<\/title>/i);
+  assert.match(html, /<title>Book a Demo \| Anqi Qu<\/title>/i);
   assert.doesNotMatch(html, /Select a communication protocol\./);
   assert.match(html, /https:\/\/www\.instagram\.com\/anqi\._\.thewateraddict/);
   assert.match(html, /https:\/\/www\.linkedin\.com\/in\/anqiqu\//);
@@ -77,8 +77,8 @@ test("server-renders the Sandbox underground loading gate", async () => {
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(html, /<title>Sandbox \| Anqi Intelligence<\/title>/i);
-  assert.match(html, /Anqi Intelligence Sandbox/);
+  assert.match(html, /<title>Anqi Qu<\/title>/i);
+  assert.match(html, /Anqi Qu Sandbox/);
   assert.match(html, /A floating solarpunk island above the clouds/);
   assert.match(html, /data-mode="loading"/);
   assert.match(html, /sandbox-cavern/);
