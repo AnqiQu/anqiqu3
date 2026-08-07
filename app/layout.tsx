@@ -38,10 +38,6 @@ export const metadata: Metadata = {
     "Anqi Qu: a multimodal human model for research, conversation, and real-world interaction.",
   applicationName: "Anqi Qu",
   alternates: { canonical: "/" },
-  icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-  },
   openGraph: {
     type: "website",
     url: "https://anqiqu.com",

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { Footer, Header } from "../components/site-shell";
+import { Favicon } from "../components/favicon";
 import { contactLinks } from "../content";
 
 export const metadata: Metadata = {
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="site-frame contact-page">
+      <Favicon href="/favicon.svg" />
       <Header />
       <main className="contact-main">
         <div className="container contact-inner">

@@ -4,6 +4,7 @@ import { Benchmarks } from "./components/benchmarks";
 import { HeroHype } from "./components/hero-hype";
 import { HeroTechnical } from "./components/hero-technical";
 import { Footer, Header, SectionHeader } from "./components/site-shell";
+import { Favicon } from "./components/favicon";
 import {
   changelog,
   companies,
@@ -30,6 +31,7 @@ function Result({ value }: { value: string }) {
 export default function Home() {
   return (
     <div className="site-frame">
+      <Favicon href="/favicon.svg" />
       <Header />
       <main>
         <section className="hero" id="overview">
