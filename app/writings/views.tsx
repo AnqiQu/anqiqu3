@@ -18,7 +18,7 @@ const SECTION_TITLE: Record<Section, string> = {
 };
 
 const SECTION_LEDE: Record<Section, string> = {
-  writing: "Essays, notes, and other things worth keeping.",
+  writing: "Essays, notes, loose thoughts...",
   manifesto: "Things I believe about how to work and live.",
 };
 
