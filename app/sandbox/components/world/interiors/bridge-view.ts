@@ -6,12 +6,13 @@ import { makeAdd } from "./kit";
 import { addHill, addTree } from "./scenery";
 import type { Interior } from "./types";
 
-// Standing on the unfinished bridge. Ahead, the deck runs out over open sky —
-// planks thinning, the last ones askew, one dangling from a rope — then nothing
-// but horizon and the cloud sea far below. Behind you lies the island you came
-// from: its grassy rim, trees, and a hill in the distance. There is no door —
-// an open gateway frames the way back, and clicking toward the land steps you
-// out onto it.
+// Standing on the bridge under construction. The decking ends clean a few steps
+// out; ahead the bare frame — beams and cross-joists — runs on over open sky,
+// with fresh planks stacked on the frame, a sawhorse, and the next board
+// swinging up on a rope hoist, then nothing but horizon and the cloud sea far
+// below. Behind you lies the island you came from: its grassy rim, trees, and a
+// hill in the distance. There is no door — an open gateway frames the way back,
+// and clicking toward the land steps you out onto it.
 
 const DECK_Y = 0.12; // plank walking surface
 const LAND_Z = 2.2; // where the island's edge meets the bridge
@@ -99,19 +100,47 @@ export function buildBridgeView(): Interior {
   }
   const plankGeo = new THREE.BoxGeometry(2.3, 0.09, 0.62);
   geometries.push(plankGeo);
-  const planks = new THREE.InstancedMesh(plankGeo, mat(P.plank, { flat: true }), 13);
+  // Planks laid neatly from the island rim, stopping clean where the work has
+  // reached — no thinning, no askew boards.
+  const NUM_LAID = 11;
+  const planks = new THREE.InstancedMesh(plankGeo, mat(P.plank, { flat: true }), NUM_LAID);
   const dummy = new THREE.Object3D();
   let pz = LAND_Z - 0.55;
-  for (let i = 0; i < 13; i++) {
-    pz -= 0.72 + Math.max(0, i - 7) * 0.12;
+  for (let i = 0; i < NUM_LAID; i++) {
+    pz -= 0.62;
     dummy.position.set(0, DECK_Y - 0.04 + (LAND_Z - pz) * -0.004, pz);
     dummy.rotation.set(0, 0, 0);
-    if (i === 11) dummy.rotation.set(0.12, 0.3, 0.1);
-    if (i === 12) dummy.rotation.set(-0.08, -0.45, -0.16);
     dummy.updateMatrix();
     planks.setMatrixAt(i, dummy.matrix);
   }
+  const DECK_END = pz; // z of the last laid plank — the working edge
   group.add(planks);
+
+  // Cross-joists spanning the beams beyond the decking: the frame laid out and
+  // waiting for its planks.
+  const joistGeo = new THREE.BoxGeometry(2.3, 0.09, 0.16);
+  geometries.push(joistGeo);
+  for (const jz of [DECK_END - 0.75, DECK_END - 1.45, DECK_END - 2.15, DECK_END - 2.85, DECK_END - 3.55]) {
+    add(joistGeo, mat(P.woodDark, { flat: true }), 0, 0.05, jz);
+  }
+
+  // Fresh planks stacked on the frame just past the working edge, ready to lay.
+  const stackGeo = new THREE.BoxGeometry(2.0, 0.09, 0.55);
+  geometries.push(stackGeo);
+  for (let i = 0; i < 4; i++) {
+    const board = add(stackGeo, mat(P.plank, { flat: true }), 0, 0.14 + i * 0.1, DECK_END - 1.1);
+    board.rotation.y = (i - 1.5) * 0.04;
+  }
+
+  // A sawhorse straddling the frame, a plank resting across it mid-work.
+  add(new THREE.BoxGeometry(0.16, 0.12, 1.5), mat(P.woodDark, { flat: true }), 0, DECK_Y + 0.5, DECK_END - 2.5);
+  for (const [lx, lz] of [[-0.06, 0.55], [0.06, 0.55], [-0.06, -0.55], [0.06, -0.55]] as Array<[number, number]>) {
+    const leg = add(new THREE.CylinderGeometry(0.03, 0.035, 0.62, 5), mat(P.woodDark), lx, DECK_Y + 0.25, DECK_END - 2.5 + lz);
+    leg.rotation.x = lz > 0 ? 0.28 : -0.28;
+    leg.rotation.z = lx > 0 ? -0.12 : 0.12;
+  }
+  const sawPlank = add(new THREE.BoxGeometry(2.1, 0.08, 0.5), mat(P.plank, { flat: true }), 0.15, DECK_Y + 0.6, DECK_END - 2.5);
+  sawPlank.rotation.y = 0.05;
 
   const postGeo = new THREE.CylinderGeometry(0.09, 0.11, 1.25, 7);
   geometries.push(postGeo);
@@ -128,25 +157,29 @@ export function buildBridgeView(): Interior {
     strut.rotation.z = sx * 0.12;
   }
 
-  // Sagging ropes running out along the deck, fraying past the last post.
+  // Guide ropes strung out along the deck, carried on to the hoist pole as the
+  // work advances.
   for (const sx of [-1, 1]) {
     const ropeCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(sx * 1.05, DECK_Y + 1.16, LAND_Z - 0.9),
       new THREE.Vector3(sx * 1.08, DECK_Y + 0.88, LAND_Z - 3.1),
-      new THREE.Vector3(sx * 1.05, DECK_Y + 1.1, LAND_Z - 5.4),
-      new THREE.Vector3(sx * 1.02, DECK_Y + 0.62, LAND_Z - 7.6),
-      new THREE.Vector3(sx * 0.98, DECK_Y + 0.78, LAND_Z - 9),
+      new THREE.Vector3(sx * 1.05, DECK_Y + 1.0, LAND_Z - 5.4),
+      new THREE.Vector3(sx * 0.9, DECK_Y + 0.92, DECK_END - 2.0),
+      new THREE.Vector3(sx * 0.5, DECK_Y + 1.2, DECK_END - 3.4),
     ]);
     const ropeGeo = new THREE.TubeGeometry(ropeCurve, 24, 0.032, 5);
     geometries.push(ropeGeo);
     group.add(new THREE.Mesh(ropeGeo, mat(P.wood)));
   }
 
-  // The dangling plank at the break, swaying.
-  const dangleRope = add(new THREE.CylinderGeometry(0.026, 0.026, 1.1, 5), mat(P.wood), 0.55, DECK_Y - 0.6, LAND_Z - 11.2);
-  dangleRope.rotation.z = 0.14;
-  const dangler = add(new THREE.BoxGeometry(0.6, 0.08, 1.7), mat(P.plank, { flat: true }), 0.62, DECK_Y - 1.2, LAND_Z - 11.15);
-  dangler.rotation.set(0.4, 0.3, 1.2);
+  // The hoist: a leaning gin pole at the far frame end with the next plank
+  // swinging up on its line, on its way to being fixed across the frame.
+  const hoistPole = add(new THREE.CylinderGeometry(0.08, 0.09, 3.4, 6), mat(P.woodDark, { flat: true }), 0.7, DECK_Y + 1.0, DECK_END - 3.0);
+  hoistPole.rotation.x = 0.45;
+  const hoistLine = add(new THREE.CylinderGeometry(0.026, 0.026, 2.2, 5), mat(P.wood), 0.35, DECK_Y + 1.0, DECK_END - 2.1);
+  hoistLine.rotation.z = 0.1;
+  const hoistPlank = add(new THREE.BoxGeometry(2.1, 0.09, 0.6), mat(P.plank, { flat: true }), 0, DECK_Y - 0.2, DECK_END - 2.1);
+  hoistPlank.rotation.z = 0.06;
 
   // Lantern on the near post.
   add(new THREE.SphereGeometry(0.1, 8, 6), new THREE.MeshBasicMaterial({ color: P.lanternGlow }), -1.05, DECK_Y + 1.32, LAND_Z - 0.9);
@@ -161,9 +194,10 @@ export function buildBridgeView(): Interior {
 
   return {
     group,
-    // A narrow walk: the deck's width, from the island rim to just shy of the
-    // askew planks. Invisible walls, not railings — the ropes read as the edge.
-    bounds: { kind: "rect", minX: -0.85, maxX: 0.85, minZ: LAND_Z - 8.6, maxZ: LAND_Z - 0.35 },
+    // A narrow walk: the deck's width, from the island rim out to the working
+    // edge where the decking ends. Invisible walls, not railings — the ropes
+    // read as the edge, and you stop where the planks do.
+    bounds: { kind: "rect", minX: -0.85, maxX: 0.85, minZ: DECK_END - 0.1, maxZ: LAND_Z - 0.35 },
     colliders: [],
     floorY: DECK_Y,
     spawn: { x: 0, z: LAND_Z - 1.3, yaw: 0 },
@@ -174,8 +208,11 @@ export function buildBridgeView(): Interior {
     far: 700,
     update(t, dt) {
       sky.update?.(t, dt);
-      dangler.rotation.x = 0.4 + Math.sin(t * 0.9) * 0.14;
-      dangleRope.rotation.x = Math.sin(t * 0.9) * 0.09;
+      // The hoisted plank sways gently on its line as it swings up.
+      const swing = Math.sin(t * 0.9) * 0.09;
+      hoistPlank.rotation.z = 0.06 + swing;
+      hoistPlank.position.y = DECK_Y - 0.2 + Math.sin(t * 0.7) * 0.05;
+      hoistLine.rotation.z = 0.1 + swing * 0.5;
     },
     dispose() {
       sky.dispose();
