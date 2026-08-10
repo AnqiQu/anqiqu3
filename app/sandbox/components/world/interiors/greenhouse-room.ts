@@ -138,21 +138,36 @@ export function buildGreenhouseRoom(): Interior {
   exitPlane.position.set(0, (WALL_H - 0.1) / 2, D / 2 - 0.05);
   group.add(exitPlane);
 
-  // Two small raised beds — rows of flowers running down the short axis of the
-  // house (along z), one either side of the centre aisle, short enough to walk
-  // around the ends. Stems and blossoms are instanced across both beds.
+  // Two small raised beds — flowers scattered across the soil (not in rows),
+  // one bed either side of the centre aisle, short enough to walk around the
+  // ends. Every bloom is a link: hovering lifts its bulb's glow, swells it a
+  // little, and floats a faint halo around it; a click opens the thing it
+  // stands for. Exactly as many flowers as there are links.
+  const flowerLinks = [
+    "https://anqiqu.github.io/", // the website relic
+    "https://en.wikipedia.org/wiki/Dyson_(company)",
+    "https://en.wikipedia.org/wiki/The_Romans_in_their_Decadence",
+    "https://en.wikipedia.org/wiki/John_Deere",
+    "https://en.wikipedia.org/wiki/Soup",
+    "https://incubatorwarehouse.com/blogs/poultry-pals/button-quail-care-guide-everything-you-need-to-know",
+    "https://www.goodreads.com/en/book/show/25899336-when-breath-becomes-air",
+    "https://en.wikipedia.org/wiki/The_Unicorn_Tapestries",
+    "https://www.goodreads.com/quotes/178823-never-regret-thy-fall-o-icarus-of-the-fearless-flight",
+    "https://www.goodreads.com/quotes/416938-i-learned-long-ago-never-to-wrestle-with-a-pig",
+    "https://www.reddit.com/r/Jokes/comments/1jnteo/a_man_lives_in_a_border_town_between_the_us_and/",
+  ];
   const bedLen = 3.2; // along z (the short axis)
   const bedWidth = 1.2; // along x
   const bedH = 0.5;
   const bedXs = [-1.6, 1.6];
-  const RANKS = 5;
+  const bedCounts = [6, 5]; // flowers per bed — 11 in all, matching the links
   const colliders: Collider[] = [];
   const longWallGeo = new THREE.BoxGeometry(0.09, bedH, bedLen); // long walls run along z
   const endWallGeo = new THREE.BoxGeometry(bedWidth, bedH, 0.09); // end caps run along x
   const soilGeo = new THREE.BoxGeometry(bedWidth - 0.14, 0.08, bedLen - 0.14);
   geometries.push(longWallGeo, endWallGeo, soilGeo);
-  const flowerSpots: Array<{ x: number; z: number; c: number }> = [];
   const rowColors = [P.blossomPink, P.blossomYellow, P.blossomOrange, P.potionBlue];
+  const flowerSpots: Array<{ x: number; z: number; c: number; href: string }> = [];
   bedXs.forEach((bx, bi) => {
     for (const sx of [-1, 1]) {
       const longWall = new THREE.Mesh(longWallGeo, mat(P.wood, { flat: true }));
@@ -167,27 +182,35 @@ export function buildGreenhouseRoom(): Interior {
     const soilTop = new THREE.Mesh(soilGeo, mat(P.soil, { flat: true }));
     soilTop.position.set(bx, bedH - 0.05, 0);
     group.add(soilTop);
-    // Neat rows down the depth: RANKS ranks along z, two blooms across, one colour per rank.
-    for (let rank = 0; rank < RANKS; rank++) {
-      const c = rowColors[(bi + rank) % rowColors.length];
-      for (const sx of [-1, 1]) {
-        flowerSpots.push({
-          x: bx + sx * 0.28,
-          z: -bedLen / 2 + 0.45 + rank * ((bedLen - 0.9) / (RANKS - 1)),
-          c,
-        });
-      }
+    // A single straight line of flowers down the middle of the bed (along z),
+    // evenly spaced. Links are handed out in order across the two beds.
+    const count = bedCounts[bi];
+    const zr = bedLen / 2 - 0.28; // inset from the end caps
+    for (let j = 0; j < count; j++) {
+      const z = count === 1 ? 0 : -zr + (j * (2 * zr)) / (count - 1);
+      const i = flowerSpots.length;
+      flowerSpots.push({ x: bx, z, c: rowColors[i % rowColors.length], href: flowerLinks[i] });
     }
     colliders.push({ kind: "rect", minX: bx - bedWidth / 2, maxX: bx + bedWidth / 2, minZ: -bedLen / 2, maxZ: bedLen / 2 });
   });
+
+  // Stems stay instanced (identical, never interactive); each bloom is its own
+  // mesh with its own material so it can be a distinct click target and, while
+  // hovered, glow, swell, and carry a soft additive halo. The bulb's emissive
+  // starts black and hover lifts it toward the bloom's own hue.
   const stemGeo = new THREE.CylinderGeometry(0.014, 0.02, 0.34, 5);
-  const bloomGeo = new THREE.SphereGeometry(0.075, 7, 6);
-  geometries.push(stemGeo, bloomGeo);
+  const bloomGeo = new THREE.SphereGeometry(0.075, 8, 6);
+  const haloGeo = new THREE.SphereGeometry(0.075, 12, 10);
+  geometries.push(stemGeo, bloomGeo, haloGeo);
   const stems = new THREE.InstancedMesh(stemGeo, mat(P.canopyDark), flowerSpots.length);
-  const blooms = new THREE.InstancedMesh(bloomGeo, mat(0xffffff), flowerSpots.length);
   const dummy = new THREE.Object3D();
-  const color = new THREE.Color();
   const rand = rng(2026);
+  const bloomMeshes: THREE.Mesh[] = [];
+  const bloomMats: THREE.MeshLambertMaterial[] = [];
+  const haloMeshes: THREE.Mesh[] = [];
+  const haloMats: THREE.MeshBasicMaterial[] = [];
+  const bloomScale: number[] = [];
+  const flowerLinkList: { meshes: THREE.Object3D[]; href: string; newTab?: boolean }[] = [];
   flowerSpots.forEach((f, i) => {
     const h = 0.9 + rand() * 0.25;
     dummy.position.set(f.x, bedH + 0.15 * h, f.z);
@@ -195,14 +218,39 @@ export function buildGreenhouseRoom(): Interior {
     dummy.rotation.set(0, 0, 0);
     dummy.updateMatrix();
     stems.setMatrixAt(i, dummy.matrix);
-    dummy.position.set(f.x, bedH + 0.32 * h, f.z);
-    dummy.scale.setScalar(0.9 + rand() * 0.3);
-    dummy.updateMatrix();
-    blooms.setMatrixAt(i, dummy.matrix);
-    blooms.setColorAt(i, color.setHex(f.c));
+    const y = bedH + 0.32 * h;
+    const s = 0.9 + rand() * 0.3;
+    const bmat = new THREE.MeshLambertMaterial({ color: f.c, emissive: f.c, emissiveIntensity: 0 });
+    materials.push(bmat);
+    const bloom = new THREE.Mesh(bloomGeo, bmat);
+    bloom.position.set(f.x, y, f.z);
+    bloom.scale.setScalar(s);
+    group.add(bloom);
+    // A soft additive shell, invisible until hovered, for the faint halo.
+    const hmat = new THREE.MeshBasicMaterial({
+      color: f.c, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
+    });
+    materials.push(hmat);
+    const halo = new THREE.Mesh(haloGeo, hmat);
+    halo.position.set(f.x, y, f.z);
+    halo.scale.setScalar(s * 1.5);
+    halo.visible = false;
+    halo.renderOrder = 3;
+    group.add(halo);
+    bloomMeshes.push(bloom);
+    bloomMats.push(bmat);
+    haloMeshes.push(halo);
+    haloMats.push(hmat);
+    bloomScale.push(s);
+    flowerLinkList.push({ meshes: [bloom], href: f.href, newTab: true });
   });
-  group.add(stems, blooms);
-  instanced.push(stems, blooms);
+  group.add(stems);
+  instanced.push(stems);
+
+  // Which bloom the pointer is over (set each frame by the controller) plus a
+  // smoothed hover level per bloom driving its glow, swell, and halo.
+  let hoveredBloom: THREE.Object3D | null = null;
+  const bloomGlow = new Float32Array(flowerSpots.length);
 
   // Potting bench along the back wall: pots, a watering can, a seed tray.
   add(new THREE.BoxGeometry(3.4, 0.09, 0.8), mat(P.wood, { flat: true }), 0, 0.85, -D / 2 + 0.55);
@@ -382,9 +430,13 @@ export function buildGreenhouseRoom(): Interior {
     spawn: { x: 0, z: D / 2 - 0.6, yaw: 0 },
     doorMeshes: [exitPlane],
     doorGlow: [jambMat],
+    links: flowerLinkList,
+    onHoverLink: (mesh) => {
+      hoveredBloom = mesh;
+    },
     background: P.skyHorizon,
     fog: { color: P.fog, near: 55, far: 120 },
-    update(t) {
+    update(t, dt) {
       for (const basket of baskets) {
         const phase = basket.userData.phase as number;
         basket.rotation.z = Math.sin(t * 0.9 + phase) * 0.06;
@@ -392,6 +444,18 @@ export function buildGreenhouseRoom(): Interior {
       }
       sign.rotation.z = Math.sin(t * 0.7) * 0.015;
       sign.rotation.x = Math.cos(t * 0.5) * 0.012;
+      // Ease each bulb's glow toward its target — lit only while hovered.
+      const k = Math.min(1, dt * 12);
+      for (let i = 0; i < bloomMeshes.length; i++) {
+        const target = bloomMeshes[i] === hoveredBloom ? 1 : 0;
+        bloomGlow[i] += (target - bloomGlow[i]) * k;
+        const g = bloomGlow[i];
+        bloomMats[i].emissiveIntensity = g * 1.4;
+        bloomMeshes[i].scale.setScalar(bloomScale[i] * (1 + g * 0.2));
+        haloMats[i].opacity = g * 0.4;
+        haloMeshes[i].visible = g > 0.01;
+        haloMeshes[i].scale.setScalar(bloomScale[i] * (1.5 + g * 0.5));
+      }
     },
     dispose() {
       signTex.dispose();

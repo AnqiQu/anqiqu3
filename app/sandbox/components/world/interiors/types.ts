@@ -34,8 +34,12 @@ export type Interior = {
   doorGlow: THREE.MeshLambertMaterial[];
   // Clickable objects inside the room that navigate elsewhere (the beacon orbs
   // that open the writing / research / manifesto pages). A click on any of a
-  // link's meshes sends the browser to `href`.
-  links?: { meshes: THREE.Object3D[]; href: string }[];
+  // link's meshes sends the browser to `href` — in a new tab when `newTab`.
+  links?: { meshes: THREE.Object3D[]; href: string; newTab?: boolean }[];
+  // Called each frame with the link mesh currently under the pointer (or null),
+  // so a room can add hover feedback beyond the pointer cursor — e.g. a flower's
+  // bulb glowing only while it is aimed at.
+  onHoverLink?: (mesh: THREE.Object3D | null) => void;
   // Scene dressing the controller applies.
   background: number;
   fog?: { color: number; near: number; far: number };

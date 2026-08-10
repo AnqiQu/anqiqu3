@@ -65,7 +65,7 @@ export function createInterior(
   // meshes into one raycast list for the hover test.
   const links = interior.links ?? [];
   const linkMeshes = links.flatMap((l) => l.meshes);
-  let hoveredLink: string | null = null;
+  let hoveredLink: { href: string; newTab?: boolean } | null = null;
 
   const setPointer = (event: PointerEvent) => {
     client.set(event.clientX, event.clientY);
@@ -86,8 +86,10 @@ export function createInterior(
     const elapsed = performance.now() - downAt.time;
     downAt = null;
     if (moved > 8 || elapsed > 500) return;
-    if (hoveredLink) window.location.href = hoveredLink;
-    else if (hovered) onExit();
+    if (hoveredLink) {
+      if (hoveredLink.newTab) window.open(hoveredLink.href, "_blank", "noopener,noreferrer");
+      else window.location.href = hoveredLink.href;
+    } else if (hovered) onExit();
   };
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") onExit();
@@ -107,6 +109,7 @@ export function createInterior(
 
       hovered = false;
       hoveredLink = null;
+      let hoveredLinkObj: THREE.Object3D | null = null;
       const width = document.documentElement.clientWidth;
       const height = document.documentElement.clientHeight;
       if (pointerInside && width > 0 && height > 0) {
@@ -117,10 +120,15 @@ export function createInterior(
         // pointer; find the nearest link mesh and resolve it back to its href.
         if (linkMeshes.length) {
           const linkHit = raycaster.intersectObjects(linkMeshes, false)[0]?.object ?? null;
-          if (linkHit) hoveredLink = links.find((l) => l.meshes.includes(linkHit))?.href ?? null;
+          if (linkHit) {
+            hoveredLink = links.find((l) => l.meshes.includes(linkHit)) ?? null;
+            hoveredLinkObj = linkHit;
+          }
         }
         hovered = !hoveredLink && raycaster.intersectObjects(interior.doorMeshes, false).length > 0;
       }
+      // Let the room light up whatever the pointer is over (or nothing).
+      interior.onHoverLink?.(hoveredLinkObj);
       canvas.style.cursor = hovered || hoveredLink ? "pointer" : dragging ? "grabbing" : "grab";
 
       const target = hovered ? 1 : 0;
