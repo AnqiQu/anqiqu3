@@ -93,6 +93,7 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
 
   const skyTitle = buildSkyTitle();
   const island = buildIsland();
+  const creatures = buildCreatures([island.perch, bridge.perch]);
 
   const modules: WorldModule[] = [
     buildSky(),
@@ -104,7 +105,7 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     greenhouse,
     pond,
     bridge,
-    buildCreatures([island.perch, bridge.perch]),
+    creatures,
     buildBlimps(),
   ];
   for (const m of modules) scene.add(m.group);
@@ -148,6 +149,16 @@ export function createWorld({ canvas, locations, ui, onFirstFrame }: WorldOption
     // Hovering the burrow cracks its round door open — a wink that it's a
     // place you can step into.
     (id) => archiveApi.setOpen(id === "archive"),
+    // The border collie is dedicated to Daniel Li; clicking it opens his site
+    // in a new tab — the easter egg the bench plaque promises.
+    [
+      {
+        id: "danielqli",
+        hit: creatures.collieLink.hit,
+        group: creatures.collieLink.group,
+        onSelect: () => window.open("https://danielqli.com/", "_blank", "noopener,noreferrer"),
+      },
+    ],
   );
 
   // Interiors: clicking an enterable landmark swaps the renderer to its room

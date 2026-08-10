@@ -56,6 +56,8 @@ export const P = {
   koiWhite: 0xfff4e4,
   dogBlack: 0x3b3b3f,
   dogWhite: 0xf5f1e8,
+  // The collie's eyes — a warm brown that reads against the dark coat.
+  dogEye: 0x966a3f,
   // The three pomeranians. Each pairs a coat with a paler tone for the chest
   // ruff, snout, and tail plume — the way a pom's undercoat actually reads.
   pomCream: 0xf3d6a4,

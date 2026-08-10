@@ -15,6 +15,11 @@ const WALK_OBSTACLES: Array<{ x: number; z: number; r: number }> = [
   { x: 2, z: 8, r: 6.2 }, // pond + rocky rim
   { x: 6, z: -4, r: 3.6 }, // greenhouse deck
   { x: -6, z: -14, r: 4.6 }, // observatory
+  // Solar array on the hill's NW flank — two arcs of panels (see energy.ts),
+  // sitting outside the observatory pad, so they need their own keep-outs or
+  // the dogs run straight through them. Two overlapping circles hug the arc.
+  { x: -10.24, z: -8.73, r: 3.0 }, // solar array, upper terrace
+  { x: -12.3, z: -11.47, r: 2.7 }, // solar array, lower terrace
   { x: -16, z: -2, r: 3.6 }, // archive mound
   { x: -13, z: -15, r: 1.2 }, // large turbine
   { x: -17.5, z: -11, r: 1 }, // small turbine
@@ -149,6 +154,15 @@ function buildDog({ coat, accent, breed, scale }: DogSpec, geos: THREE.BufferGeo
   const nose = new THREE.Mesh(geo(new THREE.SphereGeometry(0.035, 6, 5)), mat(0x2b2118));
   nose.position.set(0, 0.67, 0.76);
   body.add(torso, chest, head, snout, nose);
+
+  // Eyes: two light-brown beads on the front of the head. The collie is the
+  // island's one dog that meets your gaze — and its one clickable resident.
+  const eyeGeo = geo(new THREE.SphereGeometry(0.034, 8, 6));
+  for (const side of [-1, 1]) {
+    const eye = new THREE.Mesh(eyeGeo, mat(P.dogEye));
+    eye.position.set(side * 0.09, 0.76, 0.64);
+    body.add(eye);
+  }
 
   const earGeo = geo(new THREE.ConeGeometry(0.07, 0.16, 6));
   for (const side of [-1, 1]) {
@@ -369,7 +383,14 @@ function pickTarget(dog: Dog): void {
   dog.target.set(8, 2); // safe meadow fallback
 }
 
-export function buildCreatures(perches: Perch[]): WorldModule {
+// The collie is handed back separately: engine.ts registers `hit` (an invisible
+// sphere riding on the moving dog) as a raycast target and eases `group` on
+// hover, so a click can open the easter egg the bench plaque promises.
+export type Creatures = WorldModule & {
+  collieLink: { hit: THREE.Object3D; group: THREE.Object3D };
+};
+
+export function buildCreatures(perches: Perch[]): Creatures {
   const group = new THREE.Group();
   const geometries: THREE.BufferGeometry[] = [];
 
@@ -394,6 +415,17 @@ export function buildCreatures(perches: Perch[]): WorldModule {
     pickTarget(dog);
     group.add(dog.root);
   }
+
+  // The collie is the one clickable resident. An invisible sphere parented to
+  // it rides along as it roams, so the raycaster can catch the moving dog; the
+  // engine wires the click to the easter-egg link.
+  const collie = dogs[pack.findIndex(({ spec }) => spec.breed === "collie")];
+  const collieHitGeo = new THREE.SphereGeometry(0.7, 8, 6);
+  geometries.push(collieHitGeo);
+  const collieHitMat = new THREE.MeshBasicMaterial({ visible: false });
+  const collieHit = new THREE.Mesh(collieHitGeo, collieHitMat);
+  collieHit.position.set(0, 0.55, 0);
+  collie.root.add(collieHit);
 
   const updateDog = (dog: Dog, t: number, dt: number) => {
     const phase = (t + dog.offset) % CYCLE;
@@ -722,6 +754,7 @@ export function buildCreatures(perches: Perch[]): WorldModule {
 
   return {
     group,
+    collieLink: { hit: collieHit, group: collie.root },
     update(t, dt) {
       for (const dog of dogs) updateDog(dog, t, dt);
       updateCat(t, dt);
@@ -757,6 +790,7 @@ export function buildCreatures(perches: Perch[]): WorldModule {
       for (const g of geometries) g.dispose();
       for (const dog of dogs) (dog.shadow.material as THREE.Material).dispose();
       (cat.shadow.material as THREE.Material).dispose();
+      collieHitMat.dispose();
     },
   };
 }

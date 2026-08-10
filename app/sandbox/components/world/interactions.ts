@@ -27,6 +27,17 @@ export type WaterClick = {
   onHit: (point: THREE.Vector3) => void;
 };
 
+// A moving object (a roaming creature) that behaves like a hyperlink: hovering
+// it shows the pointer cursor and a gentle scale-breath, and a click runs
+// `onSelect`. `hit` is an invisible proxy already in the scene that rides on
+// the object; `group` is what breathes.
+export type LinkHotspot = {
+  id: string;
+  hit: THREE.Object3D;
+  group: THREE.Object3D;
+  onSelect: () => void;
+};
+
 export function createInteractions(
   scene: THREE.Scene,
   canvas: HTMLCanvasElement,
@@ -38,6 +49,8 @@ export function createInteractions(
   // Fires whenever the hovered landmark changes (also from keyboard focus);
   // the engine uses it for per-landmark flourishes like the burrow door.
   onHoverChange?: (id: string | null) => void,
+  // Clickable moving creatures (the collie easter egg).
+  linkHotspots: LinkHotspot[] = [],
 ): Interactions {
   const raycaster = new THREE.Raycaster();
   // Raw client coords; converted to NDC per frame (event-time layout can be
@@ -49,6 +62,7 @@ export function createInteractions(
   let enabled = true;
   let downAt: { x: number; y: number; time: number } | null = null;
   let lastCamera: THREE.PerspectiveCamera | null = null;
+  let hoveredLinkId: string | null = null;
 
   // Hover glow. Landmark meshes draw their materials from the shared palette
   // cache, so lighting one up in place would light every object anywhere that
@@ -93,7 +107,12 @@ export function createInteractions(
     scene.add(proxy);
     hotspots.push({ location, proxy });
   }
-  const raycastTargets = [...hotspots.map((h) => h.proxy), ...occluders];
+  for (const link of linkHotspots) link.hit.userData.linkId = link.id;
+  const raycastTargets = [
+    ...hotspots.map((h) => h.proxy),
+    ...occluders,
+    ...linkHotspots.map((l) => l.hit),
+  ];
   // Spots whose click opens their copy rather than stepping inside.
   const panelIds = new Set(
     locations.filter((l) => l.interaction === "open-panel").map((l) => l.id),
@@ -122,6 +141,7 @@ export function createInteractions(
     if (moved > 8 || elapsed > 500) return; // camera drag, not a click
     if (api.hoveredId && enterIds.has(api.hoveredId)) ui.enterInterior?.(api.hoveredId);
     else if (api.hoveredId && panelIds.has(api.hoveredId)) ui.openPanel(api.hoveredId);
+    else if (hoveredLinkId) linkHotspots.find((l) => l.id === hoveredLinkId)?.onSelect();
     else if (waterClick && lastCamera) {
       // A plain click on the pond water makes ripples.
       const width = document.documentElement.clientWidth;
@@ -159,6 +179,7 @@ export function createInteractions(
       if (!enabled) return;
       lastCamera = camera;
       let hovered: string | null = null;
+      let linkHovered: string | null = null;
       const width = document.documentElement.clientWidth;
       const height = document.documentElement.clientHeight;
       if (pointerInside && width > 0 && height > 0) {
@@ -167,11 +188,13 @@ export function createInteractions(
         raycaster.setFromCamera(pointer, camera);
         const hit = raycaster.intersectObjects(raycastTargets, false)[0];
         hovered = (hit?.object.userData.locationId as string) ?? null; // occluder hit → null
+        linkHovered = (hit?.object.userData.linkId as string) ?? null;
       }
       setHovered(hovered ?? focusId);
+      hoveredLinkId = linkHovered;
       const effective = api.hoveredId;
       canvas.style.cursor =
-        effective && (enterIds.has(effective) || panelIds.has(effective))
+        (effective && (enterIds.has(effective) || panelIds.has(effective))) || hoveredLinkId
           ? "pointer"
           : dragging
             ? "grabbing"
@@ -181,6 +204,13 @@ export function createInteractions(
       for (const [id, group] of landmarkGroups) {
         const target = id === api.hoveredId ? 1.03 : 1;
         group.scale.setScalar(group.scale.x + (target - group.scale.x) * 0.15);
+      }
+
+      // The same breath on a hovered link creature (a touch deeper, since the
+      // dog is small and moving — it needs the extra nudge to read as alive).
+      for (const link of linkHotspots) {
+        const target = link.id === hoveredLinkId ? 1.06 : 1;
+        link.group.scale.setScalar(link.group.scale.x + (target - link.group.scale.x) * 0.15);
       }
 
       // ...and a soft glow, eased in and out over the same beat.
@@ -201,6 +231,8 @@ export function createInteractions(
         downAt = null;
         pointerInside = false;
         setHovered(null);
+        hoveredLinkId = null;
+        for (const link of linkHotspots) link.group.scale.setScalar(1);
       }
     },
     dispose() {
