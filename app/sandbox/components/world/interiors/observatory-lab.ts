@@ -372,9 +372,9 @@ export function buildObservatoryLab(): Interior {
   const orb = makeBeaconOrb({
     x: 3.6, y: 1.5, z: -0.5,
     title: "My research",
-    faceColor: "#0e5b64",
-    textColor: "#ecfffb",
-    glowColor: 0x7fe6df,
+    faceColor: "#1f7ce8",
+    textColor: "#eef4ff",
+    glowColor: 0x6ab0ff,
   });
   group.add(orb.group);
 

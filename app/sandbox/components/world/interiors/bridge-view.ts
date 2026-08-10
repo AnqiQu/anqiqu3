@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { P, mat } from "../palette";
 import { buildSky } from "../sky";
 import { rng } from "../util";
-import { makeAdd } from "./kit";
+import { makeAdd, makeBeaconOrb } from "./kit";
 import { addHill, addTree } from "./scenery";
 import type { Interior } from "./types";
 
@@ -98,23 +98,38 @@ export function buildBridgeView(): Interior {
     const beam = add(new THREE.BoxGeometry(0.22, 0.24, 11.5), mat(P.woodDark, { flat: true }), sx * 1.05, -0.06, LAND_Z - 5.4);
     beam.rotation.x = 0.012;
   }
-  const plankGeo = new THREE.BoxGeometry(2.3, 0.09, 0.62);
+  // Individual boards: each narrower than its spacing so a seam shows between
+  // it and the next, and each tinted a slightly different tone with a hair of
+  // height jitter so the deck reads as separate planks, not one slab.
+  const PLANK_STEP = 0.62;
+  const plankGeo = new THREE.BoxGeometry(2.3, 0.09, 0.52);
   geometries.push(plankGeo);
-  // Planks laid neatly from the island rim, stopping clean where the work has
-  // reached — no thinning, no askew boards.
   const NUM_LAID = 11;
-  const planks = new THREE.InstancedMesh(plankGeo, mat(P.plank, { flat: true }), NUM_LAID);
+  const plankTones = [P.plank, 0xbf8455, 0xd49a67, 0xc0895a];
+  const planks = new THREE.InstancedMesh(plankGeo, mat(0xffffff, { flat: true }), NUM_LAID);
   const dummy = new THREE.Object3D();
+  const plankColor = new THREE.Color();
+  const plankRand = rng(57);
+  const DECK_FIRST = LAND_Z - 0.55 - PLANK_STEP; // z of the first laid plank
   let pz = LAND_Z - 0.55;
   for (let i = 0; i < NUM_LAID; i++) {
-    pz -= 0.62;
-    dummy.position.set(0, DECK_Y - 0.04 + (LAND_Z - pz) * -0.004, pz);
+    pz -= PLANK_STEP;
+    dummy.position.set(0, DECK_Y - 0.04 + (LAND_Z - pz) * -0.004 + (plankRand() - 0.5) * 0.012, pz);
     dummy.rotation.set(0, 0, 0);
     dummy.updateMatrix();
     planks.setMatrixAt(i, dummy.matrix);
+    planks.setColorAt(i, plankColor.setHex(plankTones[Math.floor(plankRand() * plankTones.length)]));
   }
   const DECK_END = pz; // z of the last laid plank — the working edge
   group.add(planks);
+
+  // Dark sub-deck under the boards, so the seams between planks read as shadow
+  // lines rather than gaps onto the void far below.
+  add(
+    new THREE.BoxGeometry(2.06, 0.08, DECK_FIRST - DECK_END + 0.52),
+    mat(P.floorWoodDark, { flat: true }),
+    0, DECK_Y - 0.12, (DECK_FIRST + DECK_END) / 2,
+  );
 
   // Cross-joists spanning the beams beyond the decking: the frame laid out and
   // waiting for its planks.
@@ -192,6 +207,21 @@ export function buildBridgeView(): Interior {
   sunRim.position.set(-95, 29, -262);
   group.add(hemi, sunLight, sunRim);
 
+  // A bright-green "Blog" beacon hovering right at the construction frontier,
+  // just above the stack of fresh planks waiting to be laid (DECK_END - 1.1) —
+  // the next thing being built, floating over where the deck is actively
+  // growing rather than far out over the empty void.
+  const blog = makeBeaconOrb({
+    x: 0, y: DECK_Y + 1.45, z: DECK_END - 1.0,
+    title: "Blog",
+    faceColor: "#12a046",
+    textColor: "#f0fff5",
+    glowColor: 0x4ade80,
+    glowOpacity: 0.2,
+    lightIntensity: 2.2,
+  });
+  group.add(blog.group);
+
   return {
     group,
     // A narrow walk: the deck's width, from the island rim out to the working
@@ -213,9 +243,11 @@ export function buildBridgeView(): Interior {
       hoistPlank.rotation.z = 0.06 + swing;
       hoistPlank.position.y = DECK_Y - 0.2 + Math.sin(t * 0.7) * 0.05;
       hoistLine.rotation.z = 0.1 + swing * 0.5;
+      blog.update(t);
     },
     dispose() {
       sky.dispose();
+      blog.dispose();
       for (const g of geometries) g.dispose();
       for (const m of materials) m.dispose();
       planks.dispose();

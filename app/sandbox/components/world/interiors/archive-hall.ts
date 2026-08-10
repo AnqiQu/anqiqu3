@@ -155,14 +155,17 @@ export function buildArchiveHall(): Interior {
   group.add(hemi, exitLight);
 
   // A glowing "Website Relic" orb floating in the middle of the dark chamber —
-  // the one clickable-looking thing in here, warm gold so it stands apart from
-  // the torch-orange around the walls and the cool daylight at the door.
+  // the one clickable-looking thing in here, a bright self-luminous gold cube in
+  // a soft golden halo, warm gold so it stands apart from the torch-orange around
+  // the walls and the cool daylight at the door.
   const relic = makeBeaconOrb({
     x: 0, y: 1.5, z: 0,
     title: "Website Relic",
-    faceColor: "#7a5c14",
-    textColor: "#fff4d2",
-    glowColor: 0xffd24a,
+    faceColor: "#f5cc17",
+    textColor: "#3a2b05",
+    glowColor: 0xffe64d,
+    glowOpacity: 0.26,
+    lightIntensity: 3.0,
   });
   group.add(relic.group);
 

@@ -141,9 +141,13 @@ export function makeBeaconOrb(opts: {
   textColor: string;
   glowColor: number;
   subtitle?: string;
+  glowOpacity?: number;
+  lightIntensity?: number;
 }): BeaconOrb {
   const { x, y, z, title, faceColor, textColor, glowColor } = opts;
   const subtitle = opts.subtitle ?? "(click me)";
+  const glowOpacity = opts.glowOpacity ?? 0.16;
+  const lightIntensity = opts.lightIntensity ?? 1.8;
 
   const group = new THREE.Group();
   group.position.set(x, y, z);
@@ -164,9 +168,8 @@ export function makeBeaconOrb(opts: {
     c.fillStyle = textColor;
     c.textAlign = "center";
     c.textBaseline = "middle";
-    c.shadowColor = textColor;
-    c.shadowBlur = 16;
-    // Title, shrunk to fit the face.
+    // Title, shrunk to fit the face. No canvas shadow — the label reads
+    // crisp; a same-colour blur behind it only smudges the glyphs.
     let size = 48;
     c.font = `700 ${size}px ${fam}`;
     while (c.measureText(title).width > 210 && size > 14) {
@@ -175,7 +178,6 @@ export function makeBeaconOrb(opts: {
     }
     c.fillText(title, 128, 110);
     // "(click me)" prompt, smaller and dimmer, below the title.
-    c.shadowBlur = 10;
     c.globalAlpha = 0.85;
     c.font = `400 26px ${fam}`;
     c.fillText(subtitle, 128, 156);
@@ -196,13 +198,13 @@ export function makeBeaconOrb(opts: {
   const orbGeo = new THREE.IcosahedronGeometry(0.72, 2);
   const cubeMat = new THREE.MeshBasicMaterial({ map: texture });
   const orbMat = new THREE.MeshBasicMaterial({
-    color: glowColor, transparent: true, opacity: 0.16,
+    color: glowColor, transparent: true, opacity: glowOpacity,
     blending: THREE.AdditiveBlending, depthWrite: false,
   });
   const cube = new THREE.Mesh(cubeGeo, cubeMat);
   const orb = new THREE.Mesh(orbGeo, orbMat);
   orb.renderOrder = 3;
-  group.add(cube, orb, new THREE.PointLight(glowColor, 1.8, 3.0, 2));
+  group.add(cube, orb, new THREE.PointLight(glowColor, lightIntensity, 3.0, 2));
 
   return {
     group,
