@@ -32,6 +32,10 @@ export type Interior = {
   // (private so the shared palette cache stays untouched). May be empty glow.
   doorMeshes: THREE.Object3D[];
   doorGlow: THREE.MeshLambertMaterial[];
+  // Clickable objects inside the room that navigate elsewhere (the beacon orbs
+  // that open the writing / research / manifesto pages). A click on any of a
+  // link's meshes sends the browser to `href`.
+  links?: { meshes: THREE.Object3D[]; href: string }[];
   // Scene dressing the controller applies.
   background: number;
   fog?: { color: number; near: number; far: number };

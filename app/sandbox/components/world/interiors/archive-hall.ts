@@ -154,13 +154,13 @@ export function buildArchiveHall(): Interior {
   exitLight.position.set(0, 1.6, R - 1.1);
   group.add(hemi, exitLight);
 
-  // A glowing "Website Relic" orb floating in the middle of the dark chamber —
+  // A glowing "Manifesto" orb floating in the middle of the dark chamber —
   // the one clickable-looking thing in here, a bright self-luminous gold cube in
   // a soft golden halo, warm gold so it stands apart from the torch-orange around
-  // the walls and the cool daylight at the door.
+  // the walls and the cool daylight at the door. Clicking it opens the manifesto.
   const relic = makeBeaconOrb({
     x: 0, y: 1.5, z: 0,
-    title: "Website Relic",
+    title: "Manifesto",
     faceColor: "#f5cc17",
     textColor: "#3a2b05",
     glowColor: 0xffe64d,
@@ -177,6 +177,7 @@ export function buildArchiveHall(): Interior {
     spawn: { x: 0, z: R - 1.3, yaw: 0 },
     doorMeshes: [door],
     doorGlow: [doorMat],
+    links: [{ meshes: [relic.mesh], href: "/manifesto" }],
     background: 0x0a0806,
     fog: { color: 0x0a0806, near: 7, far: 18 },
     update(t) {

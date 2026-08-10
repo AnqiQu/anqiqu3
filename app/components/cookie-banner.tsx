@@ -37,7 +37,10 @@ export function CookieBanner() {
     listeners.forEach((listener) => listener());
   }, []);
 
-  if (pathname?.startsWith("/sandbox")) return null;
+  // The banner belongs only to the main "server room" site. The sandbox and the
+  // writing section (Research / Writing / Manifesto) opt out.
+  const hiddenPrefixes = ["/sandbox", "/writing", "/research", "/manifesto"];
+  if (hiddenPrefixes.some((prefix) => pathname?.startsWith(prefix))) return null;
   if (accepted) return null;
 
   return (

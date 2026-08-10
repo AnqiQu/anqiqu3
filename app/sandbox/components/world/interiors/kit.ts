@@ -128,6 +128,9 @@ export function addPottedPlant(
 // adds `group`, ticks `update(t)`, and calls `dispose()` on teardown.
 export type BeaconOrb = {
   group: THREE.Group;
+  // The solid label cube — the thing a raycaster hits so a click can open the
+  // orb's linked page. Exposed so the interior controller can wire it up.
+  mesh: THREE.Mesh;
   update: (t: number) => void;
   dispose: () => void;
 };
@@ -208,6 +211,7 @@ export function makeBeaconOrb(opts: {
 
   return {
     group,
+    mesh: cube,
     update(t) {
       group.position.y = y + Math.sin(t * 1.6) * 0.09;
       cube.rotation.y = Math.sin(t * 0.6) * 0.5;

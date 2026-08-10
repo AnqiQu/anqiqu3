@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Audiowide, Exo_2, Philosopher, Plus_Jakarta_Sans } from "next/font/google";
+import { Audiowide, Exo_2, Open_Sans, Philosopher, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { CookieBanner } from "./components/cookie-banner";
 
@@ -27,6 +27,14 @@ const philosopher = Philosopher({
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// The writing section reads as plain prose on paper: Philosopher headings over
+// Open Sans body copy.
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -74,7 +82,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${audiowide.variable} ${exo.variable} ${philosopher.variable} ${jakarta.variable}`}
+        className={`${audiowide.variable} ${exo.variable} ${philosopher.variable} ${jakarta.variable} ${openSans.variable}`}
       >
         {children}
         <CookieBanner />

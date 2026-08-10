@@ -49,6 +49,7 @@ export function Footer() {
         <div className="footer-meta">
           <span>© {new Date().getFullYear()} Anqi Qu</span>
           <span>Built for real-world deployment.</span>
+          <Link href="/writing">Writing</Link>
           <Link href="/contact">Contact</Link>
         </div>
       </div>

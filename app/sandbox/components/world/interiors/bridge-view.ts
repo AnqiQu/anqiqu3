@@ -207,20 +207,21 @@ export function buildBridgeView(): Interior {
   sunRim.position.set(-95, 29, -262);
   group.add(hemi, sunLight, sunRim);
 
-  // A bright-green "Blog" beacon hovering right at the construction frontier,
-  // just above the stack of fresh planks waiting to be laid (DECK_END - 1.1) —
-  // the next thing being built, floating over where the deck is actively
-  // growing rather than far out over the empty void.
-  const blog = makeBeaconOrb({
+  // A bright-green "My writing" beacon hovering right at the construction
+  // frontier, just above the stack of fresh planks waiting to be laid
+  // (DECK_END - 1.1) — the next thing being built, floating over where the deck
+  // is actively growing rather than far out over the empty void. Clicking it
+  // opens the writing section.
+  const writing = makeBeaconOrb({
     x: 0, y: DECK_Y + 1.45, z: DECK_END - 1.0,
-    title: "Blog",
+    title: "My writing",
     faceColor: "#12a046",
     textColor: "#f0fff5",
     glowColor: 0x4ade80,
     glowOpacity: 0.2,
     lightIntensity: 2.2,
   });
-  group.add(blog.group);
+  group.add(writing.group);
 
   return {
     group,
@@ -233,6 +234,7 @@ export function buildBridgeView(): Interior {
     spawn: { x: 0, z: LAND_Z - 1.3, yaw: 0 },
     doorMeshes: [exitPlane, ...gatePosts, lintel],
     doorGlow: [gateMat],
+    links: [{ meshes: [writing.mesh], href: "/writing" }],
     background: P.skyTop,
     fog: { color: P.fog, near: 70, far: 300 },
     far: 700,
@@ -243,11 +245,11 @@ export function buildBridgeView(): Interior {
       hoistPlank.rotation.z = 0.06 + swing;
       hoistPlank.position.y = DECK_Y - 0.2 + Math.sin(t * 0.7) * 0.05;
       hoistLine.rotation.z = 0.1 + swing * 0.5;
-      blog.update(t);
+      writing.update(t);
     },
     dispose() {
       sky.dispose();
-      blog.dispose();
+      writing.dispose();
       for (const g of geometries) g.dispose();
       for (const m of materials) m.dispose();
       planks.dispose();

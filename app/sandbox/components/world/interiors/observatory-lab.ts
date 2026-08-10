@@ -397,6 +397,7 @@ export function buildObservatoryLab(): Interior {
     spawn: { x: 0, z: 3.35, yaw: 0 },
     doorMeshes: [door, lintel, ...jambs],
     doorGlow: [doorMat, frameMat],
+    links: [{ meshes: [orb.mesh], href: "/research" }],
     background: P.skyTop,
     update(t) {
       for (const b of bubbles) {

@@ -60,6 +60,13 @@ export function createInterior(
   let glowLevel = 0;
   const doorBase = interior.doorGlow.map((m) => m.emissive.clone());
 
+  // Beacon orbs (or any link objects) that navigate away when clicked. We track
+  // which one the pointer is over so the up-click can follow it, and flatten the
+  // meshes into one raycast list for the hover test.
+  const links = interior.links ?? [];
+  const linkMeshes = links.flatMap((l) => l.meshes);
+  let hoveredLink: string | null = null;
+
   const setPointer = (event: PointerEvent) => {
     client.set(event.clientX, event.clientY);
     pointerInside = true;
@@ -79,7 +86,8 @@ export function createInterior(
     const elapsed = performance.now() - downAt.time;
     downAt = null;
     if (moved > 8 || elapsed > 500) return;
-    if (hovered) onExit();
+    if (hoveredLink) window.location.href = hoveredLink;
+    else if (hovered) onExit();
   };
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") onExit();
@@ -98,15 +106,22 @@ export function createInterior(
       interior.update?.(t, dt);
 
       hovered = false;
+      hoveredLink = null;
       const width = document.documentElement.clientWidth;
       const height = document.documentElement.clientHeight;
       if (pointerInside && width > 0 && height > 0) {
         pointer.x = (client.x / width) * 2 - 1;
         pointer.y = -((client.y / height) * 2 - 1);
         raycaster.setFromCamera(pointer, camera);
-        hovered = raycaster.intersectObjects(interior.doorMeshes, false).length > 0;
+        // A link orb takes precedence over the door when both sit under the
+        // pointer; find the nearest link mesh and resolve it back to its href.
+        if (linkMeshes.length) {
+          const linkHit = raycaster.intersectObjects(linkMeshes, false)[0]?.object ?? null;
+          if (linkHit) hoveredLink = links.find((l) => l.meshes.includes(linkHit))?.href ?? null;
+        }
+        hovered = !hoveredLink && raycaster.intersectObjects(interior.doorMeshes, false).length > 0;
       }
-      canvas.style.cursor = hovered ? "pointer" : dragging ? "grabbing" : "grab";
+      canvas.style.cursor = hovered || hoveredLink ? "pointer" : dragging ? "grabbing" : "grab";
 
       const target = hovered ? 1 : 0;
       glowLevel += (target - glowLevel) * 0.16;
