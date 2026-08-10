@@ -175,13 +175,18 @@
 
 .wr-body a:hover { text-decoration-color: var(--wr-ink); }
 
+/* Restore list markers — the Tailwind preflight reset strips them site-wide. */
 .wr-body ul,
 .wr-body ol {
   margin: 1.25rem 0;
   padding-left: 1.5rem;
 }
 
-.wr-body li { margin: 0.4rem 0; }
+.wr-body ul { list-style: disc; }
+.wr-body ol { list-style: decimal; }
+.wr-body ul ul { list-style: circle; }
+.wr-body li { margin: 0.4rem 0; padding-left: 0.25rem; }
+.wr-body li::marker { color: var(--wr-muted); }
 
 .wr-body blockquote {
   margin: 1.75rem 0;

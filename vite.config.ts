@@ -44,6 +44,10 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    // The writing section imports Markdown via import.meta.glob(..., ?raw).
+    // Mark .md as assets so Vite's module/CSS crawler doesn't try to parse them
+    // as JS (which otherwise breaks HMR when a .md file is edited).
+    assetsInclude: ["**/*.md"],
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
