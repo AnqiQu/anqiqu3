@@ -77,7 +77,7 @@ export function WritingsShell({
 }) {
   return (
     <div className="wr-root">
-      <Favicon href="/favicon.svg" />
+      <Favicon href="/writing-favicon.svg" />
       <aside className="wr-sidebar">
         <a href="/sandbox" className="wr-back" aria-label="Back to the sandbox">
           <span className="wr-back-arrow" aria-hidden="true">
