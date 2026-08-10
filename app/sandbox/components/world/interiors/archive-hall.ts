@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { P, mat } from "../palette";
-import { makeAdd } from "./kit";
+import { makeAdd, makeBeaconOrb } from "./kit";
 import type { Interior } from "./types";
 
 // Inside the Archive: a round stone chamber, dark and lit only by torches. They
@@ -154,10 +154,22 @@ export function buildArchiveHall(): Interior {
   exitLight.position.set(0, 1.6, R - 1.1);
   group.add(hemi, exitLight);
 
+  // A glowing "Website Relic" orb floating in the middle of the dark chamber —
+  // the one clickable-looking thing in here, warm gold so it stands apart from
+  // the torch-orange around the walls and the cool daylight at the door.
+  const relic = makeBeaconOrb({
+    x: 0, y: 1.5, z: 0,
+    title: "Website Relic",
+    faceColor: "#7a5c14",
+    textColor: "#fff4d2",
+    glowColor: 0xffd24a,
+  });
+  group.add(relic.group);
+
   return {
     group,
     bounds: { kind: "circle", x: 0, z: 0, r: R - 0.3 },
-    colliders: [],
+    colliders: [{ kind: "circle", x: 0, z: 0, r: 0.9 }], // the central relic orb
     floorY: 0,
     spawn: { x: 0, z: R - 1.3, yaw: 0 },
     doorMeshes: [door],
@@ -179,8 +191,10 @@ export function buildArchiveHall(): Interior {
           1 + Math.cos(t * 12 + ph) * 0.06,
         );
       }
+      relic.update(t);
     },
     dispose() {
+      relic.dispose();
       for (const g of geometries) g.dispose();
       for (const m of materials) m.dispose();
     },

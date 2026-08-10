@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { P, mat } from "../palette";
 import { rng } from "../util";
-import { addBookRow, addBookStack, addCandle, makeAdd } from "./kit";
+import { addBookRow, addBookStack, addCandle, makeAdd, makeBeaconOrb } from "./kit";
 import { addCloudClusters, cloudMaterial } from "./scenery";
 import type { Collider, Interior } from "./types";
 
@@ -13,6 +13,14 @@ import type { Collider, Interior } from "./types";
 
 const R = 4.6; // room radius
 const WALL_H = 3.1;
+
+// A brighter, more welcoming palette than the island's dark timber, so the
+// study reads as a sunlit room rather than a dim den: a pale honey floor and
+// lighter warm wood for the furniture. (Local to the lab — the shared palette,
+// and every other interior, is untouched.)
+const FLOOR = 0xe4cc9e;
+const LAB_WOOD = 0xcaa06e; // tabletops, shelf boards, door frame
+const LAB_WOOD_DARK = 0xa87c52; // legs, shelf sides, trim, treads, the door
 
 // A small wrought-iron spiral stair set against the −x wall, winding up to a
 // modest side gallery. Kept off to one side so the room floor stays open.
@@ -48,7 +56,7 @@ export function buildObservatoryLab(): Interior {
 
   // Shell: wood floor, stone drum wall, and a near-clear glass dome so the sky
   // and its drifting clouds read plainly when you look up.
-  add(new THREE.CircleGeometry(R + 0.2, 36).rotateX(-Math.PI / 2), mat(P.floorWood, { flat: true }), 0, 0, 0);
+  add(new THREE.CircleGeometry(R + 0.2, 36).rotateX(-Math.PI / 2), mat(FLOOR, { flat: true }), 0, 0, 0);
   const wall = add(
     new THREE.CylinderGeometry(R, R, WALL_H, 28, 1, true),
     mat(P.stonePale, { flat: true, side: THREE.BackSide }),
@@ -69,13 +77,13 @@ export function buildObservatoryLab(): Interior {
     group.add(rib);
   }
   add(new THREE.TorusGeometry(R - 0.03, 0.07, 6, 28).rotateX(Math.PI / 2), mat(P.brass), 0, WALL_H, 0);
-  add(new THREE.TorusGeometry(R - 0.03, 0.06, 6, 28).rotateX(Math.PI / 2), mat(P.woodDark), 0, 0.06, 0);
+  add(new THREE.TorusGeometry(R - 0.03, 0.06, 6, 28).rotateX(Math.PI / 2), mat(LAB_WOOD_DARK), 0, 0.06, 0);
 
   // A fun celestial rug in the middle of the floor: a golden sunburst on a
   // night-blue field, ringed with teal and little gold stars. Thin discs stacked
   // a hair apart with rising renderOrder so they layer cleanly over the boards.
-  const navy = 0x274a6b;
-  const navyLight = 0x35608a;
+  const navy = 0x3f72b0;
+  const navyLight = 0x5f93cf;
   add(new THREE.CircleGeometry(1.7, 48).rotateX(-Math.PI / 2), mat(navy, { flat: true }), 0, 0.012, 0).renderOrder = 1;
   add(new THREE.RingGeometry(1.54, 1.7, 48).rotateX(-Math.PI / 2), mat(P.gold, { flat: true }), 0, 0.015, 0).renderOrder = 2;
   add(new THREE.RingGeometry(1.2, 1.36, 48).rotateX(-Math.PI / 2), mat(P.blimpTeal, { flat: true }), 0, 0.015, 0).renderOrder = 2;
@@ -113,8 +121,8 @@ export function buildObservatoryLab(): Interior {
 
   // Exit: a heavy wooden door in the +z wall. Private materials so hover can
   // lift their emissive without lighting every woodDark mesh in the world.
-  const doorMat = new THREE.MeshLambertMaterial({ color: P.woodDark, flatShading: true });
-  const frameMat = new THREE.MeshLambertMaterial({ color: P.wood, flatShading: true });
+  const doorMat = new THREE.MeshLambertMaterial({ color: LAB_WOOD_DARK, flatShading: true });
+  const frameMat = new THREE.MeshLambertMaterial({ color: LAB_WOOD, flatShading: true });
   materials.push(doorMat, frameMat);
   const door = add(new THREE.BoxGeometry(1.15, 2.2, 0.12), doorMat, 0, 1.1, R - 0.18);
   const lintel = add(new THREE.BoxGeometry(1.55, 0.16, 0.2), frameMat, 0, 2.28, R - 0.22);
@@ -142,7 +150,7 @@ export function buildObservatoryLab(): Interior {
     const h = frac * PLAT_H;
     const cx = STAIR_CX + Math.cos(a) * rMid;
     const cz = STAIR_CZ + Math.sin(a) * rMid;
-    const tread = new THREE.Mesh(treadGeo, mat(P.woodDark, { flat: true }));
+    const tread = new THREE.Mesh(treadGeo, mat(LAB_WOOD_DARK, { flat: true }));
     tread.position.set(cx, h, cz);
     tread.rotation.y = -a;
     group.add(tread);
@@ -159,7 +167,7 @@ export function buildObservatoryLab(): Interior {
   group.add(new THREE.Mesh(railGeo, mat(P.brass)));
 
   // Small landing platform at the top, with a wiry guard ring.
-  add(new THREE.CylinderGeometry(R_LAND + 0.1, R_LAND + 0.1, 0.06, 18), mat(P.woodDark, { flat: true }), STAIR_CX, PLAT_H, STAIR_CZ);
+  add(new THREE.CylinderGeometry(R_LAND + 0.1, R_LAND + 0.1, 0.06, 18), mat(LAB_WOOD_DARK, { flat: true }), STAIR_CX, PLAT_H, STAIR_CZ);
   const gpGeo = new THREE.CylinderGeometry(0.016, 0.016, 0.6, 6);
   geometries.push(gpGeo);
   for (let i = 0; i < 7; i++) {
@@ -182,7 +190,7 @@ export function buildObservatoryLab(): Interior {
   const eyeGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.34, 10);
   const objGeo = new THREE.SphereGeometry(0.19, 14, 10);
   geometries.push(mountGeo, forkGeo, scopeTubeGeo, finderGeo, eyeGeo, objGeo);
-  const mount = new THREE.Mesh(mountGeo, mat(P.woodDark, { flat: true }));
+  const mount = new THREE.Mesh(mountGeo, mat(LAB_WOOD_DARK, { flat: true }));
   mount.position.y = 0.15;
   scope.add(mount);
   for (const sx of [-1, 1]) {
@@ -220,13 +228,11 @@ export function buildObservatoryLab(): Interior {
 
   // Work table against the −z wall, groaning under the experiment.
   const TB = { cx: 0, cz: -3.4, y: 0.92 };
-  const rug = add(new THREE.CircleGeometry(1.7, 24).rotateX(-Math.PI / 2), mat(P.rugRed), TB.cx, 0.012, TB.cz + 0.1);
-  rug.renderOrder = 1;
-  add(new THREE.BoxGeometry(2.7, 0.1, 1.15), mat(P.wood, { flat: true }), TB.cx, TB.y, TB.cz);
+  add(new THREE.BoxGeometry(2.7, 0.1, 1.15), mat(LAB_WOOD, { flat: true }), TB.cx, TB.y, TB.cz);
   const legGeo = new THREE.CylinderGeometry(0.05, 0.06, 0.88, 7);
   geometries.push(legGeo);
   for (const [lx, lz] of [[-1.2, -0.45], [1.2, -0.45], [-1.2, 0.45], [1.2, 0.45]]) {
-    const leg = new THREE.Mesh(legGeo, mat(P.woodDark));
+    const leg = new THREE.Mesh(legGeo, mat(LAB_WOOD_DARK));
     leg.position.set(TB.cx + lx, 0.44, TB.cz + lz);
     group.add(leg);
   }
@@ -280,8 +286,8 @@ export function buildObservatoryLab(): Interior {
   }
   addBookStack(group, geometries, TB.cx - 1.0, surf, TB.cz + 0.25, 3, 12);
 
-  // Two shelf units on the ±x walls, packed with books.
-  const shelfAngles = [Math.PI / 2, -Math.PI / 2];
+  // One shelf unit on the −x wall (the visitor's left), packed with books.
+  const shelfAngles = [-Math.PI / 2];
   const shelfColliders: Collider[] = [];
   shelfAngles.forEach((a, si) => {
     const sx = Math.sin(a) * (R - 0.45);
@@ -294,16 +300,16 @@ export function buildObservatoryLab(): Interior {
     const capGeo = new THREE.BoxGeometry(1.9, 0.1, 0.34);
     geometries.push(sideGeo, boardGeo, capGeo);
     for (const ex of [-0.95, 0.95]) {
-      const side = new THREE.Mesh(sideGeo, mat(P.woodDark, { flat: true }));
+      const side = new THREE.Mesh(sideGeo, mat(LAB_WOOD_DARK, { flat: true }));
       side.position.set(ex, 1.15, 0);
       unit.add(side);
     }
     [0.35, 1.0, 1.65].forEach((sy) => {
-      const board = new THREE.Mesh(boardGeo, mat(P.wood, { flat: true }));
+      const board = new THREE.Mesh(boardGeo, mat(LAB_WOOD, { flat: true }));
       board.position.set(0, sy, 0);
       unit.add(board);
     });
-    const cap = new THREE.Mesh(capGeo, mat(P.woodDark, { flat: true }));
+    const cap = new THREE.Mesh(capGeo, mat(LAB_WOOD_DARK, { flat: true }));
     cap.position.set(0, 2.25, 0);
     unit.add(cap);
     group.add(unit);
@@ -315,9 +321,10 @@ export function buildObservatoryLab(): Interior {
     shelfColliders.push({ kind: "rect", minX: sx - 1.05, maxX: sx + 1.05, minZ: sz - 0.55, maxZ: sz + 0.55 });
   });
 
-  // The cauldron in the +x/+z corner, simmering green.
+  // The cauldron to the left of the table, in the gap between it and the
+  // bookshelf, simmering green.
   const cauldron = new THREE.Group();
-  cauldron.position.set(3.0, 0, 2.4);
+  cauldron.position.set(-2.6, 0, -2.4);
   const potGeo = new THREE.SphereGeometry(0.5, 14, 10, 0, Math.PI * 2, Math.PI * 0.25, Math.PI * 0.55);
   const rimGeo = new THREE.TorusGeometry(0.36, 0.05, 6, 16).rotateX(Math.PI / 2);
   const brewGeo = new THREE.CircleGeometry(0.33, 16).rotateX(-Math.PI / 2);
@@ -337,9 +344,6 @@ export function buildObservatoryLab(): Interior {
     cauldron.add(stub);
   }
   group.add(cauldron);
-  const brewLight = new THREE.PointLight(P.potionGreen, 4, 5, 2);
-  brewLight.position.set(3.0, 1.3, 2.4);
-  group.add(brewLight);
 
   // Book piles and loose papers on the floor of the outer ring.
   addBookStack(group, geometries, -3.6, 0, -1.9, 5, 13);
@@ -363,13 +367,22 @@ export function buildObservatoryLab(): Interior {
   addCandle(group, geometries, TB.cx - 1.15, surf, TB.cz - 0.25, 0.1);
   addCandle(group, geometries, -1.35, 0, 3.4, 0.22);
 
-  // Light: bright daylight pours down through the dome, warmed by the flames.
-  const hemi = new THREE.HemisphereLight(0xdfefff, 0x6b543a, 1.5);
-  const domeLight = new THREE.DirectionalLight(0xfff2d2, 1.1);
+  // The study's one clickable-looking object: a glowing "My research" orb
+  // floating by the +x wall on the right (built by makeBeaconOrb).
+  const orb = makeBeaconOrb({
+    x: 3.6, y: 1.5, z: -0.5,
+    title: "My research",
+    faceColor: "#0e5b64",
+    textColor: "#ecfffb",
+    glowColor: 0x7fe6df,
+  });
+  group.add(orb.group);
+
+  // Light: bright daylight pours down through the dome.
+  const hemi = new THREE.HemisphereLight(0xeaf4ff, 0xd8c4a2, 1.9);
+  const domeLight = new THREE.DirectionalLight(0xfff4dc, 1.3);
   domeLight.position.set(2, 8, 1);
-  const candleLight = new THREE.PointLight(0xffd9a0, 10, 8, 2);
-  candleLight.position.set(TB.cx, 1.8, TB.cz + 0.6);
-  group.add(hemi, domeLight, candleLight);
+  group.add(hemi, domeLight);
 
   return {
     group,
@@ -377,7 +390,7 @@ export function buildObservatoryLab(): Interior {
     floorHeightAt: observatoryFloor,
     colliders: [
       { kind: "rect", minX: -1.5, maxX: 1.5, minZ: -4.0, maxZ: -2.8 }, // table
-      { kind: "circle", x: 3.0, z: 2.4, r: 0.7 }, // cauldron
+      { kind: "circle", x: -2.6, z: -2.4, r: 0.7 }, // cauldron
       ...shelfColliders,
     ],
     floorY: 0,
@@ -391,10 +404,11 @@ export function buildObservatoryLab(): Interior {
         b.position.y = surf + 0.3 + cycle * 0.22;
         b.scale.setScalar(1 - cycle * 0.6);
       }
-      brewLight.intensity = 4 + Math.sin(t * 5.1) * 0.9 + Math.sin(t * 8.7) * 0.5;
       clouds.rotation.y = t * 0.01;
+      orb.update(t);
     },
     dispose() {
+      orb.dispose();
       for (const g of geometries) g.dispose();
       for (const m of materials) m.dispose();
       for (const im of instanced) im.dispose();

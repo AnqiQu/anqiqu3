@@ -118,3 +118,105 @@ export function addPottedPlant(
   add(new THREE.IcosahedronGeometry(0.18 * scale, 0), mat(P.canopy, { flat: true }), x - 0.05 * scale, y + 0.72 * scale, z);
   add(new THREE.IcosahedronGeometry(0.14 * scale, 0), mat(P.canopyLight, { flat: true }), x + 0.1 * scale, y + 0.62 * scale, z + 0.06 * scale);
 }
+
+// A floating, glowing "orb" beacon: an unlit label cube (so it reads as
+// self-luminous even in a dark room) caged in a soft additive icosphere and lit
+// from within, bobbing and rocking gently so it invites a click. The label is a
+// title over a smaller "(click me)" prompt, drawn to a canvas in Philosopher —
+// the sandbox's heading font, read from the CSS variable the page already loads
+// and redrawn once that lazily-loaded face is ready. Self-contained: the caller
+// adds `group`, ticks `update(t)`, and calls `dispose()` on teardown.
+export type BeaconOrb = {
+  group: THREE.Group;
+  update: (t: number) => void;
+  dispose: () => void;
+};
+
+export function makeBeaconOrb(opts: {
+  x: number;
+  y: number;
+  z: number;
+  title: string;
+  faceColor: string;
+  textColor: string;
+  glowColor: number;
+  subtitle?: string;
+}): BeaconOrb {
+  const { x, y, z, title, faceColor, textColor, glowColor } = opts;
+  const subtitle = opts.subtitle ?? "(click me)";
+
+  const group = new THREE.Group();
+  group.position.set(x, y, z);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+  const draw = () => {
+    const c = canvas.getContext("2d");
+    if (!c) return;
+    const fam =
+      getComputedStyle(document.body).getPropertyValue("--font-philosopher").trim() || "sans-serif";
+    c.fillStyle = faceColor;
+    c.fillRect(0, 0, 256, 256);
+    c.fillStyle = textColor;
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.shadowColor = textColor;
+    c.shadowBlur = 16;
+    // Title, shrunk to fit the face.
+    let size = 48;
+    c.font = `700 ${size}px ${fam}`;
+    while (c.measureText(title).width > 210 && size > 14) {
+      size -= 2;
+      c.font = `700 ${size}px ${fam}`;
+    }
+    c.fillText(title, 128, 110);
+    // "(click me)" prompt, smaller and dimmer, below the title.
+    c.shadowBlur = 10;
+    c.globalAlpha = 0.85;
+    c.font = `400 26px ${fam}`;
+    c.fillText(subtitle, 128, 156);
+    c.globalAlpha = 1;
+    texture.needsUpdate = true;
+  };
+  draw();
+  // Philosopher loads lazily; redraw once both weights are ready so the label
+  // uses it rather than the sans-serif fallback.
+  if (document.fonts) {
+    Promise.all([
+      document.fonts.load('700 48px "Philosopher"'),
+      document.fonts.load('400 26px "Philosopher"'),
+    ]).then(draw).catch(() => {});
+  }
+
+  const cubeGeo = new THREE.BoxGeometry(0.62, 0.62, 0.62);
+  const orbGeo = new THREE.IcosahedronGeometry(0.72, 2);
+  const cubeMat = new THREE.MeshBasicMaterial({ map: texture });
+  const orbMat = new THREE.MeshBasicMaterial({
+    color: glowColor, transparent: true, opacity: 0.16,
+    blending: THREE.AdditiveBlending, depthWrite: false,
+  });
+  const cube = new THREE.Mesh(cubeGeo, cubeMat);
+  const orb = new THREE.Mesh(orbGeo, orbMat);
+  orb.renderOrder = 3;
+  group.add(cube, orb, new THREE.PointLight(glowColor, 1.8, 3.0, 2));
+
+  return {
+    group,
+    update(t) {
+      group.position.y = y + Math.sin(t * 1.6) * 0.09;
+      cube.rotation.y = Math.sin(t * 0.6) * 0.5;
+      cube.rotation.x = Math.sin(t * 0.9) * 0.12;
+    },
+    dispose() {
+      texture.dispose();
+      cubeGeo.dispose();
+      orbGeo.dispose();
+      cubeMat.dispose();
+      orbMat.dispose();
+    },
+  };
+}
