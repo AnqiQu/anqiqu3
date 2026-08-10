@@ -256,6 +256,81 @@ export function buildGreenhouseRoom(): Interior {
     baskets.push(basket);
   });
 
+  // A welcome sign hung on two brass chains from the back eave beam, above the
+  // potting bench on the far (−z) side and facing the doorway (+z) so it reads
+  // as you step in. A parchment card in a wood frame; the lettering is drawn to
+  // a canvas in Plus Jakarta Sans — the sandbox body font — and redrawn once
+  // that lazily-loaded face is ready. It hangs from a pivot at the beam so it
+  // can sway a touch.
+  const sign = new THREE.Group();
+  sign.position.set(0, WALL_H, -D / 2 + 0.45); // pivot at the back eave beam, above the bench
+  const signW = 1.9;
+  const signH = 0.5;
+  const signFrame = 0.04; // wood frame showing around the parchment card
+  const cardW = signW - signFrame * 2;
+  const cardH = signH - signFrame * 2;
+  const signDrop = 0.55; // chain length from the beam down to the top of the board
+  const boardY = -signDrop - signH / 2;
+
+  // Canvas matches the card's aspect exactly so the lettering never stretches.
+  const signCanvas = document.createElement("canvas");
+  signCanvas.width = 1024;
+  signCanvas.height = Math.round(1024 * (cardH / cardW));
+  const signTex = new THREE.CanvasTexture(signCanvas);
+  signTex.colorSpace = THREE.SRGBColorSpace;
+  signTex.anisotropy = 4;
+  const drawSign = () => {
+    const c = signCanvas.getContext("2d");
+    if (!c) return;
+    const fam =
+      getComputedStyle(document.body).getPropertyValue("--font-jakarta").trim() || "sans-serif";
+    const { width: cw, height: ch } = signCanvas;
+    c.fillStyle = "#ead9ae"; // parchment
+    c.fillRect(0, 0, cw, ch);
+    c.strokeStyle = "#b79a63";
+    c.lineWidth = 4;
+    c.strokeRect(14, 14, cw - 28, ch - 28);
+    c.fillStyle = "#5a3a22"; // warm ink
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.font = `700 46px ${fam}`;
+    c.fillText("Welcome to the greenhouse.", cw / 2, ch * 0.3);
+    c.font = `400 34px ${fam}`;
+    c.fillText("Everything growing here is something I love.", cw / 2, ch * 0.52);
+    c.fillText("Click a flower to explore.", cw / 2, ch * 0.74);
+    signTex.needsUpdate = true;
+  };
+  drawSign();
+  if (document.fonts) {
+    Promise.all([
+      document.fonts.load('700 46px "Plus Jakarta Sans"'),
+      document.fonts.load('400 34px "Plus Jakarta Sans"'),
+    ]).then(drawSign).catch(() => {});
+  }
+
+  const boardGeo = new THREE.BoxGeometry(signW, signH, 0.06);
+  const cardGeo = new THREE.PlaneGeometry(cardW, cardH);
+  const chainGeo = new THREE.CylinderGeometry(0.012, 0.012, signDrop, 5);
+  geometries.push(boardGeo, cardGeo, chainGeo);
+  const cardMat = new THREE.MeshBasicMaterial({ map: signTex });
+  materials.push(cardMat);
+  const board = new THREE.Mesh(boardGeo, mat(P.wood, { flat: true }));
+  board.position.y = boardY;
+  sign.add(board);
+  for (const sz of [1, -1]) {
+    // Card faces are basic-mapped so the ink reads crisp regardless of the light.
+    const card = new THREE.Mesh(cardGeo, cardMat);
+    card.position.set(0, boardY, sz * 0.031);
+    card.rotation.y = sz === 1 ? 0 : Math.PI; // front reads from the door, back from within
+    sign.add(card);
+  }
+  for (const cx of [-0.78, 0.78]) {
+    const chain = new THREE.Mesh(chainGeo, mat(P.brass));
+    chain.position.set(cx, -signDrop / 2, 0);
+    sign.add(chain);
+  }
+  group.add(sign);
+
   // The world outside the glass: the island landscape, matching the meadow you
   // stand on out there — rolling green ground, low hills, scattered trees, and
   // cloud banks in the sky, so the view through the panes reads as the island.
@@ -315,8 +390,11 @@ export function buildGreenhouseRoom(): Interior {
         basket.rotation.z = Math.sin(t * 0.9 + phase) * 0.06;
         basket.rotation.x = Math.cos(t * 0.7 + phase) * 0.05;
       }
+      sign.rotation.z = Math.sin(t * 0.7) * 0.015;
+      sign.rotation.x = Math.cos(t * 0.5) * 0.012;
     },
     dispose() {
+      signTex.dispose();
       for (const g of geometries) g.dispose();
       for (const m of materials) m.dispose();
       for (const im of instanced) im.dispose();
