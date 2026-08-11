@@ -74,6 +74,36 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+// Structured data so search engines can identify the site (WebSite) and the
+// person behind it (Person), which powers richer results and knowledge panels.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://anqiqu.com/#website",
+      url: "https://anqiqu.com",
+      name: "Anqi Qu",
+      description:
+        "Anqi Qu: a multimodal human model for research, conversation, and real-world interaction.",
+      publisher: { "@id": "https://anqiqu.com/#person" },
+      inLanguage: "en",
+    },
+    {
+      "@type": "Person",
+      "@id": "https://anqiqu.com/#person",
+      name: "Anqi Qu",
+      url: "https://anqiqu.com",
+      image: "https://anqiqu.com/og.png",
+      sameAs: [
+        "https://www.linkedin.com/in/anqiqu/",
+        "https://x.com/Anqinator",
+        "https://www.instagram.com/anqi._.thewateraddict",
+      ],
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -84,6 +114,10 @@ export default function RootLayout({
       <body
         className={`${audiowide.variable} ${exo.variable} ${philosopher.variable} ${jakarta.variable} ${openSans.variable}`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {children}
         <CookieBanner />
       </body>
