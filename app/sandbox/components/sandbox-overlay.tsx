@@ -21,6 +21,7 @@ export function SandboxOverlay({
   const router = useRouter();
   const fadeRef = useRef<HTMLDivElement>(null);
   const [hintDismissed, setHintDismissed] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
   const [openPanelId, setOpenPanelId] = useState<string | null>(null);
   const [interiorId, setInteriorId] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -28,6 +29,15 @@ export function SandboxOverlay({
   const interiorLabel = interiorId ? locations.find((l) => l.id === interiorId)?.label : undefined;
 
   const worldLocations = locations.filter((l) => l.world3d);
+
+  // Touch-primary devices get a gesture hint instead of the keyboard-heavy one.
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    const apply = () => setIsTouch(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
 
   useEffect(() => {
     // First drag or zoom dismisses the hint. (The sky title clears itself off
@@ -84,7 +94,13 @@ export function SandboxOverlay({
 
   return (
     <div className="sandbox-3d-overlay">
-      {!hintDismissed && !interiorId && <div className="sandbox-3d-hint">drag · scroll · pinch · WASD · Q/E · arrows to explore — you&apos;ll figure it out</div>}
+      {!hintDismissed && !interiorId && (
+        <div className="sandbox-3d-hint">
+          {isTouch
+            ? "one finger looks · two fingers pan · pinch to zoom"
+            : "drag · scroll · pinch · WASD · Q/E · arrows to explore — you’ll figure it out"}
+        </div>
+      )}
 
       {interiorId ? (
         // Inside a room, the same corner control steps back out to the island

@@ -69,6 +69,31 @@ export function SandboxExperience() {
     };
   }, [bridge]);
 
+  // Keep the two-finger pinch inside the 3D world instead of letting the browser
+  // zoom the whole page — iOS Safari zooms on pinch even with touch-action:none
+  // (and ignores user-scalable=no), which shrinks the visual viewport and slides
+  // the fixed "back" button off screen. Swallow the native pinch here; the rig
+  // still gets its pointer events. Scoped to 3D mode so the flat text card and
+  // every other route keep normal accessibility zoom.
+  useEffect(() => {
+    if (mode !== "3d") return;
+    const prevent = (e: Event) => e.preventDefault();
+    // gesture* is Safari-only (pinch/rotate); not in the DOM typings.
+    const gestureEvents: string[] = ["gesturestart", "gesturechange", "gestureend"];
+    for (const name of gestureEvents) {
+      document.addEventListener(name, prevent, { passive: false });
+    }
+    // Belt-and-braces for engines that pinch-zoom via multi-touch scrolling.
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 1) e.preventDefault();
+    };
+    document.addEventListener("touchmove", onTouchMove, { passive: false });
+    return () => {
+      for (const name of gestureEvents) document.removeEventListener(name, prevent);
+      document.removeEventListener("touchmove", onTouchMove);
+    };
+  }, [mode]);
+
   return (
     <div className="sandbox-experience" data-mode={mode}>
       {mode !== "flat" && (

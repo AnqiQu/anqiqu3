@@ -2,12 +2,13 @@ import * as THREE from "three";
 import type { Collider, RoomBounds } from "./types";
 
 // First-person walking for the interiors, controlled like the island outside:
-// WASD walk on the floor plane, the arrow keys turn/tilt the view, drag looks
-// (same grab-the-world convention as the fly rig), Shift hurries, and a
-// two-finger pinch walks forward/back on touch. There is no flying and no
-// falling: the eye stays at a fixed height above the floor, and position is
-// clamped inside the room's bounds and pushed out of furniture, so walls are
-// genuinely solid.
+// WASD walk on the floor plane, the arrow keys turn/tilt the view, one-finger
+// drag looks (same grab-the-world convention as the fly rig), Shift hurries, and
+// on touch a two-finger pinch walks forward/back while a two-finger drag pans
+// across the floor (the same Google-Maps gesture the island uses). There is no
+// flying and no falling: the eye stays at a fixed height above the floor, and
+// position is clamped inside the room's bounds and pushed out of furniture, so
+// walls are genuinely solid.
 
 const LOOK_SPEED = 0.0026;
 const PITCH_LIMIT = 1.35;
@@ -18,6 +19,7 @@ const BOOST = 1.9;
 const MAX_SPEED = 4.6;
 const DAMP_TAU = 0.12; // quick stop — feet, not a glider
 const PINCH_IMPULSE = 0.02;
+const PAN_IMPULSE = 0.03; // velocity kick per pixel the two-finger centroid slides
 const WHEEL_IMPULSE = 0.006;
 const PLAYER_RADIUS = 0.38;
 const STEP_UP_MAX = 0.6; // climb steps up to this tall; anything taller is a wall
@@ -55,10 +57,13 @@ export function createWalkRig(
   const keys = new Set<string>();
   const pointers = new Map<number, { x: number; y: number }>();
   let pinchDist = 0;
+  const panCentroid = { x: 0, y: 0 }; // last two-finger midpoint, for panning
 
   const forward = new THREE.Vector3();
   const right = new THREE.Vector3();
   const wish = new THREE.Vector3();
+  const panForward = new THREE.Vector3();
+  const panRight = new THREE.Vector3();
 
   const twoPointerDistance = () => {
     const it = pointers.values();
@@ -66,10 +71,24 @@ export function createWalkRig(
     const b = it.next().value as { x: number; y: number };
     return Math.hypot(a.x - b.x, a.y - b.y);
   };
+  const twoPointerCentroid = () => {
+    const it = pointers.values();
+    const a = it.next().value as { x: number; y: number };
+    const b = it.next().value as { x: number; y: number };
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  };
+  // Reseed the pinch distance + pan midpoint on any change to the finger count,
+  // so the next two-finger move reads a clean delta.
+  const resyncTwoPointer = () => {
+    pinchDist = twoPointerDistance();
+    const c = twoPointerCentroid();
+    panCentroid.x = c.x;
+    panCentroid.y = c.y;
+  };
 
   const onPointerDown = (e: PointerEvent) => {
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointers.size === 2) pinchDist = twoPointerDistance();
+    if (pointers.size === 2) resyncTwoPointer();
   };
   const onPointerMove = (e: PointerEvent) => {
     const prev = pointers.get(e.pointerId);
@@ -79,9 +98,19 @@ export function createWalkRig(
     prev.x = e.clientX;
     prev.y = e.clientY;
     if (pointers.size >= 2) {
+      // Pinch spread walks forward/back...
       const d = twoPointerDistance();
       vel.addScaledVector(forward, (d - pinchDist) * PINCH_IMPULSE);
       pinchDist = d;
+      // ...and the two-finger drag pans across the floor, grab-the-world style
+      // (fingers down → step forward, fingers right → sidestep left).
+      const c = twoPointerCentroid();
+      panForward.set(-Math.sin(yaw), 0, -Math.cos(yaw));
+      panRight.set(Math.cos(yaw), 0, -Math.sin(yaw));
+      vel.addScaledVector(panForward, (c.y - panCentroid.y) * PAN_IMPULSE);
+      vel.addScaledVector(panRight, -(c.x - panCentroid.x) * PAN_IMPULSE);
+      panCentroid.x = c.x;
+      panCentroid.y = c.y;
     } else {
       yawTarget += dx * LOOK_SPEED;
       pitchTarget = THREE.MathUtils.clamp(pitchTarget + dy * LOOK_SPEED, -PITCH_LIMIT, PITCH_LIMIT);
@@ -89,7 +118,7 @@ export function createWalkRig(
   };
   const onPointerUp = (e: PointerEvent) => {
     pointers.delete(e.pointerId);
-    if (pointers.size === 2) pinchDist = twoPointerDistance();
+    if (pointers.size === 2) resyncTwoPointer();
   };
   const onWheel = (e: WheelEvent) => {
     vel.addScaledVector(forward, -e.deltaY * WHEEL_IMPULSE);

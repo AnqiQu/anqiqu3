@@ -50,7 +50,7 @@
 /* ===== 3D overlay: hint, return button ===== */
 /* The title is not here — it hangs in the sky as 3D letters (world/sky-title). */
 .sandbox-3d-overlay { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-family: var(--font-jakarta), sans-serif; }
-.sandbox-3d-hint { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border: 1px solid rgb(39 74 51 / 0.28); border-radius: 999px; background: rgb(255 247 223 / 0.82); color: #274a33; font-size: 13px; letter-spacing: 0.06em; backdrop-filter: blur(6px); animation: sandbox-hint-bob 2.2s ease-in-out infinite; }
+.sandbox-3d-hint { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border: 1px solid rgb(39 74 51 / 0.28); border-radius: 999px; background: rgb(255 247 223 / 0.82); color: #274a33; font-size: 13px; letter-spacing: 0.06em; text-align: center; backdrop-filter: blur(6px); animation: sandbox-hint-bob 2.2s ease-in-out infinite; }
 @keyframes sandbox-hint-bob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
 /* Back button. At rest it belongs to the sky — a white disc with a thick light
    blue arrow — and on hover it snaps into the server room's own idiom: pointy
@@ -59,7 +59,7 @@
    the authored value, so from 999px the corners sit visually circular for most
    of the transition and then snap square at the very end. 24px is exactly half
    the height — still a circle — and animates evenly the whole way. */
-.sandbox-3d-return { position: absolute; top: 18px; left: 18px; display: inline-flex; align-items: center; height: 48px; overflow: hidden; pointer-events: auto; padding: 0; font-family: inherit; cursor: pointer; border: 3px solid #7cc7f7; border-radius: 24px; background: #fff; color: #2f9bea; text-decoration: none; box-shadow: 0 8px 22px rgb(23 61 92 / 0.22); transition: border-radius 300ms cubic-bezier(0.33, 1, 0.68, 1), border-color 240ms ease, background 240ms ease, color 240ms ease, box-shadow 240ms ease; }
+.sandbox-3d-return { position: absolute; top: 18px; left: 18px; display: inline-flex; align-items: center; height: 48px; overflow: hidden; pointer-events: auto; touch-action: manipulation; padding: 0; font-family: inherit; cursor: pointer; border: 3px solid #7cc7f7; border-radius: 24px; background: #fff; color: #2f9bea; text-decoration: none; box-shadow: 0 8px 22px rgb(23 61 92 / 0.22); transition: border-radius 300ms cubic-bezier(0.33, 1, 0.68, 1), border-color 240ms ease, background 240ms ease, color 240ms ease, box-shadow 240ms ease; }
 .sandbox-3d-return-icon { display: grid; flex: 0 0 auto; place-items: center; width: 42px; height: 100%; }
 .sandbox-3d-return-label { max-width: 0; overflow: hidden; opacity: 0; font-size: 13px; font-weight: 650; letter-spacing: 0.06em; white-space: nowrap; transition: max-width 300ms cubic-bezier(0.33, 1, 0.68, 1), padding-right 300ms cubic-bezier(0.33, 1, 0.68, 1), opacity 220ms ease; }
 .sandbox-3d-return:hover, .sandbox-3d-return:focus-visible { border-radius: 0; border-color: var(--bright-green); background: var(--black); color: var(--bright-green); box-shadow: 0 8px 26px rgb(6 20 12 / 0.45); }
@@ -75,7 +75,7 @@
 
 /* ===== Panel: the plaque itself, enlarged. A square pale gold plate with an
    engraved-looking inscription and an × in the corner. ===== */
-.sandbox-panel { position: absolute; top: 50%; left: 50%; z-index: 20; display: grid; place-content: center; width: min(370px, calc(100vw - 44px)); aspect-ratio: 1; padding: 40px 34px; border: 2px solid #b0904a; background: linear-gradient(158deg, #f7e8b8 6%, #ecd79c 52%, #e3ca8b); box-shadow: 0 22px 50px rgb(46 34 8 / 0.42), inset 0 0 0 1px rgb(255 255 255 / 0.45); color: #4b3a15; text-align: center; pointer-events: auto; transform: translate(-50%, -50%) scale(0.9); opacity: 0; animation: sandbox-panel-open 300ms cubic-bezier(0.33, 1, 0.68, 1) forwards; }
+.sandbox-panel { position: absolute; top: 50%; left: 50%; z-index: 20; display: grid; place-content: center; width: min(370px, calc(100vw - 44px)); aspect-ratio: 1; padding: 40px 34px; touch-action: manipulation; border: 2px solid #b0904a; background: linear-gradient(158deg, #f7e8b8 6%, #ecd79c 52%, #e3ca8b); box-shadow: 0 22px 50px rgb(46 34 8 / 0.42), inset 0 0 0 1px rgb(255 255 255 / 0.45); color: #4b3a15; text-align: center; pointer-events: auto; transform: translate(-50%, -50%) scale(0.9); opacity: 0; animation: sandbox-panel-open 300ms cubic-bezier(0.33, 1, 0.68, 1) forwards; }
 .sandbox-panel-body { margin: 0; font-family: var(--font-philosopher), sans-serif; font-size: clamp(15px, 1.35vw, 18px); line-height: 1.66; letter-spacing: 0.01em; }
 .sandbox-panel-close { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; color: #7a6224; font-size: 20px; line-height: 1; cursor: pointer; transition: color 160ms ease, transform 160ms ease; }
 .sandbox-panel-close:hover { color: #4b3a15; transform: scale(1.12); }

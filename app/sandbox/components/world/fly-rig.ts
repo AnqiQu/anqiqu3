@@ -1,11 +1,14 @@
 import * as THREE from "three";
 import { ellipticalRadius, terrainHeight } from "./terrain";
 
-// Free-fly exploration. Drag looks around, wheel / pinch flies forward and back
-// along the view direction, WASD cruise/strafe over the world on the horizontal
-// plane, Q/E drop/climb, and the arrow keys turn/tilt the view (hold Shift to go
-// faster) — the camera roams freely like an aircraft instead of orbiting a fixed
-// point. The reachable space is a sphere centred on the island: you can fly
+// Free-fly exploration. One finger / mouse drag looks around, wheel / pinch
+// flies forward and back along the view direction, and a two-finger drag pans
+// across the world on the ground plane (grab-the-world, like scrolling a map).
+// WASD cruise/strafe over the world on the horizontal plane, Q/E drop/climb, and
+// the arrow keys turn/tilt the view (hold Shift to go faster) — the camera roams
+// freely like an aircraft instead of orbiting a fixed point. On touch this is
+// Google-Maps-shaped: one finger looks, two fingers pan, pinch zooms.
+// The reachable space is a sphere centred on the island: you can fly
 // anywhere inside it and simply slide along the shell at its edge, so the island
 // is never lost in the fog. A terrain floor keeps you from flying through the
 // ground while you're over the island's footprint.
@@ -32,6 +35,7 @@ const MOVE_ACCEL = 235; // keyboard thrust (units/s²)
 const BOOST = 2.6; // Shift multiplier
 const WHEEL_IMPULSE = 0.05; // velocity kick per unit of wheel delta
 const PINCH_IMPULSE = 0.16; // velocity kick per pixel of pinch spread
+const PAN_IMPULSE = 0.35; // velocity kick per pixel the two-finger centroid slides
 const DAMP_TAU = 0.2; // velocity decay constant; higher = more glide/soar
 const LOOK_EASE = 14; // how fast the view catches up to the drag
 const MAX_SPEED = 145; // clamp so a key held or a fast scroll can't run away
@@ -91,6 +95,7 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
   const keys = new Set<string>();
   const pointers = new Map<number, { x: number; y: number }>();
   let pinchDist = 0;
+  const panCentroid = { x: 0, y: 0 }; // last two-finger midpoint, for panning
   let flight: FlightTarget | null = null;
   let enabled = true;
 
@@ -101,6 +106,8 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
   const prevPos = new THREE.Vector3();
   const wish = new THREE.Vector3();
   const flatForward = new THREE.Vector3();
+  const panForward = new THREE.Vector3();
+  const panRight = new THREE.Vector3();
   const stepVec = new THREE.Vector3();
   const off = new THREE.Vector3();
   const collideRay = new THREE.Raycaster();
@@ -118,13 +125,27 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
     const b = it.next().value as { x: number; y: number };
     return Math.hypot(a.x - b.x, a.y - b.y);
   };
+  const twoPointerCentroid = () => {
+    const it = pointers.values();
+    const a = it.next().value as { x: number; y: number };
+    const b = it.next().value as { x: number; y: number };
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  };
+  // Seed the pinch distance + pan midpoint whenever a second finger lands or
+  // lifts, so the next two-finger move measures a delta from here (no jump).
+  const resyncTwoPointer = () => {
+    pinchDist = twoPointerDistance();
+    const c = twoPointerCentroid();
+    panCentroid.x = c.x;
+    panCentroid.y = c.y;
+  };
 
-  // --- Pointer: one finger / mouse = look, two fingers = pinch to fly -------
+  // --- Pointer: one finger / mouse = look, two fingers = pinch-zoom + pan ---
   const onPointerDown = (e: PointerEvent) => {
     if (!enabled) return;
     cancelFlight();
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointers.size === 2) pinchDist = twoPointerDistance();
+    if (pointers.size === 2) resyncTwoPointer();
   };
   const onPointerMove = (e: PointerEvent) => {
     const prev = pointers.get(e.pointerId);
@@ -134,9 +155,21 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
     prev.x = e.clientX;
     prev.y = e.clientY;
     if (pointers.size >= 2) {
+      // Pinch spread flies forward/back (zoom)...
       const d = twoPointerDistance();
       vel.addScaledVector(forward, (d - pinchDist) * PINCH_IMPULSE);
       pinchDist = d;
+      // ...and the two-finger drag pans over the ground, grab-the-world style:
+      // slide the fingers down and the island slides down with them (you move
+      // forward); slide them right and you strafe left. Pitch is dropped so the
+      // pan stays flat on the map no matter where you're looking.
+      const c = twoPointerCentroid();
+      panForward.set(-Math.sin(yaw), 0, -Math.cos(yaw));
+      panRight.set(Math.cos(yaw), 0, -Math.sin(yaw));
+      vel.addScaledVector(panForward, (c.y - panCentroid.y) * PAN_IMPULSE);
+      vel.addScaledVector(panRight, -(c.x - panCentroid.x) * PAN_IMPULSE);
+      panCentroid.x = c.x;
+      panCentroid.y = c.y;
     } else {
       // Grab-the-world look: drag right → view turns left, drag down → look up.
       yawTarget += dx * LOOK_SPEED;
@@ -145,7 +178,7 @@ export function createFlyRig(camera: THREE.PerspectiveCamera, canvas: HTMLCanvas
   };
   const onPointerUp = (e: PointerEvent) => {
     pointers.delete(e.pointerId);
-    if (pointers.size === 2) pinchDist = twoPointerDistance();
+    if (pointers.size === 2) resyncTwoPointer();
   };
 
   const onWheel = (e: WheelEvent) => {
