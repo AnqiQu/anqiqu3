@@ -15,19 +15,14 @@ const HYPE_TERMS = [
   "Foundation Model",
   "Zero-Shot",
   "Agentic",
-  "Emergent",
   "Superintelligence",
   "Compute",
-  "Latent Space",
   "Synthetic Data",
   "RLHF",
   "Post-Training",
   "Chain-of-Thought",
-  "Moat",
-  "10x",
   "Paradigm Shift",
   "Singularity",
-  "Test-Time Compute",
 ];
 
 // Peripheral anchor points, kept clear of the centred headline.
