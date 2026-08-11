@@ -4,7 +4,7 @@ import { getResearch } from "../writings/content";
 
 export const metadata: Metadata = {
   title: "Research | Anqi Qu",
-  description: "An index of research, papers, and projects by Anqi Qu.",
+  description: "Anqi's research, papers, and projects.",
 };
 
 export default function ResearchPage() {

@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Anqi Qu",
     short_name: "Anqi Qu",
     description:
-      "Anqi Qu: a multimodal human model for research, conversation, and real-world interaction.",
+      "Hello! This is Anqi Qu's personal website",
     start_url: "/",
     display: "standalone",
     background_color: "#000000",

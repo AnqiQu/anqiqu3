@@ -5,7 +5,7 @@ import { writingArticles } from "../writings/content";
 
 export const metadata: Metadata = {
   title: "Writing | Anqi Qu",
-  description: "Essays, notes, and other writing by Anqi Qu.",
+  description: "Anqi's essays, notes, and other writings.",
 };
 
 export default function WritingPage() {

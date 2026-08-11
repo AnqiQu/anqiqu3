@@ -5,7 +5,7 @@ import { manifestoArticles } from "../writings/content";
 
 export const metadata: Metadata = {
   title: "Manifesto | Anqi Qu",
-  description: "Things Anqi Qu believes about how to work and live.",
+  description: "Anqi's thoughts about how to work and live.",
 };
 
 export default function ManifestoPage() {

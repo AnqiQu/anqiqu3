@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://anqiqu.com"),
   title: "Anqi Qu",
   description:
-    "Anqi Qu: a multimodal human model for research, conversation, and real-world interaction.",
+    "Hello! This is Anqi Qu's personal website",
   applicationName: "Anqi Qu",
   alternates: { canonical: "/" },
   openGraph: {
@@ -85,7 +85,7 @@ const jsonLd = {
       url: "https://anqiqu.com",
       name: "Anqi Qu",
       description:
-        "Anqi Qu: a multimodal human model for research, conversation, and real-world interaction.",
+        "Hello! This is Anqi Qu's personal website",
       publisher: { "@id": "https://anqiqu.com/#person" },
       inLanguage: "en",
     },
