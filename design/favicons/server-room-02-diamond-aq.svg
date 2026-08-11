@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
-  <title id="title">Server Room diamond AQ favicon</title>
-  <desc id="desc">A white A and signal-green square Q inside a black diamond.</desc>
-  <path d="M32 3 61 32 32 61 3 32 32 3Z" fill="#000000"/>
-  <path fill="#FFFFFF" fill-rule="evenodd" d="M9 40 20 16h7l11 24h-7l-2-5H18l-2 5H9Zm11-11h7l-3.5-8-3.5 8Z"/>
-  <path fill="#80ED99" fill-rule="evenodd" d="M36 19h17v20H42l-6-6V19Zm6 6v8h5v-8h-5Z"/>
-  <path d="m47 36 7 7-5 5-7-7 5-5Z" fill="#80ED99"/>
-</svg>
