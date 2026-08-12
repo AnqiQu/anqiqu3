@@ -40,6 +40,19 @@ const openSans = Open_Sans({
   display: "swap",
 });
 
+// The single share card used everywhere a link preview appears — iMessage and
+// other OpenGraph readers, and X/Twitter. Defined once so the Twitter card is
+// identical to the one shown in texts by construction.
+const shareTitle = "Anqi Qu";
+const shareDescription = "Our most advanced multimodal human model yet.";
+const shareImage = {
+  url: "/og.png",
+  width: 1727,
+  height: 911,
+  type: "image/png",
+  alt: "Anqi Qu — our most advanced multimodal human model yet.",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://anqiqu.com"),
   title: "Anqi Qu",
@@ -51,22 +64,18 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://anqiqu.com",
     siteName: "Anqi Qu",
-    title: "Anqi Qu",
-    description: "Our most advanced multimodal human model yet.",
-    images: [
-      {
-        url: "/og.png",
-        width: 1729,
-        height: 910,
-        alt: "Anqi Qu — our most advanced multimodal human model yet.",
-      },
-    ],
+    locale: "en_US",
+    title: shareTitle,
+    description: shareDescription,
+    images: [shareImage],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Anqi Qu",
-    description: "Our most advanced multimodal human model yet.",
-    images: ["/og.png"],
+    site: "@Anqinator",
+    creator: "@Anqinator",
+    title: shareTitle,
+    description: shareDescription,
+    images: [shareImage],
   },
 };
 
