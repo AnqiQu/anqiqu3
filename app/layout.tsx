@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Audiowide, Exo_2, Open_Sans, Philosopher, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "./components/analytics";
 import { CookieBanner } from "./components/cookie-banner";
 
 const audiowide = Audiowide({
@@ -119,6 +120,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         {children}
+        <Analytics />
         <CookieBanner />
       </body>
     </html>
