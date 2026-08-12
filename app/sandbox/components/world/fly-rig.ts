@@ -34,7 +34,7 @@ const PITCH_LIMIT = 1.45; // ~83°, so the view never flips over the poles
 const MOVE_ACCEL = 235; // keyboard thrust (units/s²)
 const BOOST = 2.6; // Shift multiplier
 const WHEEL_IMPULSE = 0.05; // velocity kick per unit of wheel delta
-const PINCH_IMPULSE = 0.16; // velocity kick per pixel of pinch spread
+const PINCH_IMPULSE = 0.32; // velocity kick per pixel of pinch spread
 const PAN_IMPULSE = 0.35; // velocity kick per pixel the two-finger centroid slides
 const DAMP_TAU = 0.2; // velocity decay constant; higher = more glide/soar
 const LOOK_EASE = 14; // how fast the view catches up to the drag
