@@ -13,13 +13,15 @@ export function Header() {
         </Link>
 
         <div className="header-actions">
+          <Link href="/writing" className="header-link">
+            Writing
+          </Link>
+          <Link href="/contact" className="header-link">
+            Book a demo
+          </Link>
           <Link href="/sandbox" className="button button-compact">
             Sandbox
             <span aria-hidden="true" className="button-square" />
-          </Link>
-          <Link href="/contact" className="button button-white button-compact">
-            Book a demo
-            <span aria-hidden="true">↗</span>
           </Link>
         </div>
       </div>

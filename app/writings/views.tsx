@@ -6,6 +6,7 @@ export function ArticleView({ article }: { article: Article }) {
   return (
     <article className="wr-paper">
       <h1 className="wr-title">{article.title}</h1>
+      {article.subtitle && <p className="wr-subtitle">{article.subtitle}</p>}
       {article.dateLabel && <p className="wr-date">{article.dateLabel}</p>}
       <div className="wr-body" dangerouslySetInnerHTML={{ __html: article.html }} />
     </article>

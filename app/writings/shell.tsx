@@ -17,6 +17,13 @@ function ContentsTree({ active }: { active: ActiveNav }) {
         <a href="/research" className={navClass(active.section === "research")}>
           Research
         </a>
+        <ul className="wr-subtree">
+          <li>
+            <a href="/research" className={navClass(active.section === "research")}>
+              Research
+            </a>
+          </li>
+        </ul>
       </li>
 
       <li>

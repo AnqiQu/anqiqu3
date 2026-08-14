@@ -101,7 +101,20 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 
 .footer-meta a { transition: color 180ms ease; }
 .footer-meta a:hover { color: var(--white); }
-.header-actions { display: flex; align-items: center; gap: 10px; justify-self: end; }
+.header-actions { display: flex; align-items: center; gap: 18px; justify-self: end; }
+
+.header-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted-strong);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  transition: color 180ms ease;
+}
+.header-link:hover { color: var(--white); }
 
 .button {
   display: inline-flex;

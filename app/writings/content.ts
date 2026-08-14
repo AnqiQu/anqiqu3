@@ -22,6 +22,7 @@ export type Section = "writing" | "manifesto";
 export type Article = {
   slug: string;
   title: string;
+  subtitle?: string;
   dateISO?: string;
   dateLabel?: string;
   sortKey: number;
@@ -117,6 +118,7 @@ function buildArticle(path: string, raw: string, section: Section): Article {
   return {
     slug,
     title: data.title?.trim() || deriveTitle(body, slug),
+    subtitle: data.subtitle?.trim() || undefined,
     dateISO: data.date,
     dateLabel: label,
     sortKey,
@@ -150,7 +152,7 @@ export function getArticle(section: Section, slug: string): Article | undefined 
 }
 
 // The Research page is a single editable Markdown file (content/research.md).
-export type ResearchPage = { title: string; dateLabel?: string; html: string };
+export type ResearchPage = { title: string; subtitle?: string; dateLabel?: string; html: string };
 
 export function getResearch(): ResearchPage {
   const entry = Object.entries(researchFiles)[0];
@@ -164,6 +166,7 @@ export function getResearch(): ResearchPage {
   const { label } = formatDate(data.date);
   return {
     title: data.title?.trim() || deriveTitle(body, "Research"),
+    subtitle: data.subtitle?.trim() || undefined,
     dateLabel: label,
     html: marked.parse(body) as string,
   };
