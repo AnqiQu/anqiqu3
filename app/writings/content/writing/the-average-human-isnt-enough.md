@@ -10,13 +10,13 @@ Last week I read a paper titled MatrAIx that simulates a world of 8.3 billion AI
 
 The field has been on a tear. A handful of companies - Aaru, Simile, Artificial Societies - have raised serious money to build these kinds of simulations. To be clear, I don't want any of them to catch strays here (if anything, I'm rooting for them!) I just want to point at the thing I think matters most, in the hope it's useful to whoever's building what's next.
 
-Almost everyone working on this is asking the same question: Do the AI agents reproduce the behaviour we expect from humans? That's a reasonable question. But it skips a second one that I think matters just as much: Do they disagree the way real people do too?
+Almost everyone working on this is asking the same question: Do the AI agents reproduce the behaviour we expect from humans? That's a reasonable question. But it skips a second one that I think matters just as much: Do they also disagree the way real people do too?
 
 ## The easy part
 
-The appeal of silicon sampling is obvious. Agents are fast, cheap, and behaviourally rich. If we condition one on a specific sociodemographic profile it can reproduce a startling amount of humanlike decision-making, documented biases and all. Suddenly we can model how a policy lands across subgroups, watch population-level dynamics unfold, and test treatment effects, all without recruiting, scheduling, paying, or debriefing a single person. This is all very exciting for questions that are too slow, too expensive, or too ethically fraught to run on real humans.
+The appeal of silicon sampling is obvious. AI agents are fast, cheap, and behaviourally rich. If we condition one on a specific sociodemographic profile it can reproduce a startling amount of humanlike decision-making, documented biases and all. Suddenly we can model how a policy lands across subgroups, watch population-level dynamics unfold, and test treatment effects, all without recruiting, scheduling, paying, or debriefing a single person. This is all very exciting for questions that are too slow, too expensive, or too ethically dubious to run on real humans.
 
-But behavioural research was never only about averages. It's also about variation. In the real world people disagree about what's fair, what others deserve, and how much they'll personally give up for their principles. If AI agents are going to stand in for human participants, they have to reproduce not just the centre of the distribution but its whole shape - the spread, the tails, the lumps.
+But behavioural research was never only about the expected value. It's also about variation. In the real world people disagree about what's fair, what others deserve, and how much they'll personally give up for their principles, etc etc. If AI agents are going to stand in for human participants, they have to reproduce not just the centre of the distribution but its whole shape - the spread, the tails, the lumps.
 
 ## Three bars, and the one nobody's standing on
 
@@ -49,6 +49,6 @@ Three things stuck with me from my own work:
 
 ## What I'd love to see
 
-None of this is a knock on the field. I think silicon sampling is one of the most promising things happening in social science, and I want it to work. But if it's going to deliver on the promise, we have to treat humanlike variance as a first-class target rather than an afterthought. That means testing more than one model family, designing experiments that actually try to elicit heterogeneity instead of assuming it's there, and maybe eventually building agents tuned for behavioural research rather than borrowed from chatbots optimised to be agreeable.
+None of this is a knock on the field. I think silicon sampling is one of the most promising things happening in social science, and I want it to work. But if it's going to deliver on the promise, we have to treat humanlike variance as a first-class target rather than an afterthought. That means testing more than one model family, designing experiments that actually try to elicit heterogeneity instead of assuming it's there, and maybe eventually building agents tuned for behavioural research rather than built on top of chatbots optimised to be agreeable.
 
 The average was always the easy part. The interesting stuff, like the riots that do or don't happen, or the kids who do or don't escape from poverty, has always lived in the tails. If we want AI crowds to teach us something new about real ones, we have to make sure they can still surprise us.
