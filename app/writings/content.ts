@@ -10,12 +10,16 @@ import { marked } from "marked";
 //   ---
 //   title: On Building Slowly
 //   date: 2026-08-10
+//   image: /writing-cards/on-building-slowly.png
 //   ---
 //
 //   Body text in Markdown...
 //
 // `title` and `date` are both optional — the title falls back to the first
 // heading (or the filename), and the date is simply omitted if absent.
+// `image` is the piece's own share card (the preview shown when the article is
+// shared); `card` and `cover` are accepted as aliases. When absent, sharing a
+// piece falls back to the site's default card (see app/writings/metadata.ts).
 
 export type Section = "writing" | "manifesto";
 
@@ -29,6 +33,9 @@ export type Article = {
   html: string;
   excerpt: string;
   section: Section;
+  // The piece's own share card, if it defines one in frontmatter. A path
+  // (resolved against the site origin) or an absolute URL.
+  image?: string;
 };
 
 const writingFiles = import.meta.glob("./content/writing/*.md", {
@@ -125,6 +132,7 @@ function buildArticle(path: string, raw: string, section: Section): Article {
     html: marked.parse(body) as string,
     excerpt: makeExcerpt(body),
     section,
+    image: (data.image ?? data.card ?? data.cover)?.trim() || undefined,
   };
 }
 

@@ -34,6 +34,15 @@ test("server-renders the Anqi Qu landing page", async () => {
   const html = await response.text();
   const normalizedHtml = html.replaceAll("<!-- -->", "");
   assert.match(html, /<title>Anqi Qu<\/title>/i);
+
+  // The homepage owns the /og.png share card (it lives on the homepage, not the
+  // shared layout, so no other route inherits it).
+  assert.match(html, /<meta property="og:title" content="Anqi Qu"\/?>/i);
+  assert.match(
+    html,
+    /<meta property="og:image" content="https:\/\/anqiqu\.com\/og\.png"\/?>/i,
+  );
+
   assert.doesNotMatch(html, /INTRODUCING ANQI INTELLIGENCE/);
   assert.match(html, /Anqi Qu/);
   assert.match(html, /Our most advanced multimodal human model yet\./);
@@ -78,6 +87,14 @@ test("server-renders the Sandbox underground loading gate", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>Anqi Qu<\/title>/i);
+
+  // The sandbox shares as "Anqi Qu | Sandbox" with no image — it does not
+  // inherit the homepage's card or its /og.png.
+  assert.match(html, /<meta property="og:title" content="Anqi Qu \| Sandbox"\/?>/i);
+  assert.match(html, /<meta name="twitter:title" content="Anqi Qu \| Sandbox"\/?>/i);
+  assert.doesNotMatch(html, /<meta property="og:image"/i);
+  assert.doesNotMatch(html, /<meta name="twitter:image"/i);
+
   assert.match(html, /Anqi Qu Sandbox/);
   assert.match(html, /A floating solarpunk island above the clouds/);
   assert.match(html, /data-mode="loading"/);
@@ -92,11 +109,75 @@ test("server-renders the Sandbox underground loading gate", async () => {
   assert.doesNotMatch(html, /site-header|desktop-nav|Book a demo/);
 });
 
+test("gives a shared writing piece its own share card, not the homepage's", async () => {
+  const response = await render("/writing/my-month-up-here");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+
+  // The browser-tab title keeps the site's existing shape.
+  assert.match(html, /<title>My Month Up Here \| Anqi Qu<\/title>/i);
+
+  // The share card reads "Anqi Qu | Writings | <title>" on both OpenGraph
+  // (iMessage and other link-preview readers) and Twitter/X — not the
+  // homepage's bare "Anqi Qu".
+  assert.match(
+    html,
+    /<meta property="og:title" content="Anqi Qu \| Writings \| My Month Up Here"\/?>/i,
+  );
+  assert.match(
+    html,
+    /<meta name="twitter:title" content="Anqi Qu \| Writings \| My Month Up Here"\/?>/i,
+  );
+
+  // It is a piece, canonical to itself, not the "website" homepage card.
+  assert.match(html, /<meta property="og:type" content="article"\/?>/i);
+  assert.match(
+    html,
+    /<meta property="og:url" content="https:\/\/anqiqu\.com\/writing\/my-month-up-here"\/?>/i,
+  );
+  assert.match(
+    html,
+    /<link rel="canonical" href="https:\/\/anqiqu\.com\/writing\/my-month-up-here"\/?>/i,
+  );
+
+  // With no `image` in its frontmatter, the piece carries NO share image — it
+  // never borrows the homepage's /og.png.
+  assert.doesNotMatch(html, /<meta property="og:image"/i);
+  assert.doesNotMatch(html, /<meta name="twitter:image"/i);
+
+  // The homepage tagline / card must not leak onto a writing piece's card.
+  assert.doesNotMatch(html, /Our most advanced multimodal human model yet\./);
+});
+
+test("labels a shared manifesto piece with its own section", async () => {
+  const response = await render("/manifesto/anqo-optimisto-manifesto");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(
+    html,
+    /<meta property="og:title" content="Anqi Qu \| Manifesto \| Anqo-Optimisto Manifesto"\/?>/i,
+  );
+});
+
+test("gives Research its own share card, with no image", async () => {
+  const response = await render("/research");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<meta property="og:title" content="Anqi Qu \| Research"\/?>/i);
+  assert.match(html, /<meta name="twitter:title" content="Anqi Qu \| Research"\/?>/i);
+  assert.doesNotMatch(html, /<meta property="og:image"/i);
+  assert.doesNotMatch(html, /<meta name="twitter:image"/i);
+});
+
 test("keeps production content centralized and reduced-motion safe", async () => {
-  const [content, css, layout, packageJson] = await Promise.all([
+  const [content, css, layout, page, packageJson] = await Promise.all([
     readFile(new URL("../app/content.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
@@ -121,7 +202,11 @@ test("keeps production content centralized and reduced-motion safe", async () =>
   assert.match(css, /@media \(max-width: 360px\)/);
   assert.match(layout, /metadataBase:\s*new URL\("https:\/\/anqiqu\.com"\)/);
   assert.match(layout, /themeColor:\s*"#000000"/);
-  assert.match(layout, /images:\s*\["\/og\.png"\]/);
+  // The share-card image lives on the homepage now, not the shared layout, so
+  // no other route inherits /og.png. (The layout still references og.png in its
+  // JSON-LD Person schema, which is site-wide structured data, not a card.)
+  assert.match(page, /url:\s*"\/og\.png"/);
+  assert.doesNotMatch(layout, /openGraph|twitter/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
 
   await assert.rejects(

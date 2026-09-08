@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { WritingsShell } from "../../writings/shell";
 import { ArticleView } from "../../writings/views";
 import { getArticle, writingArticles } from "../../writings/content";
+import { articleShareMetadata } from "../../writings/metadata";
 
 export function generateStaticParams() {
   return writingArticles.map((a) => ({ slug: a.slug }));
@@ -16,10 +17,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const article = getArticle("writing", slug);
   if (!article) return { title: "Not found | Anqi Qu" };
-  return {
-    title: `${article.title} | Anqi Qu`,
-    description: article.excerpt || undefined,
-  };
+  return articleShareMetadata(article);
 }
 
 export default async function WritingArticlePage({

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Benchmarks } from "./components/benchmarks";
@@ -12,6 +13,41 @@ import {
   compliance,
   specifications,
 } from "./content";
+
+// The homepage share card, kept here rather than in the root layout so its
+// /og.png preview is shown only when the homepage itself is shared — every
+// other route defines its own card (or none) instead of inheriting this one.
+// Defined once so the Twitter card matches the OpenGraph one shown in iMessage
+// by construction.
+const shareTitle = "Anqi Qu";
+const shareDescription = "Our most advanced multimodal human model yet.";
+const shareImage = {
+  url: "/og.png",
+  width: 1727,
+  height: 911,
+  type: "image/png",
+  alt: "Anqi Qu — our most advanced multimodal human model yet.",
+};
+
+export const metadata: Metadata = {
+  openGraph: {
+    type: "website",
+    url: "https://anqiqu.com",
+    siteName: "Anqi Qu",
+    locale: "en_US",
+    title: shareTitle,
+    description: shareDescription,
+    images: [shareImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@Anqinator",
+    creator: "@Anqinator",
+    title: shareTitle,
+    description: shareDescription,
+    images: [shareImage],
+  },
+};
 
 const CHANGELOG_TONES: Record<string, string> = {
   Added: "positive",

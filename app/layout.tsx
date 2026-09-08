@@ -40,19 +40,12 @@ const openSans = Open_Sans({
   display: "swap",
 });
 
-// The single share card used everywhere a link preview appears — iMessage and
-// other OpenGraph readers, and X/Twitter. Defined once so the Twitter card is
-// identical to the one shown in texts by construction.
-const shareTitle = "Anqi Qu";
-const shareDescription = "Our most advanced multimodal human model yet.";
-const shareImage = {
-  url: "/og.png",
-  width: 1727,
-  height: 911,
-  type: "image/png",
-  alt: "Anqi Qu — our most advanced multimodal human model yet.",
-};
-
+// Only site-wide defaults live here. The share card (Open Graph + Twitter) is
+// deliberately NOT set at the layout level: Next.js hands a layout's card to
+// every descendant route wholesale, which would stamp the homepage preview —
+// title and /og.png image — onto writing pieces, the sandbox, and everything
+// else. Each page owns its own card instead (the homepage's is in page.tsx),
+// so /og.png only ever appears when the homepage itself is shared.
 export const metadata: Metadata = {
   metadataBase: new URL("https://anqiqu.com"),
   title: "Anqi Qu",
@@ -60,23 +53,6 @@ export const metadata: Metadata = {
     "Hello! This is Anqi Qu's personal website",
   applicationName: "Anqi Qu",
   alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    url: "https://anqiqu.com",
-    siteName: "Anqi Qu",
-    locale: "en_US",
-    title: shareTitle,
-    description: shareDescription,
-    images: [shareImage],
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@Anqinator",
-    creator: "@Anqinator",
-    title: shareTitle,
-    description: shareDescription,
-    images: [shareImage],
-  },
 };
 
 export const viewport: Viewport = {
