@@ -2,6 +2,7 @@
 title: My Month Up Here
 subtitle: Musings on The Muse.
 date: 1 September 2026
+image: /writing-cards/Anqi-sf.jpg
 ---
 
 When the symptoms of my (AI) psychosis became hard to ignore, I decided a change of air would do me good. Somewhere elevated. Somewhere with a view. So off I went to San Francisco.

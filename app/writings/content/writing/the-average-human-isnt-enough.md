@@ -2,6 +2,7 @@
 title: The Average Human Isn't Enough
 subtitle: On silicon sampling, and the one thing we keep forgetting to measure.
 date: 14 August 2026
+image: /writing-cards/average-human.jpg
 ---
 
 Last week I read a paper titled MatrAIx that simulates a world of 8.3 billion AI agents (roughly one persona for every human alive) and uses them to test products and studies on a "population" meant to be as diverse as the real world. It's interesting, ambitious work, and it sent me straight back to my undergrad thesis I wrote last year, which centered around one question: 

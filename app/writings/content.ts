@@ -58,6 +58,18 @@ const researchFiles = import.meta.glob("./content/research.md", {
 
 marked.setOptions({ gfm: true, breaks: false });
 
+// Only backtick fences (```) open code blocks. GFM also treats ~~~ as a
+// fence, but posts use a bare ~~~ as a visual section break, so leave it as
+// literal text and fall back to the stock tokenizer for everything else.
+marked.use({
+  tokenizer: {
+    fences(src) {
+      if (/^ {0,3}~{3,}/.test(src)) return undefined;
+      return false;
+    },
+  },
+});
+
 function slugFromPath(path: string): string {
   const file = path.split("/").pop() ?? path;
   return file.replace(/\.md$/i, "");
@@ -82,16 +94,33 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
+function monthIndex(name: string): number {
+  const prefix = name.slice(0, 3).toLowerCase();
+  return MONTHS.findIndex((m) => m.slice(0, 3).toLowerCase() === prefix);
+}
+
 // Format YYYY-MM-DD without touching Date/Intl (kept deterministic and
-// timezone-proof). Non-matching strings are shown verbatim.
+// timezone-proof). Other strings are shown verbatim, but we still derive a
+// sort key from "15 September 2026" / "September 15, 2026" / a bare year so
+// the listings order newest-first regardless of how the date was written.
 function formatDate(raw?: string): { label?: string; sortKey: number } {
   if (!raw) return { sortKey: 0 };
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
-  if (!m) return { label: raw, sortKey: 0 };
-  const [, y, mo, d] = m;
-  const month = MONTHS[Number(mo) - 1] ?? mo;
-  const sortKey = Number(y) * 10000 + Number(mo) * 100 + Number(d);
-  return { label: `${month} ${Number(d)}, ${y}`, sortKey };
+  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+  if (iso) {
+    const [, y, mo, d] = iso;
+    const month = MONTHS[Number(mo) - 1] ?? mo;
+    const sortKey = Number(y) * 10000 + Number(mo) * 100 + Number(d);
+    return { label: `${month} ${Number(d)}, ${y}`, sortKey };
+  }
+  const dmy = /^(\d{1,2})\s+([A-Za-z]+),?\s+(\d{4})$/.exec(raw);
+  const mdy = /^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/.exec(raw);
+  if (dmy || mdy) {
+    const [d, monthName, y] = dmy ? [dmy[1], dmy[2], dmy[3]] : [mdy![2], mdy![1], mdy![3]];
+    const mo = monthIndex(monthName);
+    if (mo !== -1) return { label: raw, sortKey: Number(y) * 10000 + (mo + 1) * 100 + Number(d) };
+  }
+  const year = /\b(\d{4})\b/.exec(raw);
+  return { label: raw, sortKey: year ? Number(year[1]) * 10000 : 0 };
 }
 
 function deriveTitle(body: string, fallback: string): string {
