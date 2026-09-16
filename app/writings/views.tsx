@@ -42,11 +42,27 @@ export function SectionIndex({
         <ul className="wr-index-list">
           {articles.map((a) => (
             <li key={a.slug} className="wr-index-item">
-              <a href={`/${section}/${a.slug}`} className="wr-index-link">
-                {a.title}
-              </a>
-              {a.dateLabel && <p className="wr-index-date">{a.dateLabel}</p>}
-              {a.excerpt && <p className="wr-index-excerpt">{a.excerpt}</p>}
+              {a.image && (
+                // A decorative link to the piece — the title link beside it is
+                // the one screen readers and keyboards use, so this one is
+                // hidden from both to avoid a redundant stop.
+                <a
+                  href={`/${section}/${a.slug}`}
+                  className="wr-index-thumb"
+                  aria-hidden="true"
+                  tabIndex={-1}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a small local square, same as the prose body images */}
+                  <img src={a.image} alt="" width={72} height={72} loading="lazy" decoding="async" />
+                </a>
+              )}
+              <div className="wr-index-item-body">
+                <a href={`/${section}/${a.slug}`} className="wr-index-link">
+                  {a.title}
+                </a>
+                {a.dateLabel && <p className="wr-index-date">{a.dateLabel}</p>}
+                {a.excerpt && <p className="wr-index-excerpt">{a.excerpt}</p>}
+              </div>
             </li>
           ))}
         </ul>

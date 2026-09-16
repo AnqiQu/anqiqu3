@@ -109,6 +109,18 @@ test("server-renders the Sandbox underground loading gate", async () => {
   assert.doesNotMatch(html, /site-header|desktop-nav|Book a demo/);
 });
 
+test("lists writing pieces on the section index, ready for thumbnails", async () => {
+  const response = await render("/writing");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<title>Writing \| Anqi Qu<\/title>/i);
+  // Each item wraps its text beside the (optional) left-hand thumbnail.
+  assert.match(html, /wr-index-item-body/);
+  assert.match(html, /My Month Up Here/);
+  assert.match(html, /Average Human/);
+});
+
 test("gives a shared writing piece its own share card, not the homepage's", async () => {
   const response = await render("/writing/my-month-up-here");
   assert.equal(response.status, 200);

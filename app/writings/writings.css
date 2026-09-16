@@ -249,11 +249,41 @@
 }
 
 .wr-index-item {
+  display: flex;
+  gap: 1.15rem;
+  align-items: flex-start;
   padding: 1.6rem 0;
   border-top: 1px solid var(--wr-faint);
 }
 
 .wr-index-item:last-child { border-bottom: 1px solid var(--wr-faint); }
+
+/* A small square cover thumbnail on the left of each listed piece — the same
+   image the piece uses for its share card. Only present when the piece defines
+   an `image`; pieces without one simply have no thumbnail. */
+.wr-index-thumb {
+  flex: 0 0 auto;
+  display: block;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--wr-faint);
+}
+
+.wr-index-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* The text column beside the thumbnail. min-width:0 lets long words wrap
+   instead of stretching the flex row. */
+.wr-index-item-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
 
 .wr-index-link {
   font-family: var(--font-philosopher), serif;
