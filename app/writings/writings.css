@@ -6,6 +6,7 @@
   --wr-ink: #26241f;
   --wr-muted: #7c766a;
   --wr-faint: #e7e3d8;
+  --wr-rule: #d3cdbf;
   --wr-accent: #3a3630;
 
   min-height: 100vh;
@@ -72,11 +73,15 @@
 
 .wr-subtree {
   margin-top: 0.5rem;
-  padding-left: 0.9rem;
-  border-left: 1px solid var(--wr-faint);
 }
 
-.wr-subtree > li { margin: 0.35rem 0; }
+/* Each piece carries its own stretch of the guide line, so the gap between
+   items breaks it and a title that wraps still reads as one piece. */
+.wr-subtree > li {
+  margin: 0.6rem 0;
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--wr-rule);
+}
 
 .wr-link {
   display: block;

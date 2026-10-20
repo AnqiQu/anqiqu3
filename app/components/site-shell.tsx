@@ -19,7 +19,7 @@ export function Header() {
           <Link href="/contact" className="header-link">
             Book a demo
           </Link>
-          <Link href="/sandbox" className="button button-compact">
+          <Link href="/sandbox" className="button button-compact button-sandbox">
             Sandbox
             <span aria-hidden="true" className="button-square" />
           </Link>

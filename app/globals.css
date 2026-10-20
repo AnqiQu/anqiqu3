@@ -139,6 +139,44 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .button-white { border-color: var(--white); background: var(--white); color: var(--black); }
 .button-white:hover { border-color: var(--white); background: var(--white); }
 .button-square { width: 9px; height: 9px; flex-shrink: 0; background: currentColor; border-radius: 1px; }
+/* The header's Sandbox button is the one thing we most want clicked, so it
+   glows, breathes and catches a passing glint instead of sitting flat. */
+.button-sandbox {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: #c9ffd3;
+  background: linear-gradient(135deg, #d6ffdd, var(--bright-green) 48%, #3df58c);
+  font-weight: 750;
+  animation: sandbox-glow 2.8s ease-in-out infinite;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.button-sandbox::after {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.9), transparent);
+  content: "";
+  transform: translateX(-160%) skewX(-18deg);
+  animation: sandbox-glint 3.6s ease-in-out infinite;
+}
+.button-sandbox:hover {
+  border-color: var(--white);
+  background: linear-gradient(135deg, #e6ffea, #9bf5af 48%, #52ff9b);
+  box-shadow: 0 0 0 1px rgb(128 237 153 / 0.6), 0 0 24px rgb(128 237 153 / 0.85), 0 0 60px rgb(87 204 153 / 0.5);
+  animation: none;
+  transform: translateY(-2px) scale(1.05);
+}
+.button-sandbox .button-square { transition: transform 240ms ease; }
+.button-sandbox:hover .button-square { transform: rotate(45deg) scale(1.2); }
+@keyframes sandbox-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgb(128 237 153 / 0.3), 0 0 12px rgb(128 237 153 / 0.45), 0 0 30px rgb(87 204 153 / 0.2); }
+  50% { box-shadow: 0 0 0 1px rgb(128 237 153 / 0.55), 0 0 20px rgb(128 237 153 / 0.75), 0 0 48px rgb(87 204 153 / 0.4); }
+}
+@keyframes sandbox-glint { 0%, 55% { transform: translateX(-160%) skewX(-18deg); } 85%, 100% { transform: translateX(330%) skewX(-18deg); } }
 
 .eyebrow { margin: 0; color: var(--green); font-size: 10px; font-weight: 650; letter-spacing: 0.21em; line-height: 1.4; }
 
@@ -396,6 +434,24 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
 .final-cta-copy > p { margin: 0 0 30px; color: var(--muted-strong); font-size: 16px; }
 .final-cta-copy > span { margin-top: 18px; color: var(--muted); font-size: 10px; }
 
+/* The closing invitation: copy beside a pixel-art sandbox that is the link.
+   Drawn on an 80 × 39 pixel grid and shown at a whole multiple of it (4×, or 3×
+   on phones) so every pixel stays square. Motion moves in whole pixels too. */
+.sandbox-invite { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: clamp(24px, 4vw, 56px); padding: clamp(26px, 3.2vw, 40px) clamp(24px, 4.5vw, 60px); }
+.final-cta-copy > .sandbox-invite-promise { margin: 12px 0 0; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.2rem); font-style: italic; }
+.sandbox-pit { position: relative; z-index: 1; display: block; width: 320px; max-width: 100%; transition: transform 160ms steps(2, end); }
+.sandbox-pit:hover { transform: translateY(-4px); }
+.sandbox-pit-art { display: block; width: 100%; height: auto; aspect-ratio: 80 / 39; }
+.sandbox-pit-shovel { animation: sandbox-shovel-bob 3.2s steps(1, end) infinite; }
+.sandbox-pit-sparkle { opacity: 0; animation: sandbox-sparkle 2.6s steps(1, end) infinite; }
+.sandbox-pit-grain { fill: var(--pale-green); opacity: 0; }
+.sandbox-pit:hover .sandbox-pit-shovel, .sandbox-pit:focus-visible .sandbox-pit-shovel { animation: sandbox-shovel-dig 0.6s steps(1, end) infinite; }
+.sandbox-pit:hover .sandbox-pit-grain, .sandbox-pit:focus-visible .sandbox-pit-grain { animation: sandbox-grain-toss 0.6s steps(4, end) infinite; }
+@keyframes sandbox-shovel-bob { 0%, 76%, 100% { transform: translateY(0); } 80% { transform: translateY(-1px); } 84% { transform: translateY(0); } 88% { transform: translateY(-1px); } }
+@keyframes sandbox-shovel-dig { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-1px, -3px); } 50% { transform: translate(1px, -2px); } 75% { transform: translate(0, -1px); } }
+@keyframes sandbox-sparkle { 0%, 55%, 100% { opacity: 0; } 60%, 75% { opacity: 1; } 65%, 70% { opacity: 0.5; } }
+@keyframes sandbox-grain-toss { from { opacity: 1; transform: translate(0, 0); } to { opacity: 0; transform: translate(var(--dx), var(--dy)); } }
+
 .site-footer { position: relative; min-height: 390px; overflow: hidden; padding: 64px 0 48px; border-top: 1px solid var(--border); background: linear-gradient(to bottom, rgb(5 10 7 / 0.95), var(--black)); }
 .footer-inner { position: relative; z-index: 2; display: flex; width: min(var(--container), calc(100% - 48px)); align-items: flex-start; justify-content: flex-end; gap: 30px; margin-inline: auto; }
 .footer-meta { display: flex; align-items: center; justify-content: flex-end; gap: 24px; margin-left: auto; color: var(--muted); font-size: 10px; text-align: right; }
@@ -483,6 +539,7 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
   .benchmark-radar { max-width: 460px; }
   .compliance-grid { grid-template-columns: repeat(2, 1fr); }
   .final-cta { grid-template-columns: 1fr; }
+  .sandbox-invite { grid-template-columns: minmax(0, 1fr) auto; }
 }
 
 @media (max-width: 720px) {
@@ -521,6 +578,8 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--bright-green);
   .compliance-grid { grid-template-columns: 1fr; }
   .compliance-card { min-height: 168px; }
   .final-cta { gap: 44px; }
+  .sandbox-invite { grid-template-columns: 1fr; gap: 20px; padding: 26px 20px; }
+  .sandbox-pit { width: 240px; }
   .footer-inner, .footer-meta { align-items: flex-end; flex-direction: column; }
   .footer-meta { gap: 8px; }
   .contact-main { padding-top: 112px; }

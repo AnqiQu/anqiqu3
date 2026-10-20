@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Benchmarks } from "./components/benchmarks";
 import { HeroHype } from "./components/hero-hype";
 import { HeroTechnical } from "./components/hero-technical";
+import { SandboxInvite } from "./components/sandbox-invite";
 import { Footer, Header, SectionHeader } from "./components/site-shell";
 import { Favicon } from "./components/favicon";
 import {
@@ -285,6 +286,7 @@ export default function Home() {
           </div>
         </section>
 
+        <SandboxInvite />
       </main>
       <Footer />
     </div>
